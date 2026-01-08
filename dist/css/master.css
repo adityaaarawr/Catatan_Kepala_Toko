@@ -1,0 +1,1281 @@
+/* ================================================= */
+/* 1. ROOT VARIABLES & GLOBAL STYLES */
+/* ================================================= */
+
+:root {
+    /* --- 1. COLOR PALLETE --- */
+    --primary: #113F67;
+    --primary-dark: #34699A;
+    --primary-light: #408AB4;
+    --secondary-color: #65C6C4;
+
+    /* --- 2. TEKS & WARNA UMUM --- */
+    --text-primary: #1f2937;
+    --text-color: var(--text-primary); 
+    --muted: #6b7280;
+    --muted-text: var(--muted); 
+
+    /* --- 3. BACKGROUND & BORDER --- */
+    --bg: #f4f6f9;
+    --bg-light: var(--bg);
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0; 
+    
+    /* --- 4. WARNA AKSI & STATUS (NOTIFIKASI) --- */
+    --danger: #ef4444;                
+    --danger-dark: #b91c1c;           
+    --action-primary: var(--primary); 
+    --action-danger: #dc3545;   
+    --success-color: #28a745;         
+    --warning-color: #ffc107;         
+    --info-color: #2196F3;            
+    --error-color: var(--danger);    
+
+    /* --- 5. SIDEBAR --- */
+    --sidebar-bg: #1f2937; 
+    --sidebar-border: #374151;
+    --sidebar-item: #9ca3af;
+    --sidebar-active: #ffffff;
+
+    /* --- 6. SHADOW & ESTETIKA --- */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.1); 
+    --hover-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    --focus-border-color: var(--primary);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-light);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* ======================================== */
+/* 2. LAYOUT UTAMA (Sidebar & Main Content) */
+/* ======================================== */
+
+/* TEXT UPPERCASE */
+.sidebar, 
+.topbar, 
+.table-wrap table, 
+.modal-title, 
+.modal-box label,
+.view-data-field,                   
+.catatan-display,
+.filter-card,
+.btn-primary {
+    text-transform: uppercase;
+}
+
+/* Khusus untuk input, select, dan textarea */
+.modal-box input, 
+.modal-box select, 
+.modal-box textarea,
+.filter-input {
+    text-transform: uppercase;
+}
+
+/* Sidebar Default (Terbuka) */
+.sidebar {
+    width: 250px;
+    transition: all 0.3s ease;
+}
+
+/* Saat Sidebar Tertutup */
+.sidebar.collapsed {
+    width: 70px;
+}
+
+/* Sembunyikan teks menu saat collapsed */
+.sidebar.collapsed .menu-list span, 
+.sidebar.collapsed .logo-text {
+    display: none;
+}
+
+/* Penyesuaian konten utama */
+main {
+    margin-left: 250px;
+    transition: all 0.3s ease;
+}
+
+main.sidebar-collapsed {
+    margin-left: 70px;
+}
+
+/* ======================================= */
+/* 3. KOMPONEN UI (Top Bar, Card, Button) */
+/* ======================================= */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border-color);
+    position: relative;
+}
+
+/* Garis header di bawah title */
+.topbar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--secondary-color) 100%);
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    position: relative;
+    padding-bottom: 5px;
+}
+
+.btn-primary {
+    padding: 10px 18px;
+    background: #1B3C53;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transform: translateY(0);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 14px rgba(74, 71, 255, 0.45);
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 22px;
+    border-radius: 14px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 22px;
+    transition: all 0.25s ease;
+    border: 1px solid transparent;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(74, 71, 255, 0.15);
+    border-color: var(--primary-light);
+}
+
+.filter-card {
+    padding: 15px 22px;
+    border: 1px solid var(--border-color);
+    box-shadow: none;
+    margin-bottom: 22px;
+}
+
+.filter-card .filter-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.filter-card .filter-input {
+    padding: 10px 15px;
+    height: 45px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: white;
+    transition: all 0.25s ease;
+    font-size: 14px;
+    min-width: 130px;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.filter-card .search-input {
+    min-width: 130px;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.filter-card .filter-input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(74, 71, 255, 0.35);
+    background: white;
+}
+
+.filter-card .filter-input:hover {
+    border-color: var(--primary);
+}
+
+/* ================================================= */
+/* TABLE FOOTER STYLING */
+/* ================================================= */
+
+/* Footer untuk tabel */
+.table-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #f8fafc;
+    border-top: 2px solid var(--border-color);
+    min-height: 60px;
+}
+
+/* Kontainer untuk informasi footer */
+.footer-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.footer-info {
+    color: var(--muted-text);
+    font-size: 0.9rem;
+    text-align: center;
+    flex: 1;
+    min-width: 250px;
+}
+
+.footer-info span {
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+/* Pagination styling */
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination button {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+}
+
+.pagination button:hover:not(:disabled) {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-info {
+    font-size: 0.9rem;
+    color: var(--muted-text);
+    white-space: nowrap;
+}
+
+/* ================================================= */
+/* 4. TABLE STYLING (HOME & MASTER) */
+/* ================================================= */
+
+.table-wrap {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+table thead th {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+}
+
+table tbody tr {
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+table tbody tr:hover {
+    background-color: #f0f8ff;
+    cursor: pointer;
+    transform: translateX(2px);
+}
+
+table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: var(--text-color);
+    white-space: nowrap;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+/* Kolom Checkbox */
+table td input[type="checkbox"] {
+    transform: scale(1.1);
+}
+
+/* Action Buttons di Tabel */
+.action-cell {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.action-btn {
+    border: none;
+    background: none;
+    padding: 7px;
+    border-radius: 4px;
+    margin: 0 2px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s, background-color 0.2s, transform 0.1s;
+}
+
+.action-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: scale(1.1);
+}
+
+/* WARNA DEFAULT IKON */
+.action-cell .fa-edit {
+    color: var(--action-primary);
+    font-size: 1rem;
+}
+
+.action-cell .fa-trash, 
+.action-cell .fa-trash-alt {
+    color: var(--action-danger);
+    font-size: 1rem;
+}
+
+/* WARNA HOVER IKON */
+.action-cell .fa-edit:hover {
+    color: #3835cc;
+}
+
+.action-cell .fa-trash:hover, 
+.action-cell .fa-trash-alt:hover {
+    color: #b52b39;
+}
+
+/* ================================================= */
+/* 5. MODAL (ADD/EDIT & VIEW) */
+/* ================================================= */
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.modal-box {
+    background-color: var(--secondary-color);
+    border-radius: 18px;
+    max-width: 450px;
+    width: 100%;
+    padding: 30px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    transform: scale(0.9);
+    transition: transform 0.3s ease-out;
+    max-height: 95vh;
+    overflow: visible;
+    padding-bottom: 50px;
+}
+
+.modal.active .modal-box {
+    transform: scale(1);
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin-bottom: 20px;
+}
+
+/* Form Styling */
+#noteForm label, 
+#tokoForm label {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+/* Peningkatan Focus pada Form Input */
+#noteForm input:focus:not([type="file"]), 
+#noteForm textarea:focus,
+#tokoForm input:focus:not([type="checkbox"]) {
+    border-color: var(--focus-border-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(74, 71, 255, 0.2);
+}
+
+#tokoForm input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+#noteForm textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Modal Actions */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.cancel-btn, 
+.save-btn {
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.cancel-btn {
+    background-color: #6c757d;
+    color: white;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.cancel-btn:hover {
+    background-color: #5a6268;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.save-btn {
+    background-color: var(--primary);
+    color: white;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.save-btn:hover {
+    background-color: var(--primary-dark);
+    box-shadow: 0 2px 4px rgba(74, 71, 255, 0.3);
+}
+
+/* ================================================= */
+/* DROPDOWN CHECKBOX USER ROLE */
+/* ================================================= */
+
+/* Container Utama */
+.dropdown-check-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* Tombol Dropdown */
+.dropdown-check-btn {
+    width: 100%;
+    height: 40px;
+    padding: 0 10px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+}
+
+/* List Checkbox */
+.dropdown-check-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #fff;
+    width: 100%;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
+    z-index: 1001;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 0 0 4px 4px;
+    max-height: min(200px, calc(100vh - 150px));
+}
+
+.dropdown-check-content.show {
+    display: block;
+}
+
+/* Item row dengan input value di kanan */
+.dropdown-check-item {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.dropdown-check-item:hover {
+    background-color: #f9f9f9;
+}
+
+/* Input checkbox */
+.dropdown-check-item input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0;
+    cursor: pointer;
+}
+
+/* Text label di dalam item */
+.key-label {
+    flex: 1;
+    font-size: 0.85rem;
+    color: #333;
+}
+
+/* Input value kecil di kanan */
+.val-input-small {
+    width: 40%;
+    height: 28px;
+    padding: 0 5px;
+    font-size: 0.8rem;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+/* Menyamakan ukuran semua input dan select */
+#tokoForm input[type="text"],
+#tokoForm input[type="date"],
+#tokoForm select,
+.modal-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--text-color);
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+/* Khusus untuk Select */
+#tokoForm select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 1em;
+    padding-right: 40px;
+}
+
+/* Styling untuk daftar checkbox Hak Akses */
+.permission-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    background: #f9f9f9;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.permission-item input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.permission-item label {
+    margin: 0;
+    font-weight: normal;
+    text-transform: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* ================================================= */
+/* 6. VIEW MODAL STYLING */
+/* ================================================= */
+
+.view-note-box {
+    max-width: 900px;
+}
+
+.view-header {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-content-view {
+    display: flex;
+    gap: 30px;
+}
+
+.view-details-left {
+    flex: 1;
+}
+
+.view-right-column {
+    flex: 2;
+}
+
+.detail-field-group {
+    margin-bottom: 15px;
+}
+
+.detail-field-group label, 
+.view-attachments label, 
+.view-catatan label, 
+.view-preview label {
+    font-weight: 600;
+    color: var(--muted-text);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.view-data-field {
+    display: block;
+    padding: 8px 10px;
+    background-color: var(--bg-light);
+    border-radius: 4px;
+    font-size: 1rem;
+    color: var(--text-color);
+    min-height: 38px;
+}
+
+.catatan-display {
+    padding: 10px;
+    background-color: var(--bg-light);
+    border-radius: 4px;
+    min-height: 120px;
+    white-space: pre-wrap;
+}
+
+.view-preview {
+    margin-top: 20px;
+}
+
+.preview-box {
+    border: 1px dashed var(--border-color);
+    background-color: #fcfcfc;
+    min-height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--muted-text);
+    border-radius: 4px;
+}
+
+.view-actions {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.close-btn {
+    background-color: var(--primary);
+    color: var(--secondary-color);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* ================================================= */
+/* 7. MASTER MANAGEMENT SPECIFIC STYLES */
+/* ================================================= */
+
+.master-nav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.master-tab {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.3s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.master-tab:hover:not(.active) {
+    background-color: #f0f0f0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.master-tab.active {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.master-tab:active {
+    transform: scale(0.98);
+}
+
+/* CUSTOM STYLES FOR USER ROLE MODAL */
+.user-role-permission-container { 
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: #f8fafc;
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+/* Container untuk List Keys */
+#key-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Scrollbar untuk key list */
+#key-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+#key-list-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+#key-list-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+/* Style Judul Kolom (LABEL) */
+.user-role-permission-container label {
+    font-size: 0.9rem !important;
+    color: var(--text-color) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Styling untuk item checkbox/label Key */
+.key-item {
+    display: flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.key-item:hover {
+    background-color: #f0f7ff;
+}
+
+/* Styling untuk label checkbox */
+.key-item label {
+    font-size: 0.95rem !important;
+    color: var(--text-color) !important;
+    font-weight: 400 !important;
+    text-transform: none !important;
+    margin: 0;
+    cursor: pointer;
+    flex: 1;
+}
+
+/* Styling untuk input Checkbox */
+.key-item input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+
+/* Styling untuk Value Input Column */
+#value-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Styling untuk input value */
+.value-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.value-input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(74, 71, 255, 0.1);
+}
+
+/* Header untuk permission section */
+.permission-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary-light);
+}
+
+.permission-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+.select-all-btn {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.select-all-btn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.master-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    color: var(--text-color);
+}
+
+.table-actions-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+#masterSearch.search-input {
+    flex-grow: 0;
+    width: 200px;
+    height: 38px;
+    min-width: unset;
+    text-align: center;
+    font-size: 0.9rem;
+    padding: 10px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+    transition: all 0.5s;
+}
+
+#masterSearch.search-input:hover {
+    border-color: #aaa;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+#masterSearch.search-input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(74, 71, 255, 0.2);
+}
+
+/* ================================================= */
+/* 8. NOTIFICATION (TOAST - VERSI DIPERCANTIK) */
+/* ================================================= */
+
+/* Container untuk menampung notifikasi */
+#notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Base notification style */
+.notification-toast {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px 25px;
+    margin-bottom: 0;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    min-width: 300px;
+    max-width: 400px;
+    color: #333;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out, box-shadow 0.3s;
+}
+
+/* Animasi Show */
+.notification-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Icon di dalam notifikasi */
+.notification-toast i {
+    margin-right: 15px;
+    font-size: 1.5em;
+    line-height: 1;
+}
+
+/* Animasi untuk menghilangkan notifikasi */
+.notification-toast.hide-notification {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+/* Teks notifikasi */
+.notification-message {
+    flex-grow: 1;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* VARIAN WARNA */
+/* Tipe notifikasi: Success */
+.notification-toast.success {
+    background-image: linear-gradient(to right, #e6ffe6, #f0fff0);
+    border-left: 5px solid #4CAF50;
+}
+
+.notification-toast.success i {
+    color: #4CAF50;
+}
+
+/* Tipe notifikasi: Error/Danger */
+.notification-toast.error {
+    background-image: linear-gradient(to right, #ffe6e6, #fff0f0);
+    border-left: 5px solid #F44336;
+}
+
+.notification-toast.error i {
+    color: #F44336;
+}
+
+/* Tipe notifikasi: Info/Primary */
+.notification-toast.info {
+    background-image: linear-gradient(to right, #e6f0ff, #f0f8ff);
+    border-left: 5px solid #2196F3;
+}
+
+.notification-toast.info i {
+    color: #2196F3;
+}
+
+/* ================================================= */
+/* 9. RESPONSIVE DESIGN */
+/* ================================================= */
+
+/* TABLET & MOBILE (Di bawah 1024px) */
+@media (max-width: 1024px) {
+    /* Perbaikan Topbar */
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        padding-left: 60px;
+    }
+
+    /* Pengaturan Tabel untuk Tablet */
+    .table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+    }
+
+    table {
+        min-width: 700px;
+    }
+
+    .table-actions-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    #masterSearch.search-input {
+        width: 100% !important;
+    }
+}
+
+/* KHUSUS MOBILE (Di bawah 768px) */
+@media (max-width: 768px) {
+
+    .topbar .title {
+        font-size: 1.1rem !important;
+        justify-content: center;
+        margin-left: 50px;
+        display: block;
+    }
+
+    /* Reset Tabel ke mode Stack */
+    .table-wrap {
+        overflow-x: hidden !important;
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+    }
+
+    table thead {
+        display: none;
+    }
+
+    table tbody tr {
+        margin-bottom: 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: #fff;
+        padding: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    table td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center;
+        text-align: right !important;
+        padding: 12px 15px !important;
+        border-bottom: 1px dashed #f0f0f0;
+        position: relative;
+        min-height: 45px;
+    }
+
+    table td:before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        text-align: left;
+        padding-right: 10px;
+        flex: 1;
+    }
+
+    table td:last-child {
+        border-bottom: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-left: 15px !important;
+        text-align: right !important;
+        margin-top: 5px;
+        background: #f8fafc;
+        border-radius: 0 0 8px 8px;
+    }
+
+    .action-cell {
+        position: relative;
+        text-align: right !important; /* Geser ke kanan agar tidak tertumpuk label */
+        padding-left: 50% !important;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        min-height: 50px;
+    }
+
+    /* Pastikan tombol berada di lapisan paling atas */
+    .action-btn {
+        position: relative;
+        z-index: 10; 
+        pointer-events: auto !important;
+        padding: 10px; /* Perbesar area sentuh untuk mobile */
+        margin-left: 5px;
+    }
+
+    /* Hilangkan atau sesuaikan pseudo-element jika menutupi tombol */
+    .action-cell::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    /* Modal Responsiveness */
+    .modal-content-view {
+        flex-direction: column;
+    }
+    
+    .modal-box {
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+    
+    .dropdown-check-content {
+        max-height: min(150px, calc(100vh - 200px));
+        z-index: 1002;
+    }
+
+    .user-role-permission-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 12px;
+    }
+    
+    #key-list-container,
+    #value-list-container {
+        max-height: 200px;
+    }
+    
+    .permission-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .select-all-btn {
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-role-permission-container {
+        padding: 10px;
+        gap: 12px;
+    }
+    
+    .key-item {
+        padding: 6px 8px;
+        min-height: 36px;
+    }
+    
+    .value-input {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+}

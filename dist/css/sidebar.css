@@ -1,0 +1,384 @@
+/* ================================================= */
+/* LAYOUT & SIDEBAR COMPONENTS */
+/* ================================================= */
+
+.layout {
+    display: flex;
+    width: 100%;
+}
+
+/* ================================================= */
+/* SIDEBAR STYLES */
+/* ================================================= */
+
+/* --- BASE SIDEBAR STYLES --- */
+.sidebar {
+    width: 230px;
+    height: 100vh;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-item);
+    border-right: 1px solid var(--sidebar-border);
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 999;
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(6px);
+    transform: translateX(0);
+}
+
+/* --- COLLAPSED SIDEBAR STATE --- */
+.sidebar.hide {
+    /* NOTE: Sidebar tetap terlihat sebagai icon-only mode, tidak keluar layar */
+    width: 80px; /* Lebar kecil untuk ikon */
+    padding: 22px 10px; /* Padding samping dikurangi */
+    transform: translateX(0); /* TIDAK digeser ke kiri, tapi tetap di layar */
+}
+
+/* Sembunyikan teks pada menu saat sidebar collapsed */
+.sidebar.hide .menu-list li span,
+.sidebar.hide .logout-btn {
+    display: none;
+    opacity: 0;
+}
+
+/* Menengahkan ikon saat teks hilang */
+.sidebar.hide .menu-list li {
+    justify-content: center;
+    padding: 12px 0;
+    gap: 0;
+}
+
+.sidebar.hide .menu-list li::after {
+    display: none;
+}
+
+/* --- LOGO SECTION --- */
+/* NOTE: Pastikan ada elemen dengan class .logo-icon di HTML untuk mode collapsed */
+.sidebar .logo-icon {
+    display: none; /* Default tersembunyi jika menggunakan teks */
+}
+
+.sidebar.hide .logo-icon {
+    display: block; /* Logo ikon muncul saat sidebar collapsed */
+    text-align: center;
+    padding: 0;
+}
+
+.sidebar.hide .toggle-btn {
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+}
+
+.sidebar.hide .logo {
+    border-bottom: none;
+    justify-content: center;
+    padding-left: 0;
+}
+
+.sidebar.hide .logo .logo-text {
+    display: none !important;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.logo {
+    padding: 15px 0px; /* Memberi ruang atas bawah agar tidak dempet */
+    margin-bottom: 10px;
+    text-align: center;
+    padding-left: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Garis tipis transparan */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.logo .logo-text {
+    font-weight: 800;
+    font-size: 16px; /* Ukuran diperkecil sedikit agar tidak overflow */
+    text-align: center;
+    color: #ffffff;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: block;
+}
+
+/* --- MENU LIST STYLES --- */
+.menu-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.menu-list li {
+    position: relative;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    display: flex; /* Pastikan li juga flex */
+}
+
+/* Link styles for menu items */
+.menu-list li a {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    gap: 10px !important; /* JARAK ANTARA IKON DAN TEKS */
+    width: 100%;
+    color: #a0aec0; /* Warna teks default (abu-abu terang) */
+    transition: all 0.25s ease;
+}
+
+/* Icon styles within menu items */
+.menu-list li a i {
+    color: #a0aec0 !important; /* WARNA IKON DEFAULT */
+    font-size: 20px;
+    width: 25px;
+    text-align: center;
+    flex-shrink: 0;
+    transition: all 0.25s ease;
+}
+
+.menu-list li a span {
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+/* --- MENU HOVER STATES --- */
+.menu-list li:hover {
+    background: #374151;
+}
+
+.menu-list li:hover a,
+.menu-list li:hover a i {
+    color: #ffffff !important; /* Warna berubah jadi putih terang */
+}
+
+/* --- ACTIVE MENU STATE --- */
+/* NOTE: Kelas .active ditambahkan via JavaScript/PHP berdasarkan halaman aktif */
+.menu-list li.active {
+    background: var(--primary);
+    box-shadow: 0 0 12px rgba(74, 71, 255, 0.45);
+    border-left: 4px solid #4a47ff;
+}
+
+.menu-list li.active a,
+.menu-list li.active a i {
+    color: #ffffff !important; /* Warna putih terang untuk menu aktif */
+    font-weight: 700;
+}
+
+/* Animated underline effect for menu items */
+.menu-list li::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    bottom: 8px;
+    width: 0;
+    height: 2px;
+    background: white;
+    border-radius: 20px;
+    transition: 0.3s ease;
+}
+
+.menu-list li:hover::after {
+    width: 22px;
+}
+
+/* --- LOGOUT BUTTON --- */
+.logout-btn {
+    margin-top: auto;
+    padding: 12px;
+    background: var(--danger);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    position: relative;
+    transition: all 0.25s ease;
+}
+
+/* Divider line above logout button */
+.logout-btn::before {
+    content: "";
+    position: absolute;
+    top: -20px; /* Jarak garis ke atas tombol */
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* --- SIDEBAR TOGGLE BUTTON --- */
+.toggle-btn {
+    display: flex !important;
+    position: relative;
+    width: 30px;
+    height: 30px;
+    background: transparent; /* Hilangkan background kotak agar lurus dengan ikon */
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: flex-start; /* Lurus kiri dengan ikon menu */
+    padding: 0;
+    margin-bottom: 10px;
+    margin-left: 15px; /* Sesuaikan agar lurus vertikal dengan ikon menu */
+    transition: all 0.3s ease;
+    box-shadow: none; /* Hilangkan shadow agar minimalis */
+}
+
+.toggle-btn i {
+    font-size: 20px; /* Ukuran ikon sama dengan menu list */
+}
+
+.toggle-btn:hover {
+    color: #ffffff;
+    background: transparent;
+    transform: scale(1.1);
+}
+
+/* ================================================= */
+/* MAIN CONTENT AREA */
+/* ================================================= */
+
+/* --- BASE MAIN CONTENT STYLES --- */
+main {
+    margin-left: 230px; /* Sesuaikan dengan lebar sidebar default */
+    padding: 28px;
+    width: calc(100% - 230px);
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Geser konten utama ketika sidebar collapsed */
+main.sidebar-collapsed {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+}
+
+/* ================================================= */
+/* RESPONSIVE DESIGN - TABLET & MOBILE */
+/* ================================================= */
+
+/* === Tablet Portrait (≤ 768px) === */
+@media (max-width: 768px) {
+    /* --- GLOBAL MOBILE SETTINGS --- */
+    /* NOTE: Mencegah scroll horizontal pada mobile */
+    html, body {
+        overflow-x: hidden;
+        height: 100%;
+    }
+
+    /* --- MOBILE TOGGLE BUTTON --- */
+    .toggle-btn {
+        display: flex !important;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1200;
+        width: 40px;
+        height: 40px;
+        background: #113F67 !important;
+        color: #ffffff !important;
+        border-radius: 8px;
+        justify-content: center;
+        align-items: center;
+        margin: 0 !important;
+        transition: all 0.3s ease;
+    }
+
+    /* Toggle button position when sidebar is hidden on mobile */
+    .sidebar.hide .toggle-btn {
+        transform: translateX(230px) !important;
+        left: 15px !important;
+        color: #113F67;
+        position: fixed;
+        left: 15px !important;
+    }
+
+    /* --- MOBILE SIDEBAR --- */
+    /* NOTE: Di mobile, sidebar disembunyikan dengan slide-out animation */
+    .sidebar {
+        width: 230px; /* Sedikit lebih lebar di mobile */
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 1100;
+        transform: translateX(0); /* Muncul secara default */
+        transition: transform 0.4s ease;
+    }
+
+    /* Sidebar hidden state on mobile (completely off-screen) */
+    .sidebar.hide {
+        transform: translateX(-100%);
+    }
+
+    /* Logo adjustments for mobile */
+    .sidebar .logo {
+        margin-top: 40px;
+        padding-bottom: 20px;
+        justify-content: flex-start;
+        padding-left: 15px;
+    }
+
+    /* --- MOBILE MAIN CONTENT --- */
+    main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding-top: 80px !important; /* Extra padding untuk mobile header */
+        min-height: 100vh;
+    }
+
+    /* Page title adjustments for mobile */
+    .topbar .title {
+        font-size: 1.1rem !important; /* Ukuran diperkecil */
+        margin-left: 50px; /* Ruang agar tidak tertutup tombol toggle */
+        display: block;
+    }
+
+    /* Remove animated underline effect on mobile for better performance */
+    .menu-list li::after {
+        display: none;
+    }
+}
+
+/* ================================================= */
+/* NOTES FOR MAINTENANCE */
+/* ================================================= */
+
+/*
+1. SIDEBAR STATES:
+   - Default: 230px width, full text visible
+   - Desktop collapsed: 80px width, icon-only mode
+   - Mobile: Hidden off-screen, appears as overlay
+
+2. CLASSES REQUIRED:
+   - .sidebar.hide - untuk mode collapsed
+   - main.sidebar-collapsed - untuk adjust konten utama
+   - .logo-icon - elemen ikon logo untuk mode collapsed
+   - .active - untuk menu item aktif (ditambahkan via JS/PHP)
+
+3. RESPONSIVE BEHAVIOR:
+   - Desktop: Sidebar bisa di-toggle antara expanded/collapsed
+   - Mobile (<768px): Sidebar menjadi overlay, konten utama full-width
+   - Pastikan ada script toggle untuk menambahkan/remove class .hide
+
+4. VARIABLES DEPENDENCIES:
+   - --sidebar-bg, --sidebar-border, --sidebar-item - dari :root
+   - --primary, --danger - untuk warna aktif dan logout
+
+5. PERFORMANCE NOTES:
+   - backdrop-filter pada sidebar mungkin tidak support di semua browser
+   - Animated underline (::after) dimatikan di mobile untuk performa
+   - Transition menggunakan cubic-bezier untuk animasi yang smooth
+*/

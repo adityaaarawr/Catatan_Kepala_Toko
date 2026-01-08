@@ -1,0 +1,26 @@
+/* Pastikan body memenuhi layar */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.app-container {
+    display: flex; /* Membuat sidebar dan main bersandingan */
+    min-height: 100vh;
+    background-color: #f4f7f6; /* Warna background utama agar tidak putih polos */
+}
+
+/* Pengaturan Sidebar agar full ke bawah */
+aside {
+    width: 250px;
+    background: #fff;
+    border-right: 1px solid #ddd;
+    /* Jangan gunakan fixed jika ingin sidebar ikut scroll dengan konten */
+    /* Jika gunakan fixed, tambahkan margin-left pada .content-area */
+}
+
+.content-area {
+    flex: 1; /* Mengambil sisa ruang yang ada */
+    padding: 20px;
+}
