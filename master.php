@@ -1,8 +1,51 @@
 <?php 
+require_once "direct/config.php";
+
+// ========== TOKO ========== //
+$stmt = $conn->query("
+    SELECT t.*, t.nama_toko, t.kode
+    FROM toko t 
+    ORDER BY t.id DESC
+");
+$dataToko = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// ========== DIVISI ========== //
+$stmt = $conn->query("
+    SELECT d.*, d.nama_divisi, d.deskripsi, d.toko_id
+    FROM divisi d 
+    ORDER BY d.id DESC
+");
+$dataDivisi = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// ========== TOPIK ========== //
+$stmt = $conn->query("
+    SELECT tp.*, tp.nama_topik, tp.toko_id, tp.divisi_id
+    FROM topik tp 
+    ORDER BY tp.id DESC
+");
+$dataTopik = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// ========== KARYAWAN ========== //
+$stmt = $conn->query("
+    SELECT k.*, k.nama_karyawan, k.divisi_id, k.toko_id 
+    FROM karyawan k 
+    ORDER BY k.id DESC
+");
+$dataKaryawan = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// ========== USER ROLE ========== //
+$stmt = $conn->query("
+    SELECT rk.*, rk.role_key_name
+    FROM role_key rk 
+    ORDER BY rk.id DESC
+");
+$dataRole_key = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 $pageTitle = 'Master'; 
 $cssFile = 'master.css'; 
 $jsFile = 'master.js';
 include 'modules/header.php'; 
+
 ?>
 
 <div class="layout">
@@ -44,7 +87,86 @@ include 'modules/header.php';
                             <th>ACTION</th>
                         </tr>
                     </thead>
-                    <tbody id="masterTableBody"></tbody>
+                    <tbody id="masterTableBody">
+
+                        <?php if(count($dataToko) > 0): ?>
+                            <?php $no = 1; foreach($dataToko as $row): ?>
+                                <tr>
+                                    <td><?= $no++ ?></td>
+                                    <td><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
+                                    <td><?= $row['username'] ?? '-' ?></td>
+                                    <td><?= htmlspecialchars($row['nama_toko']) ?></td>
+                                    <td><?= htmlspecialchars($row['kode']) ?></td>
+                                    <td>
+                                        <button class="edit-btn">Edit</button>
+                                        <button class="delete-btn">Delete</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; endif;?>
+
+                        <?php if(count($dataDivisi) > 0): ?>
+                            <?php $no = 1; foreach($dataDivisi as $row): ?>
+                                <tr>
+                                    <td><?= $no++ ?></td>
+                                    <td><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
+                                    <td><?= $row['username'] ?? '-' ?></td>
+                                    <td><?= htmlspecialchars($row['nama_divisi']) ?></td>
+                                    <td><?= htmlspecialchars($row['deskripsi']) ?></td>
+                                    <td><?= htmlspecialchars($row['toko_id']) ?></td>
+                                    <td>
+                                        <button class="edit-btn">Edit</button>
+                                        <button class="delete-btn">Delete</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; endif;?>
+
+                        <?php if(count($dataTopik) > 0): ?>
+                            <?php $no = 1; foreach($dataTopik as $row): ?>
+                                <tr>
+                                    <td><?= $no++ ?></td>
+                                    <td><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
+                                    <td><?= $row['username'] ?? '-' ?></td>
+                                    <td><?= htmlspecialchars($row['nama_topik']) ?></td>
+                                    <td><?= htmlspecialchars($row['toko_id']) ?></td>
+                                    <td><?= htmlspecialchars($row['divisi_id']) ?></td>
+                                    <td>
+                                        <button class="edit-btn">Edit</button>
+                                        <button class="delete-btn">Delete</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; endif;?>
+
+                        <?php if(count($dataKaryawan) > 0): ?>
+                            <?php $no = 1; foreach($dataKaryawan as $row): ?>
+                                <tr>
+                                    <td><?= $no++ ?></td>
+                                    <td><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
+                                    <td><?= $row['username'] ?? '-' ?></td>
+                                    <td><?= htmlspecialchars($row['nama_karyawan']) ?></td>
+                                    <td><?= htmlspecialchars($row['divisi_id']) ?></td>
+                                    <td><?= htmlspecialchars($row['toko_id']) ?></td>
+                                    <td>
+                                        <button class="edit-btn">Edit</button>
+                                        <button class="delete-btn">Delete</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; endif;?>
+
+                        <?php if(count($dataRole_key) > 0): ?>
+                            <?php $no = 1; foreach($dataRole_key as $row): ?>
+                                <tr>
+                                    <td><?= $no++ ?></td>
+                                    <td><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
+                                    <td><?= $row['username'] ?? '-' ?></td>
+                                    <td><?= htmlspecialchars($row['role_key_name']) ?></td>
+                                    <td>
+                                        <button class="edit-btn">Edit</button>
+                                        <button class="delete-btn">Delete</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; endif;?>
+
+                    </tbody>
                 </table>
             </div>
         </div>

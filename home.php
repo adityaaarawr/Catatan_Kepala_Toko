@@ -1,8 +1,32 @@
-<?php 
+<?php
 $pageTitle = 'Home'; 
 $cssFile = 'home.css'; 
 $jsFile = 'home.js';
 include 'modules/header.php'; 
+
+require_once "direct/config.php";
+
+$sql = "SELECT n.*, 
+               u.username,
+               t.nama_toko,
+               k.nama_karyawan,
+               d.nama_divisi,
+               tp.nama_topik
+        FROM notes n
+        LEFT JOIN users u ON n.user_id = u.id
+        LEFT JOIN toko t ON n.toko_id = t.id
+        LEFT JOIN karyawan k ON n.karyawan_id = k.id
+        LEFT JOIN divisi d ON n.divisi_id = d.id
+        LEFT JOIN topik tp ON n.topik_id = tp.id
+        ORDER BY n.created_at DESC";
+
+$stmt = $conn->prepare($sql);
+$stmt->execute();
+$notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$stmt = $conn->query("SELECT COUNT(*) FROM notes");
+$total = $stmt->fetchColumn();
+
 ?>
 
 <div class="layout">
@@ -57,8 +81,44 @@ include 'modules/header.php';
                         <th>ACTION</th>
                     </tr>
                 </thead>
-                <tbody id="noteTableBody"></tbody>
+                <tbody id="noteTableBody">
+                    <?php if(count($notes) > 0): ?>
+                        <?php $no = 1; foreach($notes as $row): ?>
+                            <tr>
+                                <td><?= $no++ ?></td>
+                                <td><?= $row['tanggal'] ?></td>
+                                <td><?= $row['username'] ?? '-' ?></td>
+                                <td><?= $row['nama_toko'] ?? '-' ?></td>
+                                <td><?= $row['nama_karyawan'] ?? '-' ?></td>
+                                <td><?= $row['nama_divisi'] ?? '-' ?></td>
+                                <td><?= $row['nama_topik'] ?? '-' ?></td>
+                                <td><?= $row['catatan'] ?></td>
+                                <td>
+                                    <?php if($row['file_name']): ?>
+                                        <a href="uploads/<?= $row['file_name'] ?>" target="_blank">Lihat</a>
+                                    <?php else: ?> - <?php endif; ?>
+                                </td>
+                                <td>
+                                    <button>View</button>
+                                    <button>Delete</button>
+                                </td>
+                                <div id="emptyState" class="empty-state" 
+                                    style="<?= count($notes) > 0 ? 'display:none;' : 'display:block;' ?>">
+                                    <i class="fas fa-folder-open"></i>
+                                    <p>Belum ada catatan yang masuk.</p>
+                                </div>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
             </table>
+
+            <div id="emptyState" class="empty-state" 
+                style="<?= count($notes) > 0 ? 'display:none;' : 'display:block;' ?>">
+                <i class="fas fa-folder-open"></i>
+                <p>Belum ada catatan yang masuk.</p>
+            </div>
+            
         </div>
 
         <div class="table-footer-divider"></div>
