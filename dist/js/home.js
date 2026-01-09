@@ -4,40 +4,40 @@
  * =================================================================
  */
 
-let dummyDataNotes = {
-    1: {
-        id: 1,
-        inputer: 'Bambang',
-        toko: 'toyomatsu',
-        karyawan: 'Rudi',
-        divisi: 'Kurir',
-        topik: 'Gagal Kirim',
-        date: '2025-01-15',
-        catatan: 'Kurir gagal kirim customer A.',
-        file: true
-    },
-    2: {
-        id: 2,
-        inputer: 'Sujarwo',
-        toko: 'robin jaya',
-        karyawan: 'Dina',
-        divisi: 'Mekanik',
-        topik: 'Kedisiplinan',
-        date: '2025-01-20',
-        catatan: 'Terlihat berserakan tools dibawah meja.',
-        file: false
-    }
-};
+// let dummyDataNotes = {
+//     1: {
+//         id: 1,
+//         inputer: 'Bambang',
+//         toko: 'toyomatsu',
+//         karyawan: 'Rudi',
+//         divisi: 'Kurir',
+//         topik: 'Gagal Kirim',
+//         date: '2025-01-15',
+//         catatan: 'Kurir gagal kirim customer A.',
+//         file: true
+//     },
+//     2: {
+//         id: 2,
+//         inputer: 'Sujarwo',
+//         toko: 'robin jaya',
+//         karyawan: 'Dina',
+//         divisi: 'Mekanik',
+//         topik: 'Kedisiplinan',
+//         date: '2025-01-20',
+//         catatan: 'Terlihat berserakan tools dibawah meja.',
+//         file: false
+//     }
+// };
 
-// Counter untuk ID catatan berikutnya
-let nextNoteId = 3;
+// // Counter untuk ID catatan berikutnya
+// let nextNoteId = 3;
 
 // Referensi Elemen DOM
-let modal, viewModal, modalTitle, noteForm, tableBody, searchBar;
-const inputerDefault = 'Administrator'; // Nama default untuk pencatat baru
+// let modal, viewModal, modalTitle, noteForm, tableBody, searchBar;
+// const inputerDefault = 'Administrator'; // Nama default untuk pencatat baru
 
-console.log("home.js dimuat");
-console.log("Data dummyNotes:", dummyDataNotes);
+// console.log("home.js dimuat");
+// console.log("Data dummyNotes:", dummyDataNotes);
 
 /**
  * =================================================================
@@ -392,8 +392,17 @@ window.renderTable = function () {
     if (!tableBody) return;
 
     tableBody.innerHTML = '';
-    const sortedIds = Object.keys(dummyDataNotes).sort((a, b) => parseInt(a) - parseInt(b));
+    const sortedIds = Object.keys(dummyDataNotes);
 
+    // 👉 HANDLER JIKA BELUM ADA CATATAN
+    if (sortedIds.length === 0) {
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+    } else {
+        if (emptyState) emptyState.style.display = 'none';
+    }
+    
+    sort((a, b) => parseInt(a) - parseInt(b));
     let counter = 1;
 
     sortedIds.forEach(id => {
@@ -512,6 +521,23 @@ window.applyFilters = function () {
         const matchSearch = !searchTerm || rowData.allText.includes(searchTerm);
         row.style.display = (matchSpecific && matchSearch) ? '' : 'none';
     });
+
+    const emptyState = document.getElementById('emptyState');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+    if (matchSpecific && matchSearch) {
+        row.style.display = '';
+        visibleCount++;
+    } else {
+        row.style.display = 'none';
+    }
+    });
+
+    if (emptyState) {
+    emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
 };
 
 /**

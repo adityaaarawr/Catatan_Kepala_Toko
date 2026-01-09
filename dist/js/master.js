@@ -14,33 +14,15 @@ let nextMasterTopikId = 3;
 let nextMasterKaryawanId = 4;
 
 // Data Master Dummy
-const dummyMasterToko = {
-    1: { id: 1, tglDibuat: '2025-01-10', dibuatOleh: 'Admin', namaToko: 'Toyomatsu', kode: 'TM' },
-    2: { id: 2, tglDibuat: '2025-01-12', dibuatOleh: 'Admin', namaToko: 'Robin Jaya', kode: 'RJ' },
-    3: { id: 3, tglDibuat: '2025-01-15', dibuatOleh: 'Manager', namaToko: 'Ikkou', kode: 'IK' },
-};
+const dummyMasterToko = {};
 
-const dummyMasterUserRole = {
-    1: { id: 1, tglDibuat: '2025-01-01', dibuatOleh: 'SysAdmin', namaRole: 'Administrator', listKeys: ['UPDATE TOKO', 'MANAGE USER', 'UPDATE ROLE'] },
-    2: { id: 2, tglDibuat: '2025-01-01', dibuatOleh: 'SysAdmin', namaRole: 'Manager', listKeys: ['UPDATE TOKO', 'MANAGE USER'] },
-    3: { id: 3, tglDibuat: '2025-01-05', dibuatOleh: 'SysAdmin', namaRole: 'Staff', listKeys: ['UPDATE TOKO'] },
-};
+const dummyMasterUserRole = {};
 
-const dummyMasterDivisi = {
-    1: { id: 1, tglDibuat: '2025-01-20', dibuatOleh: 'Admin', namaDivisi: 'Regular Staff', deskripsi: 'Staff reguler toko', namaToko: 'Toyomatsu' },
-    2: { id: 2, tglDibuat: '2025-01-22', dibuatOleh: 'Manager', namaDivisi: 'Supervisor', deskripsi: 'Pengawas harian', namaToko: 'Robin Jaya' },
-};
+const dummyMasterDivisi = {};
 
-const dummyMasterTopik = {
-    1: { id: 1, tglDibuat: '2025-02-01', dibuatOleh: 'Admin', namaTopik: 'Disiplin Waktu', namaToko: 'Toyomatsu', namaDivisi: 'Regular Staff' },
-    2: { id: 2, tglDibuat: '2025-02-05', dibuatOleh: 'Manager', namaTopik: 'Kualitas Display', namaToko: 'Robin Jaya', namaDivisi: 'Supervisor' },
-};
+const dummyMasterTopik = {};
 
-const dummyMasterKaryawan = {
-    1: { id: 1, tglDibuat: '2024-12-01', dibuatOleh: 'Manager', namaKaryawan: 'Budi Santoso', namaToko: 'Toyomatsu', namaDivisi: 'Regular Staff' },
-    2: { id: 2, tglDibuat: '2024-12-05', dibuatOleh: 'HRD', namaKaryawan: 'Citra Dewi', namaToko: 'Robin Jaya', namaDivisi: 'Supervisor' },
-    3: { id: 3, tglDibuat: '2024-12-10', dibuatOleh: 'Kepala Toko', namaKaryawan: 'Fahri Ahmad', namaToko: 'Toyomatsu', namaDivisi: 'Regular Staff' },
-};
+const dummyMasterKaryawan = {};
 
 /* --------------------------------------------------------------------------
    2. KONFIGURASI MASTER DATA MAP
@@ -107,9 +89,7 @@ const masterDataMap = {
 };
 
 const AVAILABLE_KEYS = [
-    'UPDATE TOKO', 'MANAGE USER', 'UPDATE ROLE', 'MANAGE DIVISI',
-    'MANAGE KARYAWAN', 'MANAGE TOPIK', 'CREATE CATATAN',
-    'EDIT CATATAN', 'DELETE CATATAN', 'VIEW CATATAN'
+    'UPDATE TOKO', 'MANAGE USER', 'UPDATE ROLE', 'UPDATE DIVISI', 'UPDATE TOPIK', 'UPDATE KARYAWAN', 'VIEW NOTE', 'INPUT NOTE', 'UPDATE NOTE', 'DELETE NOTE'
 ];
 
 /* --------------------------------------------------------------------------
@@ -499,6 +479,20 @@ function filterMasterTable() {
         const rowText = Array.from(row.querySelectorAll('td')).map(cell => cell.textContent.toLowerCase()).join(' ');
         row.style.display = (searchTerm && !rowText.includes(searchTerm)) ? 'none' : '';
     });
+}
+
+function checkMasterEmptyState() {
+    const rows = document.querySelectorAll('#masterTableBody tr');
+    const emptyState = document.getElementById('masterEmptyState');
+
+    let visible = 0;
+    rows.forEach(row => {
+        if (row.style.display !== 'none') visible++;
+    });
+
+    if (emptyState) {
+        emptyState.style.display = visible === 0 ? 'block' : 'none';
+    }
 }
 
 /* --------------------------------------------------------------------------
