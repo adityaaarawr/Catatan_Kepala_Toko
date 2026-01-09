@@ -284,7 +284,7 @@ main.sidebar-collapsed {
         display: flex !important;
         position: fixed;
         top: 15px;
-        left: 15px;
+        left: 25px;
         z-index: 1200;
         width: 40px;
         height: 40px;
@@ -299,7 +299,7 @@ main.sidebar-collapsed {
 
     /* Toggle button position when sidebar is hidden on mobile */
     .sidebar.hide .toggle-btn {
-        transform: translateX(230px) !important;
+        transform: translateX(100px) !important;
         left: 15px !important;
         color: #113F67;
         position: fixed;
@@ -342,7 +342,9 @@ main.sidebar-collapsed {
     /* Page title adjustments for mobile */
     .topbar .title {
         font-size: 1.1rem !important; /* Ukuran diperkecil */
-        margin-left: 50px; /* Ruang agar tidak tertutup tombol toggle */
+        justify-content: center;
+        text-align: center !important;  
+        margin-right: 60px;
         display: block;
     }
 

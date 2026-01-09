@@ -2,59 +2,59 @@
 /* 1. ROOT VARIABLES & GLOBAL STYLES */
 /* ================================================= */
 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Inter", "Arial", sans-serif;
+}
+
 :root {
-    /* --- 1. COLOR PALLETE --- */
+    /* --- 1. COLOR PALETTE --- */
     --primary: #113F67;
     --primary-dark: #34699A;
     --primary-light: #408AB4;
-    --secondary-color: #65C6C4;
-
-    /* --- 2. TEKS & WARNA UMUM --- */
+    --secondary-color: #8BD5D3;
+    
+    /* --- 2. TEXT & GENERAL COLORS --- */
     --text-primary: #1f2937;
-    --text-color: var(--text-primary); 
+    --text-color: var(--text-primary);
     --muted: #6b7280;
-    --muted-text: var(--muted); 
-
+    --muted-text: var(--muted);
+    
     /* --- 3. BACKGROUND & BORDER --- */
     --bg: #f4f6f9;
     --bg-light: var(--bg);
     --card-bg: #ffffff;
-    --border-color: #e2e8f0; 
+    --border-color: #e2e8f0;
     
-    /* --- 4. WARNA AKSI & STATUS (NOTIFIKASI) --- */
-    --danger: #ef4444;                
-    --danger-dark: #b91c1c;           
-    --action-primary: var(--primary); 
-    --action-danger: #dc3545;   
-    --success-color: #28a745;         
-    --warning-color: #ffc107;         
-    --info-color: #2196F3;            
-    --error-color: var(--danger);    
-
+    /* --- 4. ACTION & STATUS COLORS --- */
+    --danger: #ef4444;
+    --danger-dark: #b91c1c;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --info-color: #2196F3;
+    --error-color: var(--danger);
+    --action-primary: var(--primary);
+    --action-danger: var(--danger);
+    
     /* --- 5. SIDEBAR --- */
-    --sidebar-bg: #1f2937; 
+    --sidebar-bg: #1f2937;
     --sidebar-border: #374151;
     --sidebar-item: #9ca3af;
     --sidebar-active: #ffffff;
-
-    /* --- 6. SHADOW & ESTETIKA --- */
+    
+    /* --- 6. SHADOWS & AESTHETICS --- */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.1); 
+    --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.1);
     --hover-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     --focus-border-color: var(--primary);
 }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Inter', sans-serif;
-}
-
 body {
-    background-color: var(--bg-light);
-    color: var(--text-color);
-    line-height: 1.6;
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--text-primary);
 }
 
 /* ======================================== */
@@ -132,7 +132,6 @@ main.sidebar-collapsed {
     left: 0;
     width: 100%;
     height: 2px;
-    background: linear-gradient(90deg, var(--primary) 0%, var(--secondary-color) 100%);
 }
 
 .title {
@@ -236,9 +235,10 @@ main.sidebar-collapsed {
     justify-content: center;
     align-items: center;
     padding: 15px 20px;
-    background-color: #f8fafc;
     border-top: 2px solid var(--border-color);
     min-height: 60px;
+    font-size: 13px;
+    
 }
 
 /* Kontainer untuk informasi footer */
@@ -253,7 +253,7 @@ main.sidebar-collapsed {
 
 .footer-info {
     color: var(--muted-text);
-    font-size: 0.9rem;
+    font-size: 10px;
     text-align: center;
     flex: 1;
     min-width: 250px;
@@ -1137,7 +1137,7 @@ table td input[type="checkbox"] {
     .topbar .title {
         font-size: 1.1rem !important;
         justify-content: center;
-        margin-left: 50px;
+        text-align: center !important;
         display: block;
     }
 
@@ -1277,5 +1277,9 @@ table td input[type="checkbox"] {
     .value-input {
         padding: 8px;
         font-size: 0.85rem;
+    }
+
+    .project-name {
+        font-size: 10px;
     }
 }

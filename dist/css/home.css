@@ -257,6 +257,24 @@ body {
     border-color: #bbb;
 }
 
+/* HANDLER */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: #4a47ff;
+}
+
+.empty-state p {
+    font-size: 16px;
+}
+
+
 /* ======================================= */
 /* 7. TABLE STYLES */
 /* ======================================= */
@@ -357,7 +375,7 @@ td[data-label="CATATAN"] {
 }
 
 .project-name {
-    font-size: 12px;
+    font-size: 13px;
     color: var(--muted);
     font-weight: 400;
     letter-spacing: 0.5px;
@@ -1016,7 +1034,7 @@ td[data-label="CATATAN"] {
     }
     
     .project-name {
-        font-size: 11px;
+        font-size: 13px;
     }
 }
 
@@ -1059,7 +1077,7 @@ td[data-label="CATATAN"] {
     }
     
     .project-name {
-        font-size: 10px;
+        font-size: 13px;
     }
 }
 
