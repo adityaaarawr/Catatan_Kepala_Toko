@@ -4,28 +4,56 @@ $cssFile = 'home.css';
 $jsFile = 'home.js';
 include 'modules/header.php'; 
 
-require_once "direct/config.php";
+require_once "direct/config.php"; // Pastikan path config benar
 
-$sql = "SELECT n.*, 
-               u.username,
-               t.nama_toko,
-               k.nama_karyawan,
-               d.nama_divisi,
-               tp.nama_topik
-        FROM notes n
-        LEFT JOIN users u ON n.user_id = u.id
-        LEFT JOIN toko t ON n.toko_id = t.id
-        LEFT JOIN karyawan k ON n.karyawan_id = k.id
-        LEFT JOIN divisi d ON n.divisi_id = d.id
-        LEFT JOIN topik tp ON n.topik_id = tp.id
-        ORDER BY n.created_at DESC";
+// --- LOGIKA SIMPAN DATA (POST) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_save'])) {
+    try {
+        $toko_id   = $_POST['toko_id'] ?? null;
+        $karyawan  = $_POST['karyawan'] ?? null;
+        $divisi    = $_POST['divisi'] ?? null;
+        $topik_id  = $_POST['topik_id'] ?? null;
+        $tanggal   = $_POST['tanggal'] ?? null;
+        $catatan   = $_POST['catatan'] ?? null;
+        $user_id   = 1; // Sesuaikan dengan session user lo
 
-$stmt = $conn->prepare($sql);
+        $fileName = null;
+        if (!empty($_FILES['file']['name'])) {
+            if (!is_dir("uploads")) mkdir("uploads");
+            $fileName = time() . "_" . $_FILES['file']['name'];
+            move_uploaded_file($_FILES['file']['tmp_name'], "uploads/" . $fileName);
+        }
+
+        $sql = "INSERT INTO notes (user_id, toko_id, karyawan, divisi, topik_id, tanggal, catatan, file_name, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        
+        $stmt = $conn->prepare($sql);
+        $ok = $stmt->execute([$user_id, $toko_id, $karyawan, $divisi, $topik_id, $tanggal, $catatan, $fileName]);
+
+        if ($ok) {
+            echo "success";
+        } else {
+            echo "Gagal menyimpan ke database.";
+        }
+    } catch (Exception $e) {
+        echo "Error: " . $e->getMessage();
+    }
+    exit; // Berhenti di sini kalau request AJAX
+}
+
+// --- LOGIKA TAMPIL DATA ---
+$sqlFetch = "SELECT n.*, u.username, t.nama_toko, k.nama_karyawan, d.nama_divisi, tp.nama_topik
+             FROM notes n
+             LEFT JOIN users u ON n.user_id = u.id
+             LEFT JOIN toko t ON n.toko_id = t.id
+             LEFT JOIN karyawan k ON n.karyawan_id = k.id
+             LEFT JOIN divisi d ON n.divisi_id = d.id
+             LEFT JOIN topik tp ON n.topik_id = tp.id
+             ORDER BY n.created_at DESC";
+
+$stmt = $conn->prepare($sqlFetch);
 $stmt->execute();
 $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$stmt = $conn->query("SELECT COUNT(*) FROM notes");
-$total = $stmt->fetchColumn();
 
 ?>
 
@@ -99,8 +127,8 @@ $total = $stmt->fetchColumn();
                                     <?php else: ?> - <?php endif; ?>
                                 </td>
                                 <td>
-                                    <button>View</button>
-                                    <button>Delete</button>
+                                    <button class="edit-btn">Edit</button>
+                                    <button class="delete-btn">Delete</button>
                                 </td>
                                 <div id="emptyState" class="empty-state" 
                                     style="<?= count($notes) > 0 ? 'display:none;' : 'display:block;' ?>">
@@ -117,8 +145,7 @@ $total = $stmt->fetchColumn();
                 style="<?= count($notes) > 0 ? 'display:none;' : 'display:block;' ?>">
                 <i class="fas fa-folder-open"></i>
                 <p>Belum ada catatan yang masuk.</p>
-            </div>
-            
+            </div>  
         </div>
 
         <div class="table-footer-divider"></div>
@@ -136,9 +163,10 @@ $total = $stmt->fetchColumn();
         <h2 id="modal-title" class="modal-title">TAMBAH CATATAN</h2>
         <div class="divider"></div>
         
-        <form id="noteForm">
+        <form id="noteForm" enctype="multipart/form-data">
+
             <label for="inputToko">TOKO</label>
-            <select id="inputToko" required>
+            <select id="inputToko" name="toko_id" required>
                 <option value="" disabled selected>Pilih Toko</option>
                 <option value="toyomatsu">Toyomatsu</option>
                 <option value="robin jaya">Robin Jaya</option>
@@ -148,7 +176,7 @@ $total = $stmt->fetchColumn();
             </select>
 
             <label for="inputKaryawan">KARYAWAN</label>
-            <input list="karyawanList" id="inputKaryawan" placeholder="Ketik Nama Karyawan..." required onchange="updateDivisi()">
+            <input list="karyawanList" id="inputKaryawan" name="karyawan" placeholder="Ketik Nama Karyawan..." required onchange="updateDivisi()">
             <datalist id="karyawanList">
                 <option value="Rudi"></option>
                 <option value="Roni"></option>  
@@ -157,10 +185,10 @@ $total = $stmt->fetchColumn();
             </datalist>
 
             <label for="inputDivisi">DIVISI</label>
-            <input type="text" id="inputDivisi" readonly style="background-color: var(--bg); cursor: not-allowed;">
+            <input type="text" id="inputDivisi" name="divisi" readonly style="background-color: var(--bg); cursor: not-allowed;">
 
             <label for="inputTopik">TOPIK</label>
-            <select id="inputTopik" required>
+            <select id="inputTopik" name="topik_id" required>
                 <option value="" disabled selected>Pilih Topik</option>
                 <option value="Gagal Kirim">Gagal Kirim</option>
                 <option value="Omset">Omset</option>
@@ -171,13 +199,13 @@ $total = $stmt->fetchColumn();
             </select>
 
             <label for="inputDate">DATE</label>
-            <input type="date" id="inputDate">
+            <input type="date" id="inputDate" name="tanggal">
 
             <label for="inputCatatan">CATATAN</label>
-            <textarea id="inputCatatan" placeholder="Bisa dikosongkan jika sudah ada file..."></textarea>
+            <textarea id="inputCatatan" name="catatan" placeholder="Bisa dikosongkan jika sudah ada file..."></textarea>
 
             <label for="inputFile">AMBIL GAMBAR / FILE</label>
-            <input type="file" id="inputFile" accept="image/*" capture="environment">
+            <input type="file" id="inputFile" name="file" accept="image/*" capture="environment">
 
             <p id="optionalStatus" style="font-size: 12px; margin-top: -10px; margin-bottom: 15px; color: #e74c3c;">
                 *Wajib isi Catatan atau lampirkan File
