@@ -165,7 +165,6 @@ include 'modules/header.php';
                                     </td>
                                 </tr>
                             <?php endforeach; endif;?>
-
                     </tbody>
                 </table>
             </div>
@@ -185,7 +184,6 @@ include 'modules/header.php';
     <div class="modal-box">
         <h3 class="modal-title" id="modal-master-title">TAMBAH MASTER</h3>
         <div class="divider"></div>
-        
         <form id="masterForm"></form>
     </div>
 </div>
