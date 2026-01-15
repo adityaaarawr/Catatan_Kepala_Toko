@@ -1,61 +1,18 @@
 /**
  * =================================================================
- * 0. DATA DUMMY & KONFIGURASI GLOBAL
- * =================================================================
- */
-
-// let dummyDataNotes = {
-//     1: {
-//         id: 1,
-//         inputer: 'Bambang',
-//         toko: 'toyomatsu',
-//         karyawan: 'Rudi',
-//         divisi: 'Kurir',
-//         topik: 'Gagal Kirim',
-//         date: '2025-01-15',
-//         catatan: 'Kurir gagal kirim customer A.',
-//         file: true
-//     },
-//     2: {
-//         id: 2,
-//         inputer: 'Sujarwo',
-//         toko: 'robin jaya',
-//         karyawan: 'Dina',
-//         divisi: 'Mekanik',
-//         topik: 'Kedisiplinan',
-//         date: '2025-01-20',
-//         catatan: 'Terlihat berserakan tools dibawah meja.',
-//         file: false
-//     }
-// };
-
-// // Counter untuk ID catatan berikutnya
-// let nextNoteId = 3;
-
-// Referensi Elemen DOM
-// let modal, viewModal, modalTitle, noteForm, tableBody, searchBar;
-// const inputerDefault = 'Administrator'; // Nama default untuk pencatat baru
-
-// console.log("home.js dimuat");
-// console.log("Data dummyNotes:", dummyDataNotes);
-
-/**
- * =================================================================
  * 1. FUNGSI UTILITAS: NOTIFIKASI & UI SIDEBAR
  * =================================================================
  */
 
 const sidebar = document.querySelector('.sidebar');
 const mainContent = document.querySelector('main');
-const toggleBtn = document.querySelector('toggle-btn');
+const toggleBtn = document.querySelector('#toggle-btn');
 
 /**
  * window.showNotification
  * Menampilkan pesan pop-up (Toast) di pojok layar
  */
 window.showNotification = function (message, type = 'info') {
-    console.log(`Notification: ${message} (${type})`);
-
     let container = document.getElementById('notification-container');
 
     if (!container) {
@@ -65,6 +22,7 @@ window.showNotification = function (message, type = 'info') {
     }
 
     const notification = document.createElement('div');
+    // Tambahkan class 'show' segera untuk memicu animasi masuk
     notification.className = `notification-toast ${type}`;
 
     const iconMap = {
@@ -81,9 +39,20 @@ window.showNotification = function (message, type = 'info') {
 
     container.appendChild(notification);
 
+    // Timeout untuk menghilangkan notifikasi
     setTimeout(() => {
         notification.classList.add('hide-notification');
-        notification.addEventListener('transitionend', () => notification.remove());
+        
+        // Gunakan setTimeout sebagai fallback jika transitionend gagal
+        const removeElement = () => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        };
+
+        notification.addEventListener('transitionend', removeElement, { once: true });
+        // Fallback 500ms (durasi animasi) jika transitionend tidak terpicu
+        setTimeout(removeElement, 500); 
     }, 3000);
 }
 
@@ -130,6 +99,7 @@ window.openModal = function () {
     modalTitle.textContent = "TAMBAH CATATAN";
     noteForm.reset();
     noteForm.dataset.noteId = 0; // Menandakan ini data baru (ID: 0)
+    noteForm.dataset.editId = "";
 
     // Set limit tanggal maksimal adalah hari ini
     const inputDate = document.getElementById('inputDate');
@@ -141,15 +111,24 @@ window.openModal = function () {
 
     window.updateDivisi(); // Reset tampilan divisi
     modal.style.display = 'flex';
+
+    const statusLabel = document.getElementById('optionalStatus');
+    if(statusLabel){
+        statusLabel.innerText = "*Wajib isi Catatan atau lampirkan File";
+        statusLabel.style.color = "#e74c3c";
+    }
+
 }
 
 /**
  * window.closeModal & window.closeViewModal
  */
 window.closeModal = function () {
-    console.log("closeModal dipanggil");
     modal = modal || document.getElementById('modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.style.display = 'none';
+        showNotification("Input dibatalkan", "info");
+    }
 }
 
 window.closeViewModal = function () {
@@ -162,97 +141,55 @@ window.closeViewModal = function () {
  * window.openViewModal
  * Menampilkan detail lengkap satu catatan secara read-only
  */
-window.openviewModal = function (noteId) {
-    console.log(`openviewModal dipanggil untuk id: ${noteId}`);
+window.openviewModal = function(tr){
+    document.getElementById("viewInputer").innerText  = tr.dataset.inputer || "-";
+    document.getElementById("viewToko").innerText     = tr.dataset.toko || "-";
+    document.getElementById("viewKaryawan").innerText = tr.dataset.karyawan || "-";
+    document.getElementById("viewTopik").innerText    = tr.dataset.topik || "-";
+    document.getElementById("viewDivisi").innerText   = tr.dataset.divisi || "-";
+    document.getElementById("viewDate").innerText     = tr.dataset.tanggal || "-";
+    document.getElementById("viewCatatan").innerText  = tr.dataset.catatan || "-";
 
-    viewModal = viewModal || document.getElementById('viewModal');
-    const data = dummyDataNotes[noteId];
+    const file = tr.dataset.file;
+    const lampiran = document.getElementById("viewLampiran");
+    const previewBox = document.querySelector(".preview-box");
 
-    if (!data) {
-        console.error(`Data dengan id ${noteId} tidak ditemukan!`);
-        return;
+    if(file){
+        lampiran.innerHTML = `<a href="uploads/${file}" target="_blank">Download File</a>`;
+        previewBox.innerHTML = `<img src="uploads/${file}" style="max-width:100%;border-radius:8px">`;
+    } else {
+        lampiran.innerText = "Tidak ada lampiran";
+        previewBox.innerText = "Tidak ada file terlampir";
     }
 
-    if (!viewModal) {
-        console.error("View modal tidak ditemukan!");
-        return;
-    }
-
-    // Format tanggal ke gaya Indonesia
-    const dateObj = new Date(data.date + 'T00:00:00');
-    const formattedDate = dateObj.toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    });
-
-    // Helper intern: Isi teks elemen berdasarkan ID
-    const setText = (id, text) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = text;
-    };
-
-    setText('viewInputer', data.inputer);
-    setText('viewToko', data.toko.toUpperCase());
-    setText('viewKaryawan', data.karyawan.charAt(0).toUpperCase() + data.karyawan.slice(1));
-    setText('viewTopik', data.topik.charAt(0).toUpperCase() + data.topik.slice(1));
-    setText('viewDivisi', data.divisi);
-    setText('viewDate', formattedDate);
-    setText('viewCatatan', data.catatan || '(Tidak ada catatan)');
-
-    // Cek status lampiran
-    const lampiran = document.getElementById('viewLampiran');
-    if (lampiran) {
-        lampiran.innerHTML = data.file
-            ? '<span class="text-success">Terlampir</span>'
-            : '<span class="text-muted">Tidak ada lampiran</span>';
-    }
-
-    // Preview gambar (jika ada)
-    const previewBox = document.getElementById('viewPreview');
-    if (previewBox) {
-        previewBox.innerHTML = data.file
-            ? '<p><i class="fas fa-file-alt fa-2x"></i><br>File terlampir</p>'
-            : 'Tidak ada file gambar terlampir.';
-    }
-
-    viewModal.style.display = 'flex';
+    document.getElementById("viewModal").style.display = "flex";
 }
 
 /**
  * window.openEditModal
  * Mengambil data lama dan memasukkannya kembali ke form untuk diedit
  */
-window.openEditModal = function (noteId) {
-    console.log(`openEditModal dipanggil untuk id: ${noteId}`);
+window.openEditModal = function(btn){
+    event.stopPropagation();
+    const tr = btn.closest("tr");
 
-    modal = modal || document.getElementById('modal');
-    noteForm = noteForm || document.getElementById('noteForm');
-    modalTitle = modalTitle || document.getElementById('modal-title');
+    document.getElementById("modal-title").innerText = "EDIT CATATAN";
 
-    const data = dummyDataNotes[noteId];
-    if (!data || !modal || !noteForm) {
-        showNotification("Data tidak ditemukan!", 'error');
-        return;
-    }
+    const form = document.getElementById("noteForm");
+    form.dataset.editId = tr.dataset.id;
 
-    modalTitle.textContent = "EDIT CATATAN";
-    noteForm.dataset.noteId = noteId;
+    document.getElementById("inputToko").value     = tr.dataset.toko_id || "";
+    document.getElementById("inputDate").value     = tr.dataset.tanggal || "";
+    document.getElementById("inputCatatan").value  = tr.dataset.catatan || "";
+    document.getElementById("inputKaryawan").value = tr.dataset.karyawan_id || "";
 
-    const fill = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.value = val;
-    };
+    updateDivisi();
+    checkOptionalFields();
 
-    fill('inputToko', data.toko);
-    fill('inputKaryawan', data.karyawan);
-    fill('inputDivisi', data.divisi);
-    fill('inputTopik', data.topik);
-    fill('inputDate', data.date);
-    fill('inputCatatan', data.catatan || '');
-
-    modal.style.display = 'flex';
+    document.getElementById("modal").style.display = "flex";
 }
+
+
 
 /**
  * =================================================================
@@ -264,22 +201,45 @@ window.openEditModal = function (noteId) {
  * window.updateDivisi
  * Otomatis mengisi kolom Divisi saat nama karyawan dipilih
  */
+
 window.updateDivisi = function () {
-    const inputKaryawan = document.getElementById('inputKaryawan');
-    const inputDivisi = document.getElementById('inputDivisi');
-    if (!inputKaryawan || !inputDivisi) return;
+    const select = document.getElementById('inputKaryawan');
+    const divisiText = document.getElementById('inputDivisi');
+    const divisiHidden = document.getElementById('divisi_id');
 
-    const val = inputKaryawan.value.toLowerCase();
-    let divisi = '';
+    if (!select || !divisiText || !divisiHidden) return;
 
-    if (val.includes('rudi')) divisi = 'Kurir';
-    else if (val.includes('dina')) divisi = 'Mekanik';
-    else if (val.includes('roni')) divisi = 'Sales';
-    else if (val.includes('didik')) divisi = 'Sales';
-    else divisi = '-';
+    const opt = select.options[select.selectedIndex];
 
-    inputDivisi.value = divisi;
+    if (!opt || !opt.value) {
+        divisiText.value = '';
+        divisiHidden.value = '';
+        return;
+    }
+
+    divisiText.value = opt.dataset.divisiNama || '-';
+    divisiHidden.value = opt.dataset.divisiId || '';
 }
+
+function initSearchKaryawan() {
+    const input = document.getElementById("searchKaryawanInput");
+    const select = document.getElementById("inputKaryawan");
+
+    // ✅ kalau salah satu tidak ada, hentikan
+    if (!input || !select) return;
+
+    input.addEventListener('input', function () {
+        const keyword = this.value.toLowerCase();
+
+        Array.from(select.options).forEach((opt, i) => {
+            if (i === 0) return; // skip "Pilih Karyawan"
+
+            const text = opt.dataset.search || opt.textContent.toLowerCase();
+            opt.style.display = text.includes(keyword) ? '' : 'none';
+        });
+    });
+}
+
 
 /**
  * checkOptionalFields
@@ -308,77 +268,74 @@ function checkOptionalFields() {
  * window.saveNote
  */
 window.saveNote = function () {
-    console.log("saveNote dipanggil");
+    const form = document.getElementById('noteForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
 
-    modal = modal || document.getElementById('modal');
-    noteForm = noteForm || document.getElementById('noteForm');
-
-    const noteId = parseInt(noteForm.dataset.noteId) || 0;
-
-    const toko = document.getElementById('inputToko').value;
-    const karyawan = document.getElementById('inputKaryawan').value;
-    const divisi = document.getElementById('inputDivisi').value;
-    const topik = document.getElementById('inputTopik').value;
-    const date = document.getElementById('inputDate').value;
     const catatan = document.getElementById('inputCatatan').value.trim();
     const hasFile = document.getElementById('inputFile').files.length > 0;
 
-    if (!noteForm.checkValidity()) {
-        noteForm.reportValidity();
+    if (!catatan && !hasFile) {
+        showNotification("Isi catatan atau lampirkan file!", "error");
         return;
     }
 
-    if (catatan === "" && !hasFile) {
-        showNotification("Isi Catatan atau lampirkan File!", 'error');
-        return;
+    const formData = new FormData(form);
+    const editId = form.dataset.editId;
+
+    if(editId){
+        formData.append("ajax_update", "1");
+        formData.append("id", editId);
+    } else {
+        formData.append("ajax_save", "1");
     }
 
-    try {
-        if (noteId === 0) {
-            const newId = nextNoteId++;
-            dummyDataNotes[newId] = {
-                id: newId,
-                inputer: inputerDefault,
-                toko, karyawan, divisi, topik, date, catatan,
-                file: hasFile
-            };
-            showNotification("Catatan berhasil ditambahkan!", "success");
+    const btn = document.querySelector('.save-btn');
+    btn.disabled = true;
+    btn.innerText = "MENYIMPAN...";
+
+    fetch("home.php", { method: "POST", body: formData })
+    .then(res => res.text())
+    .then(res => {
+        if (res.trim() === "success") {
+            showNotification(editId ? "Catatan berhasil diupdate" : "Catatan berhasil disimpan", "success");
+            closeModal();
+            setTimeout(() => location.reload(), 600);
         } else {
-            if (dummyDataNotes[noteId]) {
-                dummyDataNotes[noteId] = {
-                    ...dummyDataNotes[noteId],
-                    toko, karyawan, divisi, topik, date, catatan,
-                    file: hasFile || dummyDataNotes[noteId].file
-                };
-                showNotification("Perubahan berhasil disimpan!", "success");
-            }
+            showNotification(res, "error");
+            btn.disabled = false;
+            btn.innerText = "SIMPAN";
         }
-
-        window.closeModal();
-        window.renderTable();
-        window.applyFilters();
-
-    } catch (error) {
-        console.error("Save error:", error);
-        showNotification("Gagal menyimpan data", "error");
-    }
+    })
+    .catch(() => {
+        showNotification("Gagal terhubung ke server", "error");
+        btn.disabled = false;
+        btn.innerText = "SIMPAN";
+    });
 }
 
 /**
  * window.deleteNote
  */
-window.deleteNote = function (noteId) {
-    const id = parseInt(noteId);
-    const dataToDelete = dummyDataNotes[id];
-    if (!dataToDelete) return;
+window.deleteNote = function(id){
+    if(!confirm("Yakin hapus catatan ini?")) return;
 
-    const tokoName = dataToDelete.toko.toUpperCase();
-    if (confirm(`Hapus catatan Toko ${tokoName}? Aksi ini permanen.`)) {
-        delete dummyDataNotes[id];
-        showNotification(`Catatan Toko ${tokoName} dihapus.`, 'error');
-        window.renderTable();
-        window.applyFilters();
-    }
+    const fd = new FormData();
+    fd.append("ajax_delete", "1");
+    fd.append("id", id);
+
+    fetch("home.php", { method:"POST", body:fd })
+    .then(res => res.text())
+    .then(res => {
+        if(res.trim() === "success"){
+            showNotification("Catatan dihapus", "success");
+            setTimeout(() => location.reload(), 500);
+        } else {
+            showNotification("Gagal menghapus data", "error");
+        }
+    });
 }
 
 /**
@@ -387,96 +344,9 @@ window.deleteNote = function (noteId) {
  * =================================================================
  */
 
-window.renderTable = function () {
-    tableBody = tableBody || document.getElementById('noteTableBody');
-    if (!tableBody) return;
-
-    tableBody.innerHTML = '';
-    const sortedIds = Object.keys(dummyDataNotes);
-
-    // 👉 HANDLER JIKA BELUM ADA CATATAN
-    if (sortedIds.length === 0) {
-        if (emptyState) emptyState.style.display = 'block';
-        return;
-    } else {
-        if (emptyState) emptyState.style.display = 'none';
-    }
-    
-    sort((a, b) => parseInt(a) - parseInt(b));
-    let counter = 1;
-
-    sortedIds.forEach(id => {
-        const data = dummyDataNotes[id];
-        const formattedDate = data.date.substring(0, 10).replace(/-/g, '/');
-        const formattedKaryawan = data.karyawan.charAt(0).toUpperCase() + data.karyawan.slice(1);
-        const formattedDivisi = data.divisi.charAt(0).toUpperCase() + data.divisi.slice(1);
-        const formattedTopik = data.topik.charAt(0).toUpperCase() + data.topik.slice(1);
-
-        const fileIcon = data.file
-            ? '<i class="fas fa-paperclip" style="color:#4a47ff" title="File terlampir"></i>'
-            : '<i class="far fa-times-circle" style="color:#e74c3c" title="Tidak ada file"></i>';
-
-        const shortCatatan = data.catatan.length > 30
-            ? data.catatan.substring(0, 30) + '...'
-            : data.catatan;
-
-        const row = document.createElement('tr');
-        row.classList.add('accordion-row');
-
-        row.innerHTML = `
-            <td data-label="NO">${counter++}</td> 
-            <td data-label="TANGGAL">${formattedDate}</td>    
-            <td data-label="INPUTER">${data.inputer}</td>
-            <td data-label="TOKO">${data.toko.toUpperCase()}</td>
-            <td data-label="KARYAWAN">${formattedKaryawan}</td>
-            <td data-label="DIVISI">${formattedDivisi}</td>
-            <td data-label="TOPIK">${formattedTopik}</td>
-            <td data-label="CATATAN" title="${data.catatan}">${shortCatatan}</td>
-            <td data-label="FILE">${fileIcon}</td>
-            <td data-label="ACTION" class="action-cell">
-                <span class="action-icons-wrapper">
-                    <span class="edit-btn" onclick="event.stopPropagation(); openEditModal(${data.id})">
-                        <i class="fas fa-edit"></i>
-                    </span>
-                    <span class="delete-btn" onclick="event.stopPropagation(); deleteNote(${data.id})">
-                        <i class="fas fa-trash"></i>
-                    </span>
-                </span>
-            </td>
-            <td class="expand-trigger">
-                <button class="btn-detail-toggle">
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-            </td>
-        `;
-
-        const btnToggle = row.querySelector('.btn-detail-toggle');
-        if (btnToggle) {
-            btnToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                row.classList.toggle('is-open');
-                const icon = btnToggle.querySelector('i');
-                icon.style.transform = row.classList.contains('is-open') ? 'rotate(180deg)' : 'rotate(0deg)';
-            });
-        }
-
-        row.addEventListener('click', (e) => {
-            if (!e.target.closest('.action-cell') &&
-                !e.target.closest('.expand-trigger') &&
-                !e.target.closest('.edit-btn') &&
-                !e.target.closest('.delete-btn') &&
-                window.innerWidth > 768) {
-                window.openviewModal(data.id);
-            }
-        });
-
-        tableBody.appendChild(row);
-    });
-}
-
 window.applyFilters = function () {
-    searchBar = searchBar || document.getElementById('searchBar');
     tableBody = tableBody || document.getElementById('noteTableBody');
+    searchBar = searchBar || document.getElementById('searchBar');
     if (!tableBody) return;
 
     const rows = tableBody.querySelectorAll('tr');
@@ -496,20 +366,20 @@ window.applyFilters = function () {
         karyawan: getVal("KARYAWAN")
     };
 
+    let visibleCount = 0;
+
     rows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        if (cells.length < 10) return;
 
         const rowData = {
-            tanggal: cells[1]?.textContent.toLowerCase().trim() || '',
-            inputer: cells[2]?.textContent.toLowerCase().trim() || '',
-            toko: cells[3]?.textContent.toLowerCase().trim() || '',
-            karyawan: cells[4]?.textContent.toLowerCase().trim() || '',
-            divisi: cells[5]?.textContent.toLowerCase().trim() || '',
-            topik: cells[6]?.textContent.toLowerCase().trim() || '',
-            allText: row.textContent.toLowerCase()
+            tanggal: cells[1]?.innerText.toLowerCase() || '',
+            inputer: cells[2]?.innerText.toLowerCase() || '',
+            toko: cells[3]?.innerText.toLowerCase() || '',
+            karyawan: cells[4]?.innerText.toLowerCase() || '',
+            divisi: cells[5]?.innerText.toLowerCase() || '',
+            topik: cells[6]?.innerText.toLowerCase() || '',
+            allText: row.innerText.toLowerCase()
         };
-
+        
         const matchSpecific =
             (!f.tanggal || rowData.tanggal.includes(f.tanggal)) &&
             (!f.inputer || rowData.inputer.includes(f.inputer)) &&
@@ -517,27 +387,21 @@ window.applyFilters = function () {
             (!f.karyawan || rowData.karyawan.includes(f.karyawan)) &&
             (!f.divisi || rowData.divisi.includes(f.divisi)) &&
             (!f.topik || rowData.topik.includes(f.topik));
-
+    
         const matchSearch = !searchTerm || rowData.allText.includes(searchTerm);
-        row.style.display = (matchSpecific && matchSearch) ? '' : 'none';
+    
+        if (matchSpecific && matchSearch) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
     });
 
     const emptyState = document.getElementById('emptyState');
-    let visibleCount = 0;
-
-    rows.forEach(row => {
-    if (matchSpecific && matchSearch) {
-        row.style.display = '';
-        visibleCount++;
-    } else {
-        row.style.display = 'none';
-    }
-    });
-
     if (emptyState) {
-    emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
     }
-
 };
 
 /**
@@ -545,6 +409,7 @@ window.applyFilters = function () {
  * 5. INISIALISASI & DOM READY
  * =================================================================
  */
+let modal, viewModal, modalTitle, noteForm, tableBody, searchBar;
 
 function initApplication() {
     modal = document.getElementById('modal');
@@ -553,6 +418,8 @@ function initApplication() {
     noteForm = document.getElementById('noteForm');
     tableBody = document.getElementById('noteTableBody');
     searchBar = document.getElementById('searchBar');
+    initSearchKaryawan();
+
 
     const btnToggleSidebar = document.getElementById('toggle-btn');
     if (btnToggleSidebar) {
@@ -598,13 +465,7 @@ function initApplication() {
     if (inputCatatan) inputCatatan.addEventListener('input', checkOptionalFields);
     if (inputFile) inputFile.addEventListener('change', checkOptionalFields);
 
-    window.renderTable();
     adjustMainContentMargin();
 }
 
 document.addEventListener('DOMContentLoaded', initApplication);
-
-window.debugApp = function () {
-    console.log("dummyDataNotes:", dummyDataNotes);
-    window.renderTable();
-}
