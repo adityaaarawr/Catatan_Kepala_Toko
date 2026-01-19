@@ -1,45 +1,20 @@
 <?php 
 require_once "direct/config.php";
 
-// ========== TOKO ========== //
-$stmt = $conn->query("
-    SELECT t.*, t.nama_toko, t.kode
-    FROM toko t 
-    ORDER BY t.id DESC
-");
-$dataToko = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$dataToko = $conn->query("SELECT * FROM toko ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
 
-// ========== DIVISI ========== //
-$stmt = $conn->query("
-    SELECT d.*, d.nama_divisi, d.deskripsi, d.toko_id
-    FROM divisi d 
-    ORDER BY d.id DESC
-");
-$dataDivisi = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$dataDivisi = $conn->query("SELECT d.*, t.nama_toko FROM divisi d 
+    LEFT JOIN toko t ON d.toko_id = t.id ORDER BY d.id DESC")->fetchAll(PDO::FETCH_ASSOC);
 
-// ========== TOPIK ========== //
-$stmt = $conn->query("
-    SELECT tp.*, tp.nama_topik, tp.toko_id, tp.divisi_id
-    FROM topik tp 
-    ORDER BY tp.id DESC
-");
-$dataTopik = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$dataTopik = $conn->query("SELECT tp.*, t.nama_toko, d.nama_divisi FROM topik tp 
+    LEFT JOIN toko t ON tp.toko_id = t.id 
+    LEFT JOIN divisi d ON tp.divisi_id = d.id ORDER BY tp.id DESC")->fetchAll(PDO::FETCH_ASSOC);
 
-// ========== KARYAWAN ========== //
-$stmt = $conn->query("
-    SELECT k.*, k.nama_karyawan, k.divisi_id, k.toko_id 
-    FROM karyawan k 
-    ORDER BY k.id DESC
-");
-$dataKaryawan = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$dataKaryawan = $conn->query("SELECT k.*, t.nama_toko, d.nama_divisi FROM karyawan k 
+    LEFT JOIN toko t ON k.toko_id = t.id 
+    LEFT JOIN divisi d ON k.divisi_id = d.id ORDER BY k.id DESC")->fetchAll(PDO::FETCH_ASSOC);
 
-// ========== USER ROLE ========== //
-$stmt = $conn->query("
-    SELECT rk.*, rk.role_key_name
-    FROM role_key rk 
-    ORDER BY rk.id DESC
-");
-$dataRole_key = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$dataRoles = $conn->query("SELECT * FROM transaksi_user_role ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
 
 $pageTitle = 'Master'; 
 $cssFile = 'master.css'; 
@@ -84,84 +59,89 @@ include 'modules/header.php';
                             <th>TGL DIBUAT</th>
                             <th>DIBUAT OLEH</th>
                             <th>NAMA TOKO</th>
+                            <th>KODE</th>
                             <th>ACTION</th>
                         </tr>
                     </thead>
                     <tbody id="masterTableBody">
 
                         <?php if(count($dataToko) > 0): ?>
-                            <?php $no = 1; foreach($dataToko as $row): ?>
-                                <tr>
+                            <?php $no = 1; foreach($dataToko as $row): ?>   
+                                <tr class="master-row" data-type="toko">
                                     <td><?= $no++ ?></td>
-                                    <td><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
-                                    <td><?= $row['username'] ?? '-' ?></td>
-                                    <td><?= htmlspecialchars($row['nama_toko']) ?></td>
-                                    <td><?= htmlspecialchars($row['kode']) ?></td>
+                                    <td><?= ($row['created_at']) ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
+                                    <td><?= htmlspecialchars($row['username'] ?? '-') ?></td>    
+                                    <td><strong><?= htmlspecialchars($row['nama_toko']) ?></strong></td>
+                                    <td><span class="badge"><?= htmlspecialchars($row['kode']) ?></span></td>
                                     <td>
-                                        <button class="edit-btn">Edit</button>
-                                        <button class="delete-btn">Delete</button>
+                                        <button class="edit-btn" onclick="editMaster('toko', <?= $row['id'] ?>)"><i class="fas fa-edit"></i></button>
+                                        <button class="delete-btn" onclick="deleteMaster('toko', <?= $row['id'] ?>)"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>
-                            <?php endforeach; endif;?>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="6" style="text-align:center;">Data tidak ditemukan.</td></tr>
+                        <?php endif;?>
 
                         <?php if(count($dataDivisi) > 0): ?>
                             <?php $no = 1; foreach($dataDivisi as $row): ?>
-                                <tr>
+                                <tr class="master-row" data-type="divisi">
                                     <td><?= $no++ ?></td>
-                                    <td><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
+                                    <td><?= $row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
                                     <td><?= $row['username'] ?? '-' ?></td>
                                     <td><?= htmlspecialchars($row['nama_divisi']) ?></td>
                                     <td><?= htmlspecialchars($row['deskripsi']) ?></td>
-                                    <td><?= htmlspecialchars($row['toko_id']) ?></td>
+                                    <td><?= htmlspecialchars($row['nama_toko']) ?></td>
                                     <td>
-                                        <button class="edit-btn">Edit</button>
-                                        <button class="delete-btn">Delete</button>
+                                        <button class="edit-btn" onclick="editMaster('divisi', <?= $row['id'] ?>)"><i class="fas fa-edit"></i></button>
+                                        <button class="delete-btn" onclick="deleteMaster('divisi', <?= $row['id'] ?>)"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>
                             <?php endforeach; endif;?>
 
                         <?php if(count($dataTopik) > 0): ?>
                             <?php $no = 1; foreach($dataTopik as $row): ?>
-                                <tr>
+                                <tr class="master-row" data-type="topik">
                                     <td><?= $no++ ?></td>
-                                    <td><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
+                                    <td><?= $row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
                                     <td><?= $row['username'] ?? '-' ?></td>
                                     <td><?= htmlspecialchars($row['nama_topik']) ?></td>
-                                    <td><?= htmlspecialchars($row['toko_id']) ?></td>
-                                    <td><?= htmlspecialchars($row['divisi_id']) ?></td>
+                                    <td><?= htmlspecialchars($row['nama_toko']) ?></td>
+                                    <td><?= htmlspecialchars($row['nama_divisi']) ?></td>
                                     <td>
-                                        <button class="edit-btn">Edit</button>
-                                        <button class="delete-btn">Delete</button>
+                                        <button class="edit-btn" onclick="editMaster('topik', <?= $row['id'] ?>)"><i class="fas fa-edit"></i></button>
+                                        <button class="delete-btn" onclick="deleteMaster('topik', <?= $row['id'] ?>)"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>
                             <?php endforeach; endif;?>
 
                         <?php if(count($dataKaryawan) > 0): ?>
                             <?php $no = 1; foreach($dataKaryawan as $row): ?>
-                                <tr>
+                                <tr class="master-row" data-type="karyawan">
                                     <td><?= $no++ ?></td>
-                                    <td><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
+                                    <td><?= $row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
                                     <td><?= $row['username'] ?? '-' ?></td>
-                                    <td><?= htmlspecialchars($row['nama_karyawan']) ?></td>
-                                    <td><?= htmlspecialchars($row['divisi_id']) ?></td>
-                                    <td><?= htmlspecialchars($row['toko_id']) ?></td>
+                                    <td><?= htmlspecialchars($row['name']) ?></td>
+                                    <td><?= htmlspecialchars($row['nama_divisi']) ?></td>
+                                    <td><?= htmlspecialchars($row['nama_toko']) ?></td>
                                     <td>
-                                        <button class="edit-btn">Edit</button>
-                                        <button class="delete-btn">Delete</button>
+                                        <button class="edit-btn" onclick="editMaster('karyawan', <?= $row['id'] ?>)"><i class="fas fa-edit"></i></button>
+                                        <button class="delete-btn" onclick="deleteMaster('karyawan', <?= $row['id'] ?>)"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>
                             <?php endforeach; endif;?>
 
-                        <?php if(count($dataRole_key) > 0): ?>
-                            <?php $no = 1; foreach($dataRole_key as $row): ?>
-                                <tr>
+                        <?php if(count($dataRoles) > 0): ?>
+                            <?php $no = 1; foreach($dataRoles as $row): ?>
+                                <tr class="master-row" data-type="user-role">
                                     <td><?= $no++ ?></td>
-                                    <td><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
+                                    <td><?= $row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
                                     <td><?= $row['username'] ?? '-' ?></td>
+                                    <td><?= htmlspecialchars($row['role_id']) ?></td>
                                     <td><?= htmlspecialchars($row['role_key_name']) ?></td>
                                     <td>
-                                        <button class="edit-btn">Edit</button>
-                                        <button class="delete-btn">Delete</button>
+                                        <button class="edit-btn" onclick="editMaster('user-role', <?= $row['id'] ?>)"><i class="fas fa-edit"></i></button>
+                                        <button class="delete-btn" onclick="deleteMaster('user-role', <?= $row['id'] ?>)"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>
                             <?php endforeach; endif;?>
@@ -171,7 +151,6 @@ include 'modules/header.php';
         </div>
 
         <div class="table-footer-divider"></div>
-
         <div class="table-footer">
             <div class="project-name">
                 <span>© 2026 Catatan Kepala Toko v1.0.0</span>
