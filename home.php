@@ -1,19 +1,28 @@
 <?php
+
+//================================//
+// CONFIG HALAMAN & HEADER       //
+//==============================//
 $pageTitle = 'Home'; 
 $cssFile = 'home.css'; 
 $jsFile = 'home.js';
 include 'modules/header.php'; 
 
+//================================//
+// KONEKSI DATABASE              //
+//==============================//
 require_once "direct/config.php"; 
 
-// ===== MASTER DATA ===== //
+//================================//
+// AMBIL MASTER DATA (DROPDOWN)  //
+//==============================//
 
-// TOKO
+// --- Data Toko ---
 $stmt = $conn->prepare("SELECT id, nama_toko FROM toko ORDER BY nama_toko");
 $stmt->execute();
 $tokoList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// KARYAWAN + DIVISI
+// --- Data Karyawan & Divisi ---
 $stmt = $conn->prepare("
     SELECT 
         k.id, 
@@ -28,16 +37,18 @@ $stmt = $conn->prepare("
 $stmt->execute();
 $karyawanList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// TOPIK
+// --- Data Topik ---
 $stmt = $conn->prepare("SELECT id, nama_topik FROM topik ORDER BY nama_topik");
 $stmt->execute();
 $topikList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
-// ===== AJAX HANDLER ===== //
+//================================//
+// AJAX HANDLER (POST REQUEST)   //
+//==============================//
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // ===== DELETE =====
+    // --- Proses Delete ---
     if (isset($_POST['ajax_delete'])) {
         $id = (int)$_POST['id'];
         $stmt = $conn->prepare("DELETE FROM notes WHERE id=?");
@@ -45,11 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // ===== UPDATE ===== //
+    // --- Proses Update ---
     if (isset($_POST['ajax_update'])) {
-
         $id = (int)$_POST['id'];
-
         $stmt = $conn->prepare("
             UPDATE notes SET 
                 toko_id=?, karyawan_id=?, divisi_id=?, topik_id=?, tanggal=?, catatan=?
@@ -65,46 +74,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_POST['catatan'],
             $id
         ]) ? "success" : "gagal";
-
         exit;
     }
 
-    // ===== INSERT ===== //
+    // --- Proses Insert (Simpan Baru) ---
     if (isset($_POST['ajax_save'])) {
-
         try {
-
-            $toko_id   = $_POST['toko_id'] ?? null;
+            $toko_id     = $_POST['toko_id'] ?? null;
             $karyawan_id = $_POST['karyawan_id'] ?? null;
             $divisi_id   = $_POST['divisi_id'] ?? null;
-            $topik_id  = $_POST['topik_id'] ?? null;
-            $tanggal   = $_POST['tanggal'] ?? null;
-            $catatan   = $_POST['catatan'] ?? null;
-            $user_id   = 1; 
+            $topik_id    = $_POST['topik_id'] ?? null;
+            $tanggal     = $_POST['tanggal'] ?? null;
+            $catatan     = $_POST['catatan'] ?? null;
+            $user_id     = 1; 
 
+            // Validasi input
             if (!$toko_id || !$karyawan_id || !$topik_id || !$tanggal) {
                 exit("Data wajib belum lengkap!");
             }
-
             if (empty($catatan) && empty($_FILES['file']['name'])) {
                 exit("Catatan atau file wajib diisi!");
             }
 
             $file_name = null;
-
+            // Handle upload file/gambar
             if (!empty($_FILES['file']['name'])) {
-
                 $allow = ['jpg','jpeg','png','webp','pdf'];
                 $ext = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
 
-                if(!in_array($ext, $allow)){
-                    exit("Format file tidak diizinkan!");
-                }
-
-                if($_FILES['file']['size'] > 2 * 1024 * 1024){
-                    exit("Ukuran file maksimal 2MB!");
-                }
-
+                if(!in_array($ext, $allow)) exit("Format file tidak diizinkan!");
+                if($_FILES['file']['size'] > 2 * 1024 * 1024) exit("Ukuran file maksimal 2MB!");
                 if (!is_dir("uploads")) mkdir("uploads", 0777, true);
 
                 $file_name = uniqid("note_") . "." . $ext;
@@ -112,11 +111,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $sql = "INSERT INTO notes 
-            (user_id, toko_id, karyawan_id, divisi_id, topik_id, tanggal, catatan, file_name, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                    (user_id, toko_id, karyawan_id, divisi_id, topik_id, tanggal, catatan, file_name, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
             $stmt = $conn->prepare($sql);
-
             echo $stmt->execute([
                 $user_id, $toko_id, $karyawan_id, $divisi_id, 
                 $topik_id, $tanggal, $catatan, $file_name
@@ -125,28 +123,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (Exception $e) {
             echo "Error: " . $e->getMessage();
         }
-
         exit;
     }
 }
 
 
-// --- QUERY TAMPIL DATA ---
+//================================//
+// QUERY TAMPIL DATA UTAMA       //
+//==============================//
 $sqlFetch = "
-SELECT n.*, 
-       u.username, 
-       t.nama_toko, 
-       k.name AS nama_karyawan,
-       k.nama_karyawan AS nama_lengkap,
-       d.nama_divisi,
-       tp.nama_topik
-FROM notes n
-LEFT JOIN users u ON n.user_id = u.id
-LEFT JOIN toko t ON n.toko_id = t.id
-LEFT JOIN karyawan k ON n.karyawan_id = k.id
-LEFT JOIN divisi d ON n.divisi_id = d.id
-LEFT JOIN topik tp ON n.topik_id = tp.id
-ORDER BY n.created_at DESC
+    SELECT n.*, 
+           u.username, 
+           t.nama_toko, 
+           k.name AS nama_karyawan,
+           k.nama_karyawan AS nama_lengkap,
+           d.nama_divisi,
+           tp.nama_topik
+    FROM notes n
+    LEFT JOIN users u ON n.user_id = u.id
+    LEFT JOIN toko t ON n.toko_id = t.id
+    LEFT JOIN karyawan k ON n.karyawan_id = k.id
+    LEFT JOIN divisi d ON n.divisi_id = d.id
+    LEFT JOIN topik tp ON n.topik_id = tp.id
+    ORDER BY n.created_at DESC
 ";
 
 $stmt = $conn->prepare($sqlFetch);
@@ -191,7 +190,7 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <div class="table-wrap">
-            <table id="noteTable">
+            <table id="noteTable" class="display nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>NO</th>
@@ -209,11 +208,11 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <tbody id="noteTableBody">
                     <?php if(count($notes) > 0): ?>
                         <?php $no = 1; foreach($notes as $row): ?>
-                            
                             <tr onclick="openviewModal(this)"
                                 data-id="<?= $row['id'] ?>"
                                 data-toko_id="<?= $row['toko_id'] ?>"
                                 data-karyawan_id="<?= $row['karyawan_id'] ?>"
+                                data-topik_id="<?= $row['topik_id'] ?>"
                                 data-divisi="<?= $row['nama_divisi'] ?>"
                                 data-topik="<?= $row['nama_topik'] ?>"
                                 data-tanggal="<?= $row['tanggal'] ?>"
@@ -223,8 +222,6 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 data-karyawan="<?= htmlspecialchars($row['nama_karyawan']) ?>"
                                 data-file="<?= $row['file_name'] ?>"
                             >
-
-                            <tr>
                                 <td><?= $no++ ?></td>
                                 <td><?= $row['tanggal'] ?></td>
                                 <td><?= $row['username'] ?? '-' ?></td>
@@ -246,35 +243,27 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 </td>
                                 <td>
                                     <span class="action-cell">
-                                        <span class="edit-btn" onclick="openEditModal(this)" title="Edit">
+                                        <span class="edit-btn" onclick="openEditModal(this, event)" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </span>
-                                        <span class="delete-btn" onclick="deleteNote(<?= $row['id'] ?>)" title="Delete">
+                                        <span class="delete-btn" onclick="deleteNote(<?= $row['id'] ?>, event)" title="Delete">
                                             <i class="fas fa-trash"></i>
                                         </span>
                                     </span>
                                 </td>
-                                <div id="emptyState" class="empty-state" 
-                                    style="<?= count($notes) > 0 ? 'display:none;' : 'display:block;' ?>">
-                                    <i class="fas fa-folder-open"></i>
-                                    <p>Belum ada catatan yang masuk.</p>
-                                </div>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
             </table>
 
-            <div id="emptyState" class="empty-state" 
-                style="<?= count($notes) > 0 ? 'display:none;' : 'display:block;' ?>">
+            <div id="emptyState" class="empty-state" style="<?= count($notes) > 0 ? 'display:none;' : 'display:block;' ?>">
                 <i class="fas fa-folder-open"></i>
                 <p>Belum ada catatan yang masuk.</p>
             </div>  
-
         </div>
 
         <div class="table-footer-divider"></div>
-
         <div class="table-footer">
             <div class="project-name">
                 <span>© 2026 Catatan Kepala Toko v1.0.0</span>
@@ -289,7 +278,6 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="divider"></div>
         
         <form id="noteForm" enctype="multipart/form-data">
-
             <label for="inputToko">TOKO</label>
             <select id="inputToko" name="toko_id" required>
                 <option value="">Pilih Toko</option>
@@ -299,14 +287,13 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </select>
 
             <label>KARYAWAN</label>
-              <select type="text" name="karyawan_id" id="inputKaryawan" placeholder="Cari Karyawan..." onchange="updateDivisi()">
+            <select name="karyawan_id" id="inputKaryawan" onchange="updateDivisi()">
                 <option value="">Pilih Karyawan</option>
                 <?php foreach($karyawanList as $k): ?>
-                    <option 
-                        value="<?= $k['id'] ?>" 
-                        data-divisi-id="<?= $k['divisi_id'] ?>"
-                        data-divisi-nama="<?= $k['nama_divisi'] ?>"
-                        data-search="<?= strtolower($k['name'].' '.$k['nama_karyawan']) ?>">
+                    <option value="<?= $k['id'] ?>" 
+                            data-divisi-id="<?= $k['divisi_id'] ?>"
+                            data-divisi-nama="<?= $k['nama_divisi'] ?>"
+                            data-search="<?= strtolower($k['name'].' '.$k['nama_karyawan']) ?>">
                         <?= htmlspecialchars($k['name']) ?>
                     </option>
                 <?php endforeach; ?>
@@ -316,7 +303,6 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <input type="hidden" name="divisi_id" id="divisi_id">
             <input type="text" id="inputDivisi" readonly>
 
-
             <label for="inputTopik">TOPIK</label>
             <select id="inputTopik" name="topik_id" required>
                 <option value="">Pilih Topik</option>
@@ -325,7 +311,6 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php endforeach; ?>
             </select>
 
-
             <label for="inputDate">DATE</label>
             <input type="date" id="inputDate" name="tanggal">
 
@@ -333,7 +318,7 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <textarea id="inputCatatan" name="catatan" placeholder="Bisa dikosongkan jika sudah ada file..."></textarea>
 
             <label for="inputFile">AMBIL GAMBAR / FILE</label>
-            <input type="file" id="inputFile" name="file" accept="image/*" capture="environment">
+            <input type="file" name="lampiran" id="inputFile" accept="image/*,video/*" capture="environment">
 
             <p id="optionalStatus" style="font-size: 12px; margin-top: -10px; margin-bottom: 15px; color: #e74c3c;">
                 *Wajib isi Catatan atau lampirkan File
@@ -356,44 +341,17 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="modal-content-wrapper"> 
             <div class="modal-content-view">
                 <div class="view-details-left">
-                    <div class="detail-field-group">
-                        <label>INPUTER</label>
-                        <span id="viewInputer" class="view-data-field">Bambang</span>
-                    </div>
-                    <div class="detail-field-group">
-                        <label>TOKO</label>
-                        <span id="viewToko" class="view-data-field">IKKOU</span>
-                    </div>
-                    <div class="detail-field-group">
-                        <label>KARYAWAN</label>
-                        <span id="viewKaryawan" class="view-data-field">Rudi</span>
-                    </div>
-                    <div class="detail-field-group">
-                        <label>TOPIK</label>
-                        <span id="viewTopik" class="view-data-field">Kedisiplinan</span>
-                    </div>
-                    <div class="detail-field-group">
-                        <label>DIVISI</label>
-                        <span id="viewDivisi" class="view-data-field">Regular</span>
-                    </div>
-                    <div class="detail-field-group">
-                        <label>DATE</label>
-                        <span id="viewDate" class="view-data-field">5 Januari 2025</span>
-                    </div>
-                    <div class="view-attachments">
-                        <label>LAMPIRAN</label>
-                        <span id="viewLampiran">Tidak ada lampiran.</span>
-                    </div> 
+                    <div class="detail-field-group"><label>INPUTER</label><span id="viewInputer" class="view-data-field"></span></div>
+                    <div class="detail-field-group"><label>TOKO</label><span id="viewToko" class="view-data-field"></span></div>
+                    <div class="detail-field-group"><label>KARYAWAN</label><span id="viewKaryawan" class="view-data-field"></span></div>
+                    <div class="detail-field-group"><label>TOPIK</label><span id="viewTopik" class="view-data-field"></span></div>
+                    <div class="detail-field-group"><label>DIVISI</label><span id="viewDivisi" class="view-data-field"></span></div>
+                    <div class="detail-field-group"><label>DATE</label><span id="viewDate" class="view-data-field"></span></div>
+                    <div class="view-attachments"><label>LAMPIRAN</label><span id="viewLampiran"></span></div> 
                 </div>
                 <div class="view-right-column">
-                    <div class="view-catatan">
-                        <label>CATATAN</label>
-                        <p id="viewCatatan" class="catatan-display">Isi catatan muncul di sini...</p>
-                    </div>
-                    <div class="view-preview">
-                        <label>PREVIEW</label>
-                        <div class="preview-box">Tidak ada file gambar terlampir.</div>
-                    </div>
+                    <div class="view-catatan"><label>CATATAN</label><p id="viewCatatan" class="catatan-display"></p></div>
+                    <div class="view-preview"><label>PREVIEW</label><div class="preview-box"></div></div>
                 </div>
             </div>
         </div>
@@ -402,5 +360,16 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 </div>
-    
+
+<div id="confirmModal" class="confirm-modal">
+  <div class="confirm-box">
+    <h3>Hapus Catatan</h3>
+    <p>Yakin ingin menghapus catatan ini?</p>
+    <div class="confirm-action">
+      <button id="confirmCancel">Batal</button>
+      <button id="confirmDelete" class="danger">Hapus</button>
+    </div>
+  </div>
+</div>
+
 <?php include 'modules/footer.php'; ?>
