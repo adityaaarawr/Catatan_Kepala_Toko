@@ -1,13 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-    <link rel="stylesheet" href="dist/css/login.css">
-</head>
+<?php 
+require_once "direct/config.php";
+$pageTitle = 'Login'; 
+$cssFile = 'login.css'; 
+$jsFile = 'login.js';
+include 'modules/header.php'; 
 
-<body>
+?>
   
 <div class="main-wrapper">
     <div class="header-section">
@@ -45,7 +43,7 @@
             <h2>SIGN IN</h2>
             <p>Silakan Masuk Dengan Username & Password</p>
 
-            <form id="loginForm">
+            <form id="loginForm" method="post" action="routines/auth.php">
                 <div class="input-wrapper">
                     <label>USERNAME</label>
                     <input type="text" id="username" class="input-box" placeholder="Username" required>
@@ -64,7 +62,4 @@
 
 <div id="notification-container" class="notification-container"></div>
 
-<script src="dist/js/login.js"></script> 
-
-</body>
-</html>
+<?php include 'modules/footer.php'; ?>
