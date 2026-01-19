@@ -1,0 +1,1525 @@
+/* ======================================= */
+/* 1. GLOBAL RESET & VARIABEL TEMA         */
+/* ======================================= */
+
+/* --- Reset & Base Styles --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Inter", "Arial", sans-serif;
+}
+
+/* --- CSS Variables (Theme Colors) --- */
+:root {
+    /* 1. Primary Color Palette */
+    --primary: #113F67;
+    --primary-dark: #34699A;
+    --primary-light: #408AB4;
+    --secondary-color: #8BD5D3;
+    
+    /* 2. Text & General Colors */
+    --text-primary: #1f2937;
+    --text-color: var(--text-primary);
+    --muted: #6b7280;
+    --muted-text: var(--muted);
+    
+    /* 3. Background & Border */
+    --bg: #f4f6f9;
+    --bg-light: var(--bg);
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    
+    /* 4. Action & Status Colors */
+    --danger: #ef4444;
+    --danger-dark: #b91c1c;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --info-color: #2196F3;
+    --error-color: var(--danger);
+    --action-primary: var(--primary);
+    --action-danger: var(--danger);
+    
+    /* 5. Sidebar Colors */
+    --sidebar-bg: #1f2937;
+    --sidebar-border: #374151;
+    --sidebar-item: #9ca3af;
+    --sidebar-active: #ffffff;
+    
+    /* 6. Shadows & Aesthetics */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.1);
+    --hover-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    --focus-border-color: var(--primary);
+}
+
+/* --- Body Base --- */
+body {
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--text-primary);
+}
+
+/* ======================================= */
+/* 2. TEXT TRANSFORM UTILITIES             */
+/* ======================================= */
+
+/* Text Uppercase for Headers & Important Elements */
+.sidebar, 
+.topbar, 
+.table-wrap table, 
+.modal-title, 
+.modal-box label,
+.view-data-field,
+.catatan-display,
+.filter-card,
+.btn-primary {
+    text-transform: uppercase;
+}
+
+/* Text Uppercase for Form Inputs */
+.modal-box input, 
+.modal-box select, 
+.modal-box textarea,
+.filter-input {
+    text-transform: uppercase;
+}
+
+/* ======================================= */
+/* 3. MAIN LAYOUT COMPONENTS               */
+/* ======================================= */
+
+/* --- Topbar Layout --- */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* --- Title Styling --- */
+.title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+/* --- Header Divider --- */
+.header-divider {
+    width: 100%;
+    height: 2px;
+    background: var(--border-color);
+    margin-bottom: 20px;
+}
+
+/* --- Title Container --- */
+.title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* --- Add Button Container --- */
+.btn-add-container {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+}
+
+/* ======================================= */
+/* 4. CARD & FILTER SYSTEM                 */
+/* ======================================= */
+
+/* --- Base Card Style --- */
+.card {
+    background: var(--card-bg);
+    padding: 22px;
+    border-radius: 14px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 22px;
+    transition: all 0.25s ease;
+    border: 1px solid transparent;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(74, 71, 255, 0.15);
+    border-color: var(--primary-light);
+}
+
+/* --- Filter Card --- */
+.filter-card {
+    padding: 15px 22px;
+    border: 1px solid var(--border-color);
+    box-shadow: none;
+    margin-bottom: 15px;
+    transition: all 0.4s ease-in-out;
+    overflow: hidden;
+    max-height: 500px;
+    opacity: 1;
+}
+
+/* Filter Card Hidden State */
+.filter-card.hide-filter {
+    display: none;
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    pointer-events: none;
+}
+
+/* --- Filter Bar Layout --- */
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+/* --- Filter Group --- */
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* --- Filter Icon --- */
+.filter-icon {
+    color: #666;
+    font-size: 15px;
+    padding-left: 5px;
+    flex-shrink: 0;
+}
+
+/* --- Filter Input Fields --- */
+.filter-input {
+    padding: 10px 15px;
+    height: 45px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: white;
+    transition: all 0.25s ease;
+    font-size: 14px;
+    min-width: 130px;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+/* Special Styling for Search Input */
+.search-input {
+    min-width: 130px;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+/* Filter Input States */
+.filter-input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(74, 71, 255, 0.35);
+    background: white;
+}
+
+.filter-input:hover {
+    border-color: var(--primary);
+}
+
+/* --- Filter Trigger Button --- */
+.btn-filter-trigger {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    color: #444;
+    transition: all 0.3s;
+    margin-bottom: 10px;
+}
+
+.btn-filter-trigger:hover {
+    background: #f0f0f0;
+    border-color: #bbb;
+}
+
+/* ======================================= */
+/* 5. BUTTON STYLES                        */
+/* ======================================= */
+
+/* --- Primary Button --- */
+.btn-primary {
+    padding: 10px 18px;
+    background: var(--primary);
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transform: translateY(0);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 14px rgba(74, 71, 255, 0.45);
+}
+
+/* ======================================= */
+/* 6. TABLE & DATA DISPLAY                 */
+/* ======================================= */
+
+/* --- Table Container --- */
+.table-wrap {
+    background: var(--card-bg);
+    padding: 0;
+    border-radius: 14px;
+    box-shadow: var(--shadow-md);
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+/* --- Base Table Styling --- */
+table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+/* --- Table Header --- */
+thead {
+    background: var(--secondary-color);
+    color: var(--text-primary);
+}
+
+/* --- Table Cells --- */
+th, td {
+    padding: 14px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+/* --- Table Row Hover --- */
+tbody tr:hover {
+    background: rgba(74, 71, 255, 0.15);
+    cursor: pointer;
+}
+
+/* --- Catatan Column Specific --- */
+td[data-label="CATATAN"] {
+    width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-all;
+}
+
+.catatan-cell {
+    max-width: 260px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- Action Column --- */
+.action-cell {
+    width: 100px;
+    text-align: center;
+}
+
+.action-cell span {
+    cursor: pointer;
+    margin: 0 8px;
+    font-size: 16px;
+    transition: transform 0.25s ease;
+}
+
+/* Action Button Colors */
+.action-cell .edit-btn i { color: var(--primary); }
+.action-cell .edit-btn:hover i { color: var(--primary-dark); transform: scale(1.25); }
+.action-cell .delete-btn i { color: var(--danger); }
+.action-cell .delete-btn:hover i { color: var(--danger-dark); transform: scale(1.25); }
+
+/* --- Table Footer --- */
+.table-footer-divider {
+    width: 100%;
+    height: 2px;
+    background: var(--border-color);
+    margin: 15px 0;
+}
+
+.table-footer {
+    width: 100%;
+    text-align: center;
+    padding: 15px 0;
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.data-info {
+    font-size: 13px;
+    color: var(--primary);
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.project-name {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+/* ======================================= */
+/* 7. MODAL SYSTEM (Add/Edit)              */
+/* ======================================= */
+
+/* --- Modal Overlay --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow-y: auto;
+    backdrop-filter: blur(3px);
+}
+
+/* --- Modal Box Container --- */
+.modal-box {
+    background: var(--secondary-color);
+    padding: 28px;
+    width: 90%;
+    max-width: 450px;
+    border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: scale(1);
+    transition: all 0.3s ease;
+    margin: auto;
+    max-height: 90vh;
+}
+
+/* Modal Animations */
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.9) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes modalOut {
+    to { opacity: 0; transform: scale(0.95) translateY(20px); }
+}
+
+.modal-box:hover {
+    transform: scale(1.01);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+}
+
+.modal-box.closing {
+    animation: modalOut 0.2s ease forwards;
+}
+
+/* --- Modal Title --- */
+.modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 18px;
+    color: var(--text-primary);
+}
+
+.modal-title + .divider {
+    width: 100%;
+    height: 1.5px;
+    background: #e5e7eb;
+    margin-bottom: 18px;
+}
+
+/* --- Form Elements --- */
+.modal-box label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+}
+
+.required-label::after {
+    content: " *";
+    color: #e74c3c;
+    font-weight: bold;
+    margin-left: 4px;
+}
+
+/* Input, Select, Textarea */
+.modal-box input,
+.modal-box select,
+.modal-box textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    background: #f9fafb;
+    transition: all 0.25s ease;
+}
+
+/* Form Element States */
+.modal-box input:hover,
+.modal-box select:hover,
+.modal-box textarea:hover {
+    border-color: var(--primary);
+    background: white;
+}
+
+.modal-box input:focus,
+.modal-box select:focus,
+.modal-box textarea:focus {
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 2px var(--primary-light);
+    outline: none;
+}
+
+/* Custom Select Styling */
+.modal-box select, 
+.modal-box input[list],
+#inputKaryawan {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 40px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23113F67' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 15px center !important;
+    background-size: 16px !important;
+    background-color: #f9fafb;
+}
+
+/* Date Input */
+.modal-box input[type="date"] {
+    padding-right: 15px;
+}
+
+.modal-box input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+}
+
+/* Textarea */
+.modal-box textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* --- Modal Action Buttons --- */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1.5px solid rgba(229, 231, 235, 0.8);
+}
+
+.modal-actions .cancel-btn {
+    background: #6b7280;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+.modal-actions .save-btn {
+    background: var(--primary);
+    color: white;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+/* ======================================= */
+/* 8. VIEW NOTE DETAIL MODAL               */
+/* ======================================= */
+
+/* --- View Modal Container --- */
+.modal-box.view-note-box {
+    max-width: 850px;
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--secondary-color);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow-x: hidden !important;
+}
+
+/* --- View Header --- */
+.view-header {
+    background: var(--card-bg);
+    padding: 18px 25px;
+    display: none;
+}
+
+/* --- View Content Wrapper --- */
+.modal-content-wrapper {
+    overflow-y: auto;
+    flex-grow: 1;
+    padding: 0 25px;
+}
+
+/* --- View Content Layout --- */
+.modal-content-view {
+    padding: 10px 0 25px 0;
+    display: grid;
+    grid-template-columns: 1.5fr 2fr;
+    grid-gap: 30px;
+}
+
+/* --- Detail Field Groups --- */
+.detail-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 5px;
+}
+
+.view-data-field {
+    background-color: #f4f6f9;
+    border: 1px solid var(--border-color);
+    padding: 10px 12px;
+    border-radius: 8px;
+    min-height: 40px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+}
+
+/* --- Catatan Display --- */
+.catatan-display {
+    background-color: #f4f6f9;
+    padding: 15px;
+    border-radius: 10px;
+    min-height: 120px;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: break-all;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* --- File Preview Box --- */
+.preview-box {
+    background-color: var(--bg);
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    min-height: 180px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--muted);
+    font-style: italic;
+}
+
+/* --- View Modal Actions --- */
+.view-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 15px 25px;
+    border-top: 1.5px solid var(--border-color);
+}
+
+.view-actions .close-btn {
+    background: var(--primary);
+    color: white;
+    padding: 10px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* ======================================= */
+/* 9. UI STATES & FEEDBACK                 */
+/* ======================================= */
+
+/* --- Empty State --- */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: #4a47ff;
+}
+
+/* --- Confirmation Modal --- */
+.confirm-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.confirm-box {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 90%;
+}
+
+.confirm-action {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.confirm-action button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.confirm-action .danger {
+    background: #e74c3c;
+    color: #fff;
+}
+
+@keyframes scaleIn {
+    from { transform: scale(.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* --- Miscellaneous Utilities --- */
+.expand-trigger {
+    display: none;
+}
+
+.view-attachments {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.view-attachments .link-lampiran {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* ======================================= */
+/* 10. NOTIFICATION SYSTEM                 */
+/* ======================================= */
+
+/* --- Notification Container --- */
+#notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 320px;
+    width: auto;
+    pointer-events: none;
+}
+
+/* --- Notification Toast Base --- */
+.notification-toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 18px;
+    margin-bottom: 0;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    opacity: 0;
+    transform: translateX(100px);
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    min-width: 280px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Toast States */
+.notification-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.notification-toast.hide {
+    opacity: 0;
+    transform: translateX(100px);
+}
+
+/* Toast Left Border */
+.notification-toast::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 4px 0 0 4px;
+}
+
+/* Toast Type Colors */
+/* Success */
+.notification-toast.success::before {
+    background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+}
+.notification-toast.success {
+    border-left: 4px solid #4CAF50;
+}
+
+/* Error */
+.notification-toast.error::before {
+    background: linear-gradient(to bottom, #F44336, #C62828);
+}
+.notification-toast.error {
+    border-left: 4px solid #F44336;
+}
+
+/* Info */
+.notification-toast.info::before {
+    background: linear-gradient(to bottom, #2196F3, #1565C0);
+}
+.notification-toast.info {
+    border-left: 4px solid #2196F3;
+}
+
+/* Warning */
+.notification-toast.warning::before {
+    background: linear-gradient(to bottom, #FF9800, #EF6C00);
+}
+.notification-toast.warning {
+    border-left: 4px solid #FF9800;
+}
+
+/* --- Notification Icon --- */
+.notification-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Icon Colors by Type */
+.notification-toast.success .notification-icon { background: #4CAF50; }
+.notification-toast.error .notification-icon { background: #F44336; }
+.notification-toast.info .notification-icon { background: #2196F3; }
+.notification-toast.warning .notification-icon { background: #FF9800; }
+
+/* --- Notification Content --- */
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.notification-message {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+/* --- Close Button --- */
+.notification-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.notification-close:hover {
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* --- Progress Bar --- */
+.notification-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 12px 12px;
+    overflow: hidden;
+}
+
+.notification-progress::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    animation: progress 5s linear forwards;
+}
+
+/* Progress Bar Colors by Type */
+.notification-toast.success .notification-progress::after {
+    background: linear-gradient(to right, #4CAF50, #2E7D32);
+}
+.notification-toast.error .notification-progress::after {
+    background: linear-gradient(to right, #F44336, #C62828);
+}
+.notification-toast.info .notification-progress::after {
+    background: linear-gradient(to right, #2196F3, #1565C0);
+}
+.notification-toast.warning .notification-progress::after {
+    background: linear-gradient(to right, #FF9800, #EF6C00);
+}
+
+@keyframes progress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+/* ======================================= */
+/* 11. RESPONSIVE DESIGN                   */
+/* ======================================= */
+
+/* --- Tablet Landscape & Desktop (≤ 1024px) --- */
+@media (max-width: 1024px) {
+    main {
+        margin-left: 220px;
+        width: calc(100% - 220px);
+        padding: 25px;
+    }
+}
+
+/* --- Tablet Portrait (≤ 768px) --- */
+@media (max-width: 768px) {
+    /* Title Adjustments */
+    .title {
+        font-size: 20px;
+    }
+    
+    /* Table Responsive */
+    .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 0;
+        margin: 0 -15px;
+        width: calc(100% + 30px);
+    }
+    
+    .table-wrap table {
+        min-width: 100% !important;
+        width: 100%;
+        margin: 0;
+    }
+
+    /* Table Header Hidden for Mobile */
+    table thead {
+        display: none;
+    }
+
+    /* Accordion Row Style for Mobile */
+    .accordion-row {
+        display: flex;
+        flex-wrap: wrap;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        position: relative;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Table Cell Adjustments */
+    .accordion-row td[data-label="NO"],
+    .accordion-row td[data-label="TANGGAL"],
+    .accordion-row td[data-label="INPUTER"],
+    .accordion-row td[data-label="TOKO"],
+    .accordion-row td[data-label="KARYAWAN"] {
+        display: flex !important;
+        flex-direction: column;
+        width: 18% !important;
+        font-size: 11px;
+        border: none !important;
+        padding: 2px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .accordion-row td::before {
+        content: attr(data-label);
+        font-size: 9px;
+        font-weight: 800;
+        color: #94a3b8;
+        margin-bottom: 1px;
+    }
+
+    /* Expand Trigger for Mobile */
+    .expand-trigger {
+        display: flex !important;
+        width: 10% !important;
+        justify-content: flex-end;
+        align-items: center;
+        border: none !important;
+    }
+
+    .btn-detail-toggle {
+        background: none;
+        border: none;
+        color: var(--primary);
+        font-size: 16px;
+        cursor: pointer;
+        padding: 5px;
+    }
+
+    /* Hidden Columns Initially */
+    .accordion-row td:not([data-label="NO"]):not([data-label="TANGGAL"]):not([data-label="INPUTER"]):not([data-label="TOKO"]):not([data-label="KARYAWAN"]):not(.expand-trigger) {
+        display: none !important;
+    }
+
+    /* Open Accordion State */
+    .accordion-row.is-open {
+        border-left: 4px solid var(--primary);
+    }
+
+    .accordion-row.is-open td {
+        display: flex !important;
+        width: 100% !important;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 8px 0 !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        font-size: 13px;
+        white-space: normal;
+    }
+
+    .accordion-row.is-open td::before {
+        width: 35%;
+        text-align: left;
+        color: var(--primary);
+        font-size: 11px;
+    }
+
+    .accordion-row.is-open .btn-detail-toggle {
+        color: var(--danger);
+        transform: rotate(90deg);
+        transition: 0.3s;
+    }
+
+    /* Mobile Table Structure */
+    table,
+    tbody,
+    tr,
+    td {
+        display: block;
+        width: 100%;
+    }
+
+    table tbody tr {
+        margin-bottom: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 10px;
+        background: #fff;
+        box-shadow: var(--shadow-sm);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    table td {
+        text-align: right !important;
+        padding: 12px 15px !important;
+        border-bottom: 1px dashed #eee;
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        min-height: 45px;
+        box-sizing: border-box;
+    }
+
+    table td:last-child {
+        border-bottom: none;
+    }
+
+    table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        text-align: left;
+        color: var(--primary);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        min-width: 100px;
+        margin-right: 10px;
+        flex-shrink: 0;
+    }
+
+    /* Catatan Column Specific */
+    table td[data-label="CATATAN"] {
+        align-items: flex-start;
+        text-align: right;
+    }
+
+    table td[data-label="CATATAN"]::before {
+        margin-bottom: 5px;
+    }
+
+    /* Action Column */
+    table td.action-cell {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 12px 15px !important;
+        min-width: unset !important;
+    }
+
+    .action-icons-wrapper {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .action-icons-wrapper span {
+        cursor: pointer;
+    }
+    
+    .action-icons-wrapper span:hover {
+        transform: scale(1.15);
+    }
+
+    .edit-btn,
+    .delete-btn {
+        margin: 0 !important;
+        padding: 5px;
+    }
+
+    /* Ensure Specific Columns Display */
+    th:nth-child(4),
+    td:nth-child(4),
+    th:nth-child(5),
+    td:nth-child(5) {
+        display: flex !important;
+    }
+
+    table {
+        font-size: 13px;
+        min-width: 650px;
+    }
+    
+    /* Filter Adjustments */
+    .filter-card .filter-bar {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 15px !important;
+        width: 100%;
+    }
+
+    .filter-card .filter-input {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        min-width: unset !important;
+        gap: 5px;
+    }
+
+    .filter-card .filter-input select,
+    .filter-card .filter-input input,
+    .filter-card .search-input,
+    .filter-card .search-input input {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .btn-filter-trigger {
+        width: 100% !important;
+        display: flex;
+        justify-content: center;
+        padding: 12px;
+    }
+
+    /* View Modal Adjustments */
+    .modal-box.view-note-box {
+        max-width: 95%;
+    }
+
+    .modal-title {
+        padding: 15px 20px 0 20px;
+        font-size: 18px;
+    }
+    
+    .modal-title + .divider {
+        margin: 0 20px 15px 20px;
+        width: calc(100% - 40px);
+    }
+
+    .modal-content-wrapper {
+        padding: 0 20px;
+    }
+
+    .modal-content-view {
+        grid-template-columns: 1fr;
+        grid-gap: 20px;
+        padding-bottom: 20px;
+    }
+
+    .view-actions {
+        padding: 12px 20px;
+        justify-content: center;
+    }
+    
+    .view-actions .close-btn {
+        width: 100%;
+        max-width: 300px;
+        padding: 12px 25px;
+    }
+    
+    /* Table Footer */
+    .table-footer {
+        padding: 10px 0;
+        font-size: 13px;
+    }
+    
+    .data-info {
+        font-size: 12px;
+    }
+    
+    .project-name {
+        font-size: 13px;
+    }
+
+    /* Modal Fixes */
+    .modal {
+        padding: 20px;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding-top: 70px;
+    }
+    
+    .modal-box {
+        padding: 25px;
+        max-height: 90vh;
+        animation: modalInMobile 0.3s ease;
+        overflow-y: auto;
+        overflow-x: hidden;
+        width: 90%;
+        max-width: 450px;
+        margin: 0 auto;
+    }
+    
+    @keyframes modalInMobile {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Modal Actions */
+    .modal-actions {
+        flex-direction: row;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+    
+    .modal-actions .cancel-btn,
+    .modal-actions .save-btn {
+        width: auto;
+        text-align: center;
+        padding: 10px 20px;
+    }
+
+    /* Form Adjustments */
+    .modal-box form .form-group {
+        margin-bottom: 10px;
+    }
+
+    .modal-box input, 
+    .modal-box select, 
+    .modal-box textarea {
+        padding: 8px 12px !important;
+        font-size: 14px !important;
+    }
+
+    .modal-title {
+        font-size: 1.1rem !important;
+        margin-bottom: 10px !important;
+    }
+    
+    /* Notification Adjustments */
+    #notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        left: auto !important;
+        width: 280px;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+
+    .notification-toast, .error-msg, [id^="error"] {
+        pointer-events: auto;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 12px 16px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        border: 1px solid rgba(0,0,0,0.05);
+        border-right: 5px solid #ff4d4d;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        animation: slideInCustom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .notification-toast strong, .notification-title {
+        font-size: 13px;
+        display: block;
+        color: #1e293b;
+        margin-bottom: 2px;
+    }
+
+    .notification-toast span, .notification-message {
+        font-size: 11px;
+        color: #64748b;
+        line-height: 1.4;
+    }
+
+    @keyframes slideInCustom {
+        from {
+            opacity: 0;
+            transform: translateX(50px) scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+    }
+        
+    /* Prevent Horizontal Scroll */
+    body {
+        overflow-x: hidden;
+        width: 100%;
+        position: relative;
+    }
+    
+    main {
+        overflow-x: hidden;
+        width: 100%;
+        padding: 15px;
+    }
+}
+
+/* --- Mobile Large (≤ 480px) --- */
+@media (max-width: 480px) {
+    .title {
+        font-size: 18px;
+        line-height: 1.3;
+        margin-left: 50px;
+    }
+    
+    main {
+        padding: 15px;
+        padding-top: 65px;
+        overflow-x: hidden;
+    }
+    
+    .filter-card .filter-bar {
+        flex-direction: column !important;
+    }
+    
+    .filter-card .filter-input {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    table {
+        min-width: 500px;
+    }
+    
+    .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -15px;
+        width: calc(100% + 30px);
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
+
+    .view-actions .close-btn {
+        max-width: 100%;
+    }
+    
+    .table-footer {
+        padding: 8px 0;
+        font-size: 12px;
+    }
+    
+    .data-info {
+        font-size: 11px;
+    }
+    
+    .project-name {
+        font-size: 13px;
+    }
+
+    /* Notification */
+    #notification-container {
+        top: 15px;
+        right: 15px;
+        left: auto !important;
+        width: 240px;
+    }
+
+    .notification-toast {
+        padding: 10px 14px;
+    }
+    
+    .notification-title {
+        font-size: 13px;
+    }
+    
+    .notification-message {
+        font-size: 12px;
+    }
+    
+    /* Modal */
+    .modal-box {
+        padding: 25px;
+        width: 95%;
+        max-width: 450px;
+        border-radius: 16px;
+    }
+    
+    .modal-title {
+        font-size: 18px;
+    }
+    
+    .modal-actions {
+        flex-direction: row;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+    
+    .modal-actions .cancel-btn,
+    .modal-actions .save-btn {
+        padding: 10px 16px;
+        font-size: 12px;
+        min-width: 80px;
+    }
+}
+
+/* --- Extra Small Devices (≤ 360px) --- */
+@media (max-width: 360px) {
+    .modal-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .modal-actions .cancel-btn,
+    .modal-actions .save-btn {
+        width: 100%;
+        padding: 12px;
+    }
+    
+    .modal-box {
+        padding: 25px;
+        width: 90%;
+    }
+    
+    .table-wrap {
+        margin: 0 -10px;
+        width: calc(100% + 20px);
+        padding: 0 10px;
+    }
+}
