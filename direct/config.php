@@ -1,6 +1,6 @@
 <?php
 $host = "localhost";
-$db   = "catatan_kepala_toko"; // HARUS SAMA PERSIS
+$db   = "catatan_kepala_toko"; 
 $user = "root";
 $pass = "";
 
