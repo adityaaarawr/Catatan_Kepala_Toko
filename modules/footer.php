@@ -14,11 +14,24 @@
         <?php endif; ?>
     <?php endif; ?>
 
+    <?php if(isset($pageTitle) && $pageTitle == 'Home'): ?>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <?php endif; ?>
+
     <?php if(isset($pageTitle) && $pageTitle == 'Report'): ?>
         <!-- JQUERY (WAJIB PALING ATAS) -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
          <!-- SELECT2 -->
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <?php endif; ?>
+
+    <?php if(isset($pageTitle) && $pageTitle == 'Master'): ?>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <?php endif; ?>
 
     <?php if(isset($pageTitle) && $pageTitle == 'User Management'): ?>
