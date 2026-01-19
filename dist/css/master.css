@@ -226,7 +226,7 @@ main.sidebar-collapsed {
 }
 
 /* ================================================= */
-/* TABLE FOOTER STYLING */
+/* 4. TABLE FOOTER STYLING */
 /* ================================================= */
 
 /* Footer untuk tabel */
@@ -303,7 +303,7 @@ main.sidebar-collapsed {
 }
 
 /* ================================================= */
-/* 4. TABLE STYLING (HOME & MASTER) */
+/* 5. TABLE STYLING (HOME & MASTER) */
 /* ================================================= */
 
 .table-wrap {
@@ -404,7 +404,7 @@ table td input[type="checkbox"] {
 }
 
 /* ================================================= */
-/* 5. MODAL (ADD/EDIT & VIEW) */
+/* 6. MODAL (ADD/EDIT & VIEW) */
 /* ================================================= */
 
 .modal {
@@ -532,7 +532,7 @@ table td input[type="checkbox"] {
 }
 
 /* ================================================= */
-/* DROPDOWN CHECKBOX USER ROLE */
+/* 7. DROPDOWN CHECKBOX USER ROLE 
 /* ================================================= */
 
 /* Container Utama */
@@ -679,7 +679,7 @@ table td input[type="checkbox"] {
 }
 
 /* ================================================= */
-/* 6. VIEW MODAL STYLING */
+/* 8. VIEW MODAL STYLING */
 /* ================================================= */
 
 .view-note-box {
@@ -773,8 +773,19 @@ table td input[type="checkbox"] {
 }
 
 /* ================================================= */
-/* 7. MASTER MANAGEMENT SPECIFIC STYLES */
+/* 9. MASTER MANAGEMENT SPECIFIC STYLES */
 /* ================================================= */
+
+/* Sembunyikan semua baris master secara default */
+.master-row {
+    display: none;
+}
+
+/* Tampilkan hanya baris yang sesuai dengan tipe aktif */
+/* Contoh: jika tab Toko aktif, tampilkan .toko-row */
+.master-row.active-type {
+    display: table-row;
+}
 
 .master-nav {
     display: flex;
@@ -1003,7 +1014,7 @@ table td input[type="checkbox"] {
 }
 
 /* ================================================= */
-/* 8. NOTIFICATION (TOAST - VERSI DIPERCANTIK) */
+/* 10. NOTIFICATION (TOAST - VERSI DIPERCANTIK) */
 /* ================================================= */
 
 /* Container untuk menampung notifikasi */
@@ -1093,7 +1104,7 @@ table td input[type="checkbox"] {
 }
 
 /* ================================================= */
-/* 9. RESPONSIVE DESIGN */
+/* 11. RESPONSIVE DESIGN */
 /* ================================================= */
 
 /* TABLET & MOBILE (Di bawah 1024px) */
@@ -1144,11 +1155,14 @@ table td input[type="checkbox"] {
     /* Reset Tabel ke mode Stack */
     .table-wrap {
         overflow-x: hidden !important;
+        width: 100%;
+        padding: 5px;
     }
 
     table, thead, tbody, th, td, tr {
         display: block;
-        width: 100%;
+        width: 100% !important;
+        box-sizing: border-box;
     }
 
     table thead {
@@ -1169,9 +1183,9 @@ table td input[type="checkbox"] {
         justify-content: space-between !important;
         align-items: center;
         text-align: right !important;
-        padding: 12px 15px !important;
+        padding: 12px 8px !important;
         border-bottom: 1px dashed #f0f0f0;
-        position: relative;
+        word-break: break-word;
         min-height: 45px;
     }
 
@@ -1179,11 +1193,11 @@ table td input[type="checkbox"] {
         content: attr(data-label);
         font-weight: 700;
         color: var(--primary);
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         text-transform: uppercase;
         text-align: left;
         padding-right: 10px;
-        flex: 1;
+        flex: 0 0 40%;
     }
 
     table td:last-child {
@@ -1199,31 +1213,32 @@ table td input[type="checkbox"] {
     }
 
     .action-cell {
-        position: relative;
-        text-align: right !important; /* Geser ke kanan agar tidak tertumpuk label */
-        padding-left: 50% !important;
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        min-height: 50px;
-    }
-
-    /* Pastikan tombol berada di lapisan paling atas */
-    .action-btn {
-        position: relative;
-        z-index: 10; 
-        pointer-events: auto !important;
-        padding: 10px; /* Perbesar area sentuh untuk mobile */
-        margin-left: 5px;
+        background: #f8fafc;
+        margin-top: 10px;
+        border-radius: 8px;
+        border-bottom: none !important;
+        padding: 15px 10px !important;
+        justify-content: center !important;
     }
 
     /* Hilangkan atau sesuaikan pseudo-element jika menutupi tombol */
     .action-cell::before {
+        display: none;
         content: attr(data-label);
         position: absolute;
         left: 10px;
         font-weight: bold;
         text-transform: uppercase;
+    }
+
+    /* Pastikan tombol berada di lapisan paling atas */
+    .action-btn {
+        flex: 1; /* Biar tombol lebar dan mudah ditekan */
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        padding: 12px !important;
+        margin: 0 5px;
     }
 
     /* Modal Responsiveness */
