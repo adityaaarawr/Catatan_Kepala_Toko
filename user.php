@@ -78,10 +78,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
+/* ==========================
+   AMBIL DATA DARI API (LIVE)
+========================== */
+$apiUrl = "https://toyomatsu.ddns.net/master/api/?login=true";
+$context = stream_context_create(["ssl" => ["verify_peer"=>false, "verify_peer_name"=>false]]);
+$jsonData = @file_get_contents($apiUrl, false, $context);
+$karyawan_api = json_decode($jsonData, true) ?? [];
 
 /* ==========================
-   AMBIL DATA
+   AMBIL DATA DARI DB LOKAL (USERS & ROLES)
 ========================== */
+// Ini tetap ambil dari DB karena ini data akun untuk login web kamu
 $sqlUsers = "SELECT u.id, u.name, u.username, u.last_active, r.role_name
             FROM users u
             LEFT JOIN roles r ON r.id = u.role_id
@@ -89,9 +97,6 @@ $sqlUsers = "SELECT u.id, u.name, u.username, u.last_active, r.role_name
 $stmtUsers = $conn->prepare($sqlUsers);
 $stmtUsers->execute();
 $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
-
-$roles = $conn->query("SELECT id, role_name FROM roles ORDER BY role_name")->fetchAll(PDO::FETCH_ASSOC);
-$karyawan = $conn->query("SELECT name, username FROM karyawan ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="layout"> 
@@ -213,14 +218,15 @@ $karyawan = $conn->query("SELECT name, username FROM karyawan ORDER BY name ASC"
                         <label>PILIH KARYAWAN :</label>
                         <select id="selectUser" name="selected_user_id">
                             <option value="">Pilih user</option>
-                            <?php foreach ($karyawan as $k): ?>
-                                <option value="<?= $k['username']; ?>" data-name="<?= $k['name']; ?>" data-username="<?= $k['username']; ?>">
-                                    <?= strtoupper($k['name']); ?> (@<?= $k['username']; ?>)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
+                           <?php foreach ($karyawan_api as $k): ?>
+            <option value="<?= $k['nip']; ?>" 
+                    data-name="<?= htmlspecialchars($k['nama_lengkap']); ?>" 
+                    data-username="<?= strtolower(str_replace(' ', '', $k['nama_panggilan'])) . $k['id']; ?>">
+                <?= strtoupper($k['nama_lengkap']); ?> (@<?= $k['nip']; ?>)
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
                     <div class="popup-group">
                         <label>NAME :</label>
                         <input type="text" id="name" name="name" readonly>
