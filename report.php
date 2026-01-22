@@ -1,61 +1,116 @@
 <?php 
+date_default_timezone_set('Asia/Jakarta');
 $pageTitle = 'Report'; 
 $cssFile = 'report.css'; 
 $jsFile = 'report.js';
-
 include './direct/config.php';
+
+// Fungsi Fetch API
+function fetch_api_data($url) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Gunakan jika ada masalah SSL
+    $response = curl_exec($ch);
+    curl_close($ch);
+    return json_decode($response, true);
+}
+
+// Ambil Data dari API
+$apiUrl = "https://toyomatsu.ddns.net/master/api/?login=true";
+$karyawanList = fetch_api_data($apiUrl) ?? [];
+
+// Mapping data dari API ke variabel yang digunakan di form
+// Sesuaikan index array ('karyawan', 'divisi', 'toko') dengan struktur JSON dari API
+$karyawanList = $apiData['data']['karyawan'] ?? [];
+$divisiList   = $apiData['data']['divisi'] ?? [];
+$tokoList     = $apiData['data']['toko'] ?? [];
+
 include 'modules/header.php'; 
+
+// 3. TANGKAP FILTER FORM
+$f_karyawan = $_POST['karyawan'] ?? '';
+$f_divisi   = $_POST['divisi'] ?? '';
+$f_toko     = $_POST['toko'] ?? '';
+$f_start    = $_POST['start_date'] ?? date('Y-m-d');
+$f_end      = $_POST['end_date'] ?? date('Y-m-d');
+
+// JIKA PILIH KARYAWAN → AUTO ISI DIVISI & TOKO (Cari dari hasil API)
+if (!empty($f_karyawan)) {
+    foreach ($karyawanList as $k) {
+        if ($k['id'] == $f_karyawan) {
+            $f_divisi = $k['divisi_id'];
+            $f_toko   = $k['toko_id'];
+            break;
+        }
+    }
+}
+
+
+// // DIVISI
+// $sqlDivisi = "SELECT * FROM divisi WHERE 1=1";
+// $params = [];
+
+// if ($f_toko) {
+//     $sqlDivisi .= " AND toko_id = ?";
+//     $params[] = $f_toko;
+// }
+
+// $stmt = $conn->prepare($sqlDivisi . " ORDER BY nama_divisi");
+// $stmt->execute($params);
+// $divisiList = $stmt->fetchAll();
+
+// // TOKO
+// $sqlToko = "SELECT * FROM toko WHERE 1=1";
+// $params = [];
+
+// if ($f_divisi) {
+//     $sqlToko .= " AND id IN (SELECT toko_id FROM divisi WHERE id = ?)";
+//     $params[] = $f_divisi;
+// }
+
+// $stmt = $conn->prepare($sqlToko . " ORDER BY nama_toko");
+// $stmt->execute($params);
+// $tokoList = $stmt->fetchAll();
+
+// // KARYAWAN
+// $sqlKaryawan = "SELECT * FROM karyawan WHERE 1=1";
+// $params = [];
+
+// if ($f_divisi) {
+//     $sqlKaryawan .= " AND divisi_id = ?";
+//     $params[] = $f_divisi;
+// }
+// if ($f_toko) {
+//     $sqlKaryawan .= " AND toko_id = ?";
+//     $params[] = $f_toko;
+// }
+
+// $stmt = $conn->prepare($sqlKaryawan . " ORDER BY nama_karyawan");
+// $stmt->execute($params);
+// $karyawanList = $stmt->fetchAll();
+
+// 4. QUERY UTAMA TABEL
+$sqlNotes = "SELECT n.*, u.name as inputer, t.nama_toko, d.nama_divisi, tp.nama_topik, k.nama_karyawan 
+             FROM notes n
+             LEFT JOIN users u ON n.user_id = u.id
+             LEFT JOIN toko t ON n.toko_id = t.id
+             LEFT JOIN divisi d ON n.divisi_id = d.id
+             LEFT JOIN topik tp ON n.topik_id = tp.id
+             LEFT JOIN karyawan k ON n.karyawan_id = k.id
+             WHERE 1=1";
+
+if(!empty($f_karyawan)) $sqlNotes .= " AND n.karyawan_id = '$f_karyawan'";
+if(!empty($f_divisi))   $sqlNotes .= " AND n.divisi_id = '$f_divisi'";
+if(!empty($f_toko))     $sqlNotes .= " AND n.toko_id = '$f_toko'";
+if(!empty($f_start))    $sqlNotes .= " AND n.tanggal >= '$f_start'";
+if(!empty($f_end))      $sqlNotes .= " AND n.tanggal <= '$f_end'";
+
+$notesList = $conn->query($sqlNotes . " ORDER BY n.created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+$divisiList = $conn->query("SELECT * FROM divisi ORDER BY nama_divisi")->fetchAll(PDO::FETCH_ASSOC);
+$tokoList   = $conn->query("SELECT * FROM toko ORDER BY nama_toko")->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
-
-<?php
-// Ambil data karyawan
-$karyawanStmt = $conn->query("SELECT id, nama_karyawan FROM karyawan ORDER BY nama_karyawan");
-$karyawanList = $karyawanStmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Ambil data divisi
-$divisiStmt = $conn->query("SELECT id, nama_divisi FROM divisi ORDER BY nama_divisi");
-$divisiList = $divisiStmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Ambil data toko
-$tokoStmt = $conn->query("SELECT id, nama_toko FROM toko ORDER BY nama_toko");
-$tokoList = $tokoStmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Ambil data topik
-$topikStmt = $conn->query("SELECT id, nama_topik FROM topik ORDER BY nama_topik");
-$topikList = $topikStmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Ambil data users (inputer)
-$usersStmt = $conn->query("SELECT id, name FROM users ORDER BY name");
-$usersList = $usersStmt->fetchAll(PDO::FETCH_ASSOC);
-?>
-
-<?php
-// =====================
-// AMBIL DATA NOTES (REPORT)
-// =====================
-$notesStmt = $conn->query("
-    SELECT 
-        n.id,
-        n.created_at,
-        u.name AS inputer,
-        t.nama_toko,
-        d.nama_divisi,
-        tp.nama_topik,
-        k.nama_karyawan,
-        n.catatan,
-        n.file_name
-    FROM notes n
-    LEFT JOIN users u ON n.user_id = u.id
-    LEFT JOIN toko t ON n.toko_id = t.id
-    LEFT JOIN divisi d ON n.divisi_id = d.id
-    LEFT JOIN topik tp ON n.topik_id = tp.id
-    LEFT JOIN karyawan k ON n.karyawan_id = k.id
-    ORDER BY n.created_at DESC
-");
-
-$notesList = $notesStmt->fetchAll(PDO::FETCH_ASSOC);
-?>
-
 
 
 <div class="layout"> 
@@ -67,85 +122,89 @@ $notesList = $notesStmt->fetchAll(PDO::FETCH_ASSOC);
         
         <div class="container">
             <div class="filter-card">
-                <div class="filter-grid">
-                    <!-- Karyawan -->
-<select id="filterKaryawan" data-placeholder="Karyawan">
-    <option value=""></option>
+                <form method="POST" action="report.php" id="formReport"> 
+                    <div class="filter-grid">
+                     <select name="karyawan" id="filterKaryawan" class="select2">
+    <option value="">ALL KARYAWAN</option> 
     <?php foreach($karyawanList as $k) : ?>
-        <option value="<?= $k['id'] ?>"><?= $k['nama_karyawan'] ?></option>
+        <option value="<?= $k['id'] ?>" 
+                data-toko="<?= $k['toko_id'] ?>" 
+                data-divisi="<?= $k['divisi_id'] ?>"
+                <?= ($f_karyawan == $k['id']) ? 'selected' : '' ?>>
+            <?= strtoupper($k['nama']) ?> </option>
     <?php endforeach; ?>
 </select>
 
-<!-- Divisi -->
-<select id="filterDivisi" data-placeholder="Divisi">
-    <option value=""></option>
+                    <select name="divisi" id="filterDivisi" class="select2">
+    <option value="">ALL DIVISI</option> 
     <?php foreach($divisiList as $d) : ?>
-        <option value="<?= $d['id'] ?>"><?= $d['nama_divisi'] ?></option>
+        <option value="<?= $d['id'] ?>" 
+                data-toko="<?= $d['toko_id'] ?>"
+                <?= ($f_divisi == $d['id']) ? 'selected' : '' ?>>
+            <?= strtoupper($d['nama_divisi']) ?>
+        </option>
     <?php endforeach; ?>
 </select>
 
-<!-- Toko -->
-<select id="filterToko" data-placeholder="Toko">
-    <option value=""></option>
-    <?php foreach($tokoList as $t) : ?>
-        <option value="<?= $t['id'] ?>"><?= $t['nama_toko'] ?></option>
-    <?php endforeach; ?>
-</select>
+                        <select name="toko" id="filterToko" class="select2">
+                            <option value="">ALL TOKO</option> 
+                            <?php foreach($tokoList as $t) : ?>
+                                <option value="<?= $t['id'] ?>" <?= ($f_toko == $t['id']) ? 'selected' : '' ?>>
+                                    <?= strtoupper($t['nama_toko']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
 
+                        <div class="date-range">
+                            <input type="date" name="start_date" value="<?= $f_start ?>">
+                            <input type="date" name="end_date" value="<?= $f_end ?>">
+                        </div>
 
-                    <div class="date-range">
-                        <input type="date" id="filterDateStart">
-                        <input type="date" id="filterDateEnd">
+                        <button type="submit" class="btn-generate">GENERATE</button>
                     </div>
-
-                        <button id="btnGenerate" class="btn-generate">GENERATE</button>
-            </div>
-
-            <div class="table-container">
-                <h3 class="table-title">TABLE RESULT</h3>
-                <table id="reportTable">
-                    <thead>
-                        <tr>
-                            <th>NO</th>
-                            <th>INPUT DATETIME</th>
-                            <th>INPUTER</th>
-                            <th>TOKO</th>
-                            <th>DIVISI</th>
-                            <th>TOPIK</th>
-                            <th>KARYAWAN</th>
-                            <th>CATATAN</th>
-                            <th>FILE</th>
-                            <th>ACTION</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                       <?php if(count($notesList) > 0): ?>
-    <?php foreach($notesList as $i => $note): ?>
-        <tr>
-            <td><?= $i + 1 ?></td>
-            <td><?= $note['created_at'] ?></td>
-            <td><?= $note['inputer'] ?></td>
-            <td><?= $note['nama_toko'] ?></td>
-            <td><?= $note['nama_divisi'] ?></td>
-            <td><?= $note['nama_topik'] ?></td>
-            <td><?= $note['nama_karyawan'] ?></td>
-            <td><?= $note['catatan'] ?></td>
-            <td><?= $note['file_name'] ?></td>
-            <td><!-- Action button nanti --></td>
-        </tr>
-    <?php endforeach; ?>
-<?php else: ?>
-    <tr>
-        <td colspan="10" style="text-align:center;color:#888">
-            Tidak ada data...
-        </td>
-    </tr>
-<?php endif; ?>
-
-                    </tbody>
-                </table>
+                </form>
             </div>
         </div>
+
+        <div class="table-container">
+            <h3 class="table-title">TABLE RESULT</h3>
+            <table id="reportTable">
+                <thead>
+                    <tr>
+                        <th>NO</th>
+                        <th>INPUT DATETIME</th>
+                        <th>INPUTER</th>
+                        <th>TOKO</th>
+                        <th>DIVISI</th>
+                        <th>TOPIK</th>
+                        <th>KARYAWAN</th>
+                        <th>CATATAN</th>
+                        <th>FILE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if(!empty($notesList)): ?>
+                        <?php foreach($notesList as $i => $note): ?>
+                            <tr>
+                                <td><?= $i + 1 ?></td>
+                                <td><?= $note['created_at'] ?></td>
+                                <td><?= strtoupper($note['inputer'] ?? '-') ?></td>
+                                <td><?= strtoupper($note['nama_toko'] ?? '-') ?></td>
+                                <td><?= strtoupper($note['nama_divisi'] ?? '-') ?></td>
+                                <td><?= strtoupper($note['nama_topik'] ?? '-') ?></td>
+                                <td><?= strtoupper($note['nama_karyawan'] ?? '-') ?></td>
+                                <td><?= $note['catatan'] ?></td>
+                                <td><?php if (!empty($note['file'])): ?><a href="uploads/<?= $note['file'] ?>" target="_blank" style="color: blue; text-decoration: underline;">Lihat File</a><?php else: ?><span style="color: #ccc;">No File</span><?php endif; ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr><td colspan="9" style="text-align:center; padding:20px;">Data tidak ditemukan.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </main> 
+</div> 
 
 <!-- ======================
      MODAL EDIT
@@ -211,5 +270,18 @@ $notesList = $notesStmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </main>
 </div>
+
+<script>
+    // Ambil data langsung dari variabel PHP yang menampung hasil API
+    const MASTER_DATA = {
+        karyawan: <?= json_encode($karyawanList) ?>,
+        divisi: <?= json_encode($divisiList) ?>,
+        toko: <?= json_encode($tokoList) ?>
+    };
+
+    if ( window.history.replaceState ) {
+        window.history.replaceState( null, null, window.location.href );
+    }
+</script>
 
 <?php include 'modules/footer.php'; ?>
