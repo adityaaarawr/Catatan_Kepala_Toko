@@ -449,6 +449,7 @@ td[data-label="CATATAN"] {
     font-weight: 700;
     text-align: center;
     margin-bottom: 18px;
+    margin-top: 10px;
     color: var(--text-primary);
 }
 
@@ -464,7 +465,7 @@ td[data-label="CATATAN"] {
     display: block;
     font-size: 14px;
     font-weight: 600;
-    margin-bottom: 6px;
+    margin-bottom: 10px;
     color: var(--text-primary);
 }
 
@@ -644,6 +645,7 @@ td[data-label="CATATAN"] {
     word-break: break-all;
     max-height: 300px;
     overflow-y: auto;
+    margin-bottom: 10px;
 }
 
 /* --- File Preview Box --- */
@@ -1224,6 +1226,7 @@ td[data-label="CATATAN"] {
     .modal-title {
         padding: 15px 20px 0 20px;
         font-size: 18px;
+        margin-top: 0 !important;
     }
     
     .modal-title + .divider {
