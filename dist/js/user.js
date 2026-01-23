@@ -2,6 +2,8 @@ $(document).ready(function () {
     /* =============================
        1️⃣ ELEMENT & STATE
     ============================== */
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('main');
     const popup = document.getElementById("popupAddUser");
     const btnAdd = document.querySelector(".btn-add");
     const closeBtn = document.getElementById("popupClose");
@@ -11,6 +13,7 @@ $(document).ready(function () {
     const foreverBtn = document.querySelector(".forever-text");
     const enableCheckbox = document.getElementById("enable");
     const searchInput = document.getElementById("searchUser");
+    
 
     const today = new Date().toISOString().split("T")[0];
     expDate.min = today;
@@ -31,6 +34,29 @@ $(document).ready(function () {
     popup.addEventListener("click", e => {
         if (e.target === popup) popup.style.display = "none";
     });
+
+/* =============================
+   SIDEBAR TOGGLE
+============================== */
+const toggleBtn = document.querySelector('.toggle-btn');
+
+if (toggleBtn && sidebar && mainContent) {
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+
+        // optional: simpan state sidebar
+        localStorage.setItem("sidebar", sidebar.classList.contains("collapsed") ? "closed" : "open");
+    });
+
+    // restore state saat reload
+    if (localStorage.getItem("sidebar") === "closed") {
+        sidebar.classList.add("collapsed");
+        mainContent.classList.add("expanded");
+    }
+}
+
+
 
     /* =============================
        3️⃣ EXPIRATION / FOREVER

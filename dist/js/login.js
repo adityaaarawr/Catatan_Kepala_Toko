@@ -6,57 +6,89 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
 
-    // Memastikan form login ada sebelum menjalankan script
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            // Mencegah refresh halaman saat form dikirim
-            e.preventDefault();
+    if (!loginForm) return;
 
-            // Deklarasi variabel elemen
-            const btn = document.querySelector('.btn-login');
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
+    loginForm.addEventListener('submit', async function (e) {
+        e.preventDefault(); // <<< INI WAJIB PALING ATAS
 
-            // --- TAHAP 1: LOADING STATE ---
-            // Mengubah status tombol menjadi loading agar tidak diklik berkali-kali
-            btn.classList.add('is-loading');
-            btn.innerHTML = "VERIFYING..."; 
-            btn.disabled = true;
+        const btn  = document.querySelector('.btn-login');
+        const user = document.getElementById('username').value.trim();
+        const pass = document.getElementById('password').value.trim();
 
-            // --- TAHAP 2: SIMULASI VERIFIKASI ---
-            // Simulasi proses pengecekan ke database (delay 2 detik)
-            setTimeout(() => {
-                // Mengembalikan status tombol
-                btn.classList.remove('is-loading');
-                btn.innerHTML = "SIGN IN";
-                btn.disabled = false;
+        if(!user || !pass){
+            showNotification('error','Gagal','Username dan password wajib diisi');
+            return;
+        }
 
-                // --- TAHAP 3: VALIDASI USER ---
-                // Mengecek kredensial berdasarkan 4 akun yang tersedia
-                const isAdmin = (user === "admin" && pass === "admin123");
-                const isKTTM = (user === "kepalatokotm" && pass === "kttm321");
-                const isKTRJ = (user === "kepalatokorj" && pass === "ktrj789");
-                const isKTOL = (user === "kepalatokool" && pass === "ktol987");
+        btn.classList.add('is-loading');
+        btn.innerHTML = "VERIFYING...";
+        btn.disabled = true;
 
-                if (isAdmin || isKTTM || isKTRJ || isKTOL) {
-                    // Login Sukses
-                    showNotification('success', 'Berhasil', 'Data valid! Mengalihkan...');
-                    
-                    // Simpan status login di storage browser
-                    localStorage.setItem('isLoggedIn', 'true');
+        try {
+            let res = await fetch('routines/index.php', {
+                method: 'POST',
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ user, pass })
+            });
 
-                    // Tunggu 1.5 detik agar user sempat membaca notifikasi sebelum pindah halaman
-                    setTimeout(() => {
-                        window.location.href = "home.php"; 
-                    }, 1500);
-                } else {
-                    // Login Gagal
-                    showNotification('error', 'Gagal', 'Username atau Password salah!');
-                }
-            }, 2000);
-        });
-    }
+            let text = await res.text();
+            console.log("SERVER RESPONSE:", text);
+
+            let data = JSON.parse(text);
+
+            btn.classList.remove('is-loading');
+            btn.innerHTML = "SIGN IN";
+            btn.disabled = false;
+
+            if (data.status === true) {
+                showNotification('success','Berhasil','Login berhasil, mengalihkan...');
+            
+                setTimeout(() => {
+                    if (data.redirect) {
+                        location.href = data.redirect;
+                    } else {
+                        location.href = "home.php";
+                    }
+                }, 1200);
+            
+            } else {
+                showNotification('error','Gagal', data.message || 'Login gagal');
+            }
+            
+
+        } catch (err) {
+            console.error("LOGIN ERROR:", err);
+
+            btn.classList.remove('is-loading');
+            btn.innerHTML = "SIGN IN";
+            btn.disabled = false;
+
+            showNotification('error','Error','Server error / response tidak valid');
+        }
+    });
 });
+
+// async function Login(){
+//     try{
+//         const postData = {
+//             user: document.getElementById('username').value,
+//             pass: document.getElementById('password').value
+//         }
+//         var ress  = await fetch('routines/auth.php', {
+//             method: 'POST',
+//             body: JSON.stringify(postData)
+//         });
+    
+//         if (!ress.ok) {
+//             console.error("error")
+//         }
+
+//         var data = await ress.json();
+        
+//     }catch(ex){
+//         console.error(ex);
+//     }
+// }
 
 /**
  * ==================================================================

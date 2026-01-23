@@ -13,16 +13,22 @@ let nextMasterDivisiId = 3;
 let nextMasterTopikId = 3;
 let nextMasterKaryawanId = 4;
 
-// Data Master Dummy
-const dummyMasterToko = {};
+console.log("MASTER JS LOADED");
 
-const dummyMasterUserRole = {};
+let masterTokoOptions = [];
+let masterDivisiOptions = [];
 
-const dummyMasterDivisi = {};
+async function loadMasterOptions() {
+    // Ambil TOKO
+    const tokoRes = await fetch("direct/get_master_toko.php?action=get");
+    const tokoJson = await tokoRes.json();
+    masterTokoOptions = tokoJson.data || [];
 
-const dummyMasterTopik = {};
-
-const dummyMasterKaryawan = {};
+    // Ambil DIVISI
+    const divRes = await fetch("direct/get_master_divisi.php?action=get");
+    const divJson = await divRes.json();
+    masterDivisiOptions = divJson.data || [];
+}
 
 /* --------------------------------------------------------------------------
    2. KONFIGURASI MASTER DATA MAP
@@ -30,7 +36,7 @@ const dummyMasterKaryawan = {};
 
 const masterDataMap = {
     'TOKO': {
-        data: dummyMasterToko,
+        // data: dummyMasterToko,
         fields: ['NO', 'TGL DIBUAT', 'DIBUAT OLEH', 'NAMA TOKO', 'KODE', 'ACTION'],
         action: 'ADD TOKO',
         title: 'TOKO',
@@ -41,43 +47,43 @@ const masterDataMap = {
         nextIdKey: 'nextMasterId'
     },
     'DIVISI': {
-        data: dummyMasterDivisi,
+        // data: dummyMasterDivisi,
         fields: ['NO', 'TGL DIBUAT', 'DIBUAT OLEH', 'NAMA DIVISI', 'DESKRIPSI', 'TOKO', 'ACTION'],
         action: 'ADD DIVISI',
-        title: 'GROUP',
+        title: 'DIVISI',
         modalFields: [
             { label: 'NAMA DIVISI', key: 'namaDivisi', type: 'text' },
             { label: 'DESKRIPSI', key: 'deskripsi', type: 'text' },
-            { label: 'NAMA TOKO', key: 'namaToko', type: 'select', options: ['TOYOMATSU', 'ROBIN JAYA', 'ONLINE', 'HIKOMI', 'IKKOU'] },
+            { label: 'NAMA TOKO', key: 'nama_toko', type: 'select-db', source: 'toko' },
         ],
         nextIdKey: 'nextMasterDivisiId'
     },
     'TOPIK': {
-        data: dummyMasterTopik,
+        // data: dummyMasterTopik,
         fields: ['NO', 'TGL DIBUAT', 'DIBUAT OLEH', 'NAMA TOPIK', 'TOKO', 'DIVISI', 'ACTION'],
         action: 'ADD TOPIK',
         title: 'TOPIK',
         modalFields: [
             { label: 'NAMA TOPIK', key: 'namaTopik', type: 'text' },
-            { label: 'NAMA TOKO', key: 'namaToko', type: 'select', options: ['TOYOMATSU', 'ROBIN JAYA', 'ONLINE', 'HIKOMI', 'IKKOU'] },
-            { label: 'NAMA DIVISI', key: 'namaDivisi', type: 'select', options: ['IT', 'ACCOUNTING', 'SALES', 'ADMIN COUNTER', 'KASIR'] },
+            { label: 'NAMA TOKO', key: 'toko_id', type: 'select-db', source: 'toko' },
+            { label: 'NAMA DIVISI', key: 'divisi_id', type: 'select-db', source: 'divisi' },
         ],
         nextIdKey: 'nextMasterTopikId'
     },
     'KARYAWAN': {
-        data: dummyMasterKaryawan,
+        // data: dummyMasterKaryawan,
         fields: ['NO', 'TGL DIBUAT', 'DIBUAT OLEH', 'NAMA KARYAWAN', 'TOKO', 'DIVISI', 'ACTION'],
         action: 'ADD KARYAWAN',
         title: 'KARYAWAN',
         modalFields: [
             { label: 'NAMA KARYAWAN', key: 'namaKaryawan', type: 'text' },
-            { label: 'NAMA TOKO', key: 'namaToko', type: 'select', options: ['TOYOMATSU', 'ROBIN JAYA', 'ONLINE', 'HIKOMI', 'IKKOU'] },
-            { label: 'NAMA DIVISI', key: 'namaDivisi', type: 'select', options: ['IT', 'ACCOUNTING', 'SALES', 'ADMIN COUNTER', 'KASIR'] },
-        ],
+            { label: 'NAMA TOKO', key: 'toko_id', type: 'select-db', source: 'toko' },
+            { label: 'NAMA DIVISI', key: 'divisi_id', type: 'select-db', source: 'divisi' },
+        ],        
         nextIdKey: 'nextMasterKaryawanId'
     },
     'USER ROLE': {
-        data: dummyMasterUserRole,
+        // data: dummyMasterUserRole,
         fields: ['NO', 'TGL DIBUAT', 'DIBUAT OLEH', 'NAMA ROLE', 'LIST KEYS', 'ACTION'],
         action: 'ADD USER ROLE',
         title: 'USER ROLE',
@@ -108,14 +114,20 @@ const masterSearch = document.getElementById('masterSearch');
 const masterTabs = document.querySelectorAll('.master-tab');
 const masterHeaderTitle = document.querySelector('.section-title');
 const masterHeaderButtonText = document.querySelector('#btnAddMaster');
-const modalTitle = document.getElementById('modal-master-title');
+// const modalTitle = document.getElementById('modal-master-title');
 const masterHeader = document.querySelector('.master-header');
 const masterCard = document.querySelector('.table-card');
 const tableDivider = document.querySelector('.table-divider');
 
 // Global Status Variable
-let currentMasterEditId = null;
+let currentMasterEditId = null; 
 let activeMasterKey = null;
+let isTokoMode = false;
+
+// Tambahkan ini di bagian paling atas master.js atau home.js
+let modal = document.getElementById('masterModal');
+let modalTitle = document.getElementById('modal-master-title');
+let masterForm = document.getElementById('masterForm');
 
 
 
@@ -196,13 +208,23 @@ function renderModalForm(data = null) {
     config.modalFields.forEach(field => {
         let value = data ? (data[field.key] || '') : '';
         formHTML += `<label style="display:block; margin-bottom:5px; font-weight:bold; font-size: 0.9rem;">${field.label}</label>`;
+        
+            if (field.type === 'select-db') {
 
-        if (field.type === 'select') {
-            formHTML += `
-            <select id="modalInput-${field.key}" name="${field.key}" class="modal-select" required style="width:100%; height:40px; margin-bottom:15px; border-radius:4px; border:1px solid #ccc; padding: 0 10px;">
-                <option value="">-- Pilih ${field.label} --</option>
-                ${field.options.map(opt => `<option value="${opt}" ${value.toString().toUpperCase() === opt.toString().toUpperCase() ? 'selected' : ''}>${opt}</option>`).join('')}
-            </select>`;
+                let options = [];
+                if (field.source === 'toko') options = masterTokoOptions;
+                if (field.source === 'divisi') options = masterDivisiOptions;
+            
+                formHTML += `
+                    <select id="modalInput-${field.key}" class="modal-select" required>
+                        <option value="">-- Pilih ${field.label} --</option>
+                        ${options.map(opt => `
+                            <option value="${opt.id}" ${data && data[field.key] == opt.id ? 'selected' : ''}>
+                                ${opt.nama_toko || opt.nama_divisi}
+                            </option>
+                        `).join('')}
+                    </select>
+                `;
         } else {
             formHTML += `<input type="${field.type}" id="modalInput-${field.key}" name="${field.key}" value="${value}" required style="width:100%; height:40px; margin-bottom:15px; padding: 0 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">`;
         }
@@ -312,7 +334,7 @@ function renderModalForm(data = null) {
    6. CRUD LOGIC
    -------------------------------------------------------------------------- */
 
-window.openMasterModal = function(id = null) {
+   window.openMasterModal = function(id = null) {   
     if (!activeMasterKey) {
         showNotification('error', 'Pilih master yang akan diedit/ditambahkan.');
         return;
@@ -320,12 +342,18 @@ window.openMasterModal = function(id = null) {
 
     const masterConfig = masterDataMap[activeMasterKey];
     currentMasterEditId = id;
-    let dataToEdit = id !== null && masterConfig.data[id] ? masterConfig.data[id] : null;
 
-    modalTitle.textContent = dataToEdit ? `EDIT ${masterConfig.title}` : masterConfig.action;
+    let dataToEdit = null;
+    if (id !== null && masterConfig.data && masterConfig.data[id]) {
+        dataToEdit = masterConfig.data[id];
+    }
+
+    modalTitle.textContent = id ? `EDIT ${masterConfig.title}` : masterConfig.action;
     renderModalForm(dataToEdit);
+
     if (masterModal) masterModal.style.display = 'flex';
 }
+
 
 window.closeMasterModal = function() {
     if (masterModal) masterModal.style.display = 'none';
@@ -376,9 +404,27 @@ window.saveMasterData = function() {
     if (currentMasterEditId) {
         config.data[currentMasterEditId] = { ...config.data[currentMasterEditId], ...newData };
         showNotification('success', `${config.title} berhasil diperbarui.`);
-    } else {
+    }else {
+
+        if (!config.data) {
+            config.data = {};
+        }
+    
+        if (typeof window[config.nextIdKey] !== 'number') {
+            window[config.nextIdKey] = 1;
+        }
+    
         const id = window[config.nextIdKey]++;
-        config.data[id] = { id, tglDibuat: today, dibuatOleh: 'Admin', ...newData };
+    
+        config.data[id] = { 
+            id, 
+            tglDibuat: today, 
+            dibuatOleh: 'Admin', 
+            ...newData 
+        };
+
+        saveUserRole();
+    
         showNotification('success', `${config.title} berhasil ditambahkan.`);
     }
 
@@ -403,15 +449,43 @@ window.deleteMasterData = function(id) {
    7. TABLE RENDERING & FILTERING
    -------------------------------------------------------------------------- */
 
-function renderMasterTable() {
+   function renderMasterTable() {
     if (!masterTableBody || !masterTableHeader || !activeMasterKey) return;
 
     const masterConfig = masterDataMap[activeMasterKey];
-    const currentData = masterConfig.data;
-
+    
+    // 1. Update Header Tabel (Selalu update agar kolomnya pas)
     masterTableHeader.innerHTML = masterConfig.fields.map(field => `<th>${field}</th>`).join('');
-    masterTableBody.innerHTML = '';
 
+    // 2. CEK DATA DARI PHP (Baris yang sudah ada di HTML)
+    const phpRows = document.querySelectorAll('.master-row');
+    const targetType = activeMasterKey.toLowerCase();
+
+    // Jika ada baris dari PHP, kita lakukan filtering (Show/Hide)
+    if (phpRows.length > 0) {
+        let hasDataVisible = false;
+
+        phpRows.forEach(row => {
+            if (row.getAttribute('data-type') === targetType) {
+                row.style.display = 'table-row'; // Tampilkan jika tipe master cocok
+                hasDataVisible = true;
+            } else {
+                row.style.display = 'none'; // Sembunyikan yang lain
+            }
+        });
+
+        // Jika data PHP ditemukan untuk kategori ini, berhenti di sini (jangan render dummy)
+        if (hasDataVisible) {
+            filterMasterTable(); // Jalankan fungsi search/filter jika ada
+            return; 
+        }
+    }
+
+    // 3. LOGIKA RENDER DUMMY (Hanya jalan jika data PHP tidak ada)
+    // Kosongkan body tabel hanya jika kita akan merender data dari variabel JS (Dummy)
+    masterTableBody.innerHTML = '';
+    
+    const currentData = masterConfig.data;
     const masterIds = Object.keys(currentData).sort((a, b) => parseInt(a) - parseInt(b));
     let counter = 1;
 
@@ -423,20 +497,18 @@ function renderMasterTable() {
     masterIds.forEach(id => {
         const data = currentData[id];
         const row = document.createElement('tr');
+        row.className = `master-row ${targetType}-row`; // Beri class agar konsisten
+        row.setAttribute('data-type', targetType);
+        
         let cellContent = `<td data-label="NO">${counter++}</td>`;
 
+        // Switch case Anda tetap sama untuk menentukan isi kolom
         switch (activeMasterKey) {
             case 'TOKO':
                 cellContent += `<td data-label="TGL DIBUAT">${data.tglDibuat}</td><td data-label="DIBUAT OLEH">${data.dibuatOleh}</td><td data-label="NAMA TOKO">${data.namaToko}</td><td data-label="KODE">${data.kode}</td>`;
                 break;
             case 'USER ROLE':
-                const keysDisplay = (data.listKeys || []).map(key => {
-                    if (key.includes(':')) {
-                        const parts = key.split(':');
-                        return `${parts[0]}${parts[1] ? ` (${parts[1]})` : ''}`;
-                    }
-                    return key;
-                }).join(', ');
+                const keysDisplay = (data.listKeys || []).map(key => key.includes(':') ? key.split(':').join(' (') + ')' : key).join(', ');
                 cellContent += `<td data-label="TGL DIBUAT">${data.tglDibuat}</td><td data-label="DIBUAT OLEH">${data.dibuatOleh}</td><td data-label="NAMA ROLE">${data.namaRole}</td><td data-label="LIST KEYS">${keysDisplay}</td>`;
                 break;
             case 'DIVISI':
@@ -452,12 +524,8 @@ function renderMasterTable() {
         cellContent += `
         <td data-label="ACTION" class="action-cell">
             <div class="action-buttons-container">
-                <button class="action-btn edit-btn" onclick="event.stopPropagation(); openMasterModal(${data.id})" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteMasterData(${data.id})" title="Hapus">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <button class="action-btn edit-btn" onclick="event.stopPropagation(); openMasterModal(${data.id})" title="Edit"><i class="fas fa-edit"></i></button>
+                <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteMasterData(${data.id})" title="Hapus"><i class="fas fa-trash"></i></button>
             </div>
         </td>`;
 
@@ -500,85 +568,119 @@ function checkMasterEmptyState() {
    -------------------------------------------------------------------------- */
 
    function switchMasterTab(key) {
-    const cleanKey = key.trim(); // Menghapus spasi yang tidak terlihat
-    
-    toggleMasterContent(true);
-    
-    // Sesuaikan active class dengan trim juga
-    masterTabs.forEach(tab => {
-        const tabText = tab.innerText || tab.textContent;
-        tab.classList.toggle('active', tab.textContent.trim() === cleanKey);
+    activeMasterKey = key.toUpperCase();
+    const targetType = key.toLowerCase().replace(' ', '-');
+
+    // 1. Update UI Tab
+    masterTabs.forEach(t => {
+        t.classList.toggle('active', t.getAttribute('data-type') === targetType);
     });
-    
-    activeMasterKey = cleanKey;
-    const config = masterDataMap[cleanKey];
-    
+
+    // 2. Update Header Tabel & Tombol Add secara Dinamis
+    const config = masterDataMap[activeMasterKey];
     if (config) {
         masterHeaderTitle.textContent = config.title;
-        const addButton = document.getElementById('btnAddMaster');
-        if (addButton) {
-            addButton.innerHTML = `<i class="fas fa-plus"></i> ${config.action}`;
-        }
-        if (masterSearch) masterSearch.value = '';
-        renderMasterTable();
+        masterHeaderButtonText.innerHTML = `<i class="fas fa-plus"></i> ${config.action}`;
+        
+        // Render Header
+        const headerRow = document.getElementById('masterTableHead');
+        headerRow.innerHTML = `<tr>${config.fields.map(f => `<th>${f}</th>`).join('')}</tr>`;
     }
+
+    // 3. Filter Baris PHP & Reset Nomor Urut
+    const allRows = document.querySelectorAll('.master-row');
+    let visibleCount = 0;
+
+    allRows.forEach(row => {
+        if (row.getAttribute('data-type') === targetType) {
+            row.style.display = 'table-row';
+            visibleCount++;
+            // Update kolom nomor (selalu kolom pertama)
+            row.querySelector('td:first-child').textContent = visibleCount;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    toggleMasterContent(true);
 }
+
+// 3. Inisialisasi saat halaman siap
+document.addEventListener('DOMContentLoaded', () => {
+    // Jalankan Tab Toko secara default
+    switchMasterTab('TOKO');
+
+    // Pasang event listener pada tab
+    document.querySelectorAll('.master-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            switchMasterTab(tab.textContent.trim());
+        });
+    });
+});
+
 
 /* --------------------------------------------------------------------------
    9. PAGINATION FUNCTIONS
    -------------------------------------------------------------------------- */
 
-let currentPage = 1;
-let rowsPerPage = 10;
-let totalPages = 1;
+    let currentPage = 1;
+    let rowsPerPage = 10;
+    let totalPages = 1;
 
-function updateTableFooter() {
-    if (!activeMasterKey) return;
+    function updateTableFooter() {
+        if (!activeMasterKey) return;
 
-    const config = masterDataMap[activeMasterKey];
-    const dataCount = Object.keys(config.data).length;
+        const config = masterDataMap[activeMasterKey];
+        const dataCount = Object.keys(config.data).length;
 
-    totalPages = Math.ceil(dataCount / rowsPerPage);
-    const startRow = ((currentPage - 1) * rowsPerPage) + 1;
-    let endRow = Math.min(currentPage * rowsPerPage, dataCount);
+        totalPages = Math.ceil(dataCount / rowsPerPage);
+        const startRow = ((currentPage - 1) * rowsPerPage) + 1;
+        let endRow = Math.min(currentPage * rowsPerPage, dataCount);
 
-    const elements = {
-        start: document.getElementById('startRow'),
-        end: document.getElementById('endRow'),
-        total: document.getElementById('totalRows'),
-        info: document.getElementById('pageInfo'),
-        prev: document.getElementById('prevPage'),
-        next: document.getElementById('nextPage')
-    };
+        const elements = {
+            start: document.getElementById('startRow'),
+            end: document.getElementById('endRow'),
+            total: document.getElementById('totalRows'),
+            info: document.getElementById('pageInfo'),
+            prev: document.getElementById('prevPage'),  
+            next: document.getElementById('nextPage')
+        };
 
-    if (elements.start) elements.start.textContent = startRow;
-    if (elements.end) elements.end.textContent = endRow;
-    if (elements.total) elements.total.textContent = dataCount;
-    if (elements.info) elements.info.textContent = `Page ${currentPage} of ${totalPages}`;
-    if (elements.prev) elements.prev.disabled = currentPage === 1;
-    if (elements.next) elements.next.disabled = currentPage === totalPages;
+        if (elements.start) elements.start.textContent = startRow;
+        if (elements.end) elements.end.textContent = endRow;
+        if (elements.total) elements.total.textContent = dataCount;
+        if (elements.info) elements.info.textContent = `Page ${currentPage} of ${totalPages}`;
+        if (elements.prev) elements.prev.disabled = currentPage === 1;
+        if (elements.next) elements.next.disabled = currentPage === totalPages;
 
-    const tableFooter = document.getElementById('masterTableFoot');
-    if (tableFooter) tableFooter.style.display = dataCount > 0 ? 'table-footer-group' : 'none';
-}
+        const tableFooter = document.getElementById('masterTableFoot');
+        if (tableFooter) tableFooter.style.display = dataCount > 0 ? 'table-footer-group' : 'none';
+    }
 
-function goToPage(page) {
-    if (page < 1 || page > totalPages) return;
-    currentPage = page;
-    renderMasterTable();
-    updateTableFooter();
-}
+    function goToPage(page) {
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        renderMasterTable();
+        updateTableFooter();
+    }
 
-function changeRowsPerPage(value) {
-    rowsPerPage = parseInt(value);
-    currentPage = 1;
-    renderMasterTable();
-    updateTableFooter();
-}
+    function changeRowsPerPage(value) {
+        rowsPerPage = parseInt(value);
+        currentPage = 1;
+        renderMasterTable();
+        updateTableFooter();
+    }
 
 /* --------------------------------------------------------------------------
    10. INITIALIZATION & GLOBAL EVENTS
    -------------------------------------------------------------------------- */
+   const allRows = document.querySelectorAll(".master-row");
+
+   // sembunyikan semua data dulu
+   allRows.forEach(row => row.style.display = "none");
+   
+   // set default ke TOKO
+   switchMasterTab("TOKO");
 
    document.addEventListener('DOMContentLoaded', () => {
     // 1. Pastikan konten tersembunyi saat awal load
@@ -643,5 +745,613 @@ function changeRowsPerPage(value) {
     // 3. BAGIAN PENTING: Jangan panggil switchMasterTab di sini
     // Cukup biarkan kosong agar user harus memilih tab dulu
     console.log("System Ready: Silakan pilih kategori master.");
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        await loadMasterOptions();   // 🔥 INI PENTING
+    });
+    
+      
 });
 
+/*-------------------
+    GET MASTER TOKO
+-------------------*/
+async function loadMasterToko() {
+    try {
+        const res = await fetch("api/get_master_toko.php?action=get");
+        const json = await res.json();
+
+        if (!json.status) {
+            showNotification(json.message || "Gagal load data", "error");
+            return;
+        }
+
+        const tbody = document.getElementById("masterTableBody");
+        tbody.innerHTML = "";
+
+        json.data.forEach((row, i) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${row.created_at ? row.created_at.split(' ')[0] : '-'}</td>
+                    <td>${row.nama_toko}</td>
+                    <td>${row.kode}</td>
+                    <td class="action-cell">
+                        <button class="action-btn edit-btn" onclick="editToko(${row.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteToko(${row.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+    } catch (err) {
+        console.error(err);
+        showNotification("Gagal konek ke server", "error");
+    }
+}
+
+async function deleteToko(id) {
+    if (!confirm("Yakin mau hapus toko ini?")) return;
+
+    try {
+        const fd = new FormData();
+        fd.append("id", id);
+
+        const res = await fetch("api/get_master_toko.php?action=delete", {
+            method: "POST",
+            body: fd
+        });
+
+        const json = await res.json();
+        showNotification(json.message, json.status ? "success" : "error");
+
+        if(json.status) loadMasterToko();
+
+    } catch (err) {
+        console.error(err);
+        showNotification("Server error", "error");
+    }
+}
+
+
+async function editToko(id) {
+    try {
+        const res = await fetch("api/get_master_toko.php?action=detail&id=" + id);
+        const json = await res.json();
+
+        if(!json.status){
+            showNotification("Data tidak ditemukan", "error");
+            return;
+        }
+
+        const data = json.data;
+
+        activeMasterKey = "TOKO";
+        currentMasterEditId = id;
+
+        openMasterModal(id);
+
+        setTimeout(() => {
+            document.getElementById("modalInput-namaToko").value = data.nama_toko;
+            document.getElementById("modalInput-kode").value = data.kode;
+
+            document.querySelector("#masterForm").onsubmit = (e) => {
+                e.preventDefault();
+                saveToko(id);
+            };
+        }, 100);
+
+    } catch(err){
+        console.error(err);
+        showNotification("Gagal load detail toko", "error");
+    }
+}
+
+async function saveToko(id = null) {
+    const nama = document.getElementById("modalInput-namaToko").value.trim();
+    const kode = document.getElementById("modalInput-kode").value.trim();
+
+    if(!nama || !kode){
+        showNotification("Nama & kode wajib diisi", "error");
+        return;
+    }
+
+    const fd = new FormData();
+    fd.append("nama_toko", nama);
+    fd.append("kode", kode);
+
+    let url = "api/get_master_toko.php?action=add";
+    if (id) {
+        url = "api/get_master_toko.php?action=edit";
+        fd.append("id", id);
+    }
+
+    try {
+        const res = await fetch(url, { method: "POST", body: fd });
+        const json = await res.json();
+
+        showNotification(json.message, json.status ? "success" : "error");
+
+        if(json.status){
+            closeMasterModal();
+            loadMasterToko();
+        }
+
+    } catch(err){
+        console.error(err);
+        showNotification("Server error", "error");
+    }
+}
+
+/*---------------------
+    GET MASTER DIVISI
+-----------------------*/
+
+async function loadMasterDivisi() {
+    const res = await fetch("api/get_master_divisi.php?action=get");
+    const json = await res.json();
+    const data = json.data;
+
+
+    const tbody = document.getElementById("masterTableBody");
+    tbody.innerHTML = "";
+
+    if (!Array.isArray(data) || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Data divisi kosong.</td></tr>`;
+        return;
+    }
+
+    data.forEach((row, i) => {
+        tbody.innerHTML += `
+            <tr class="master-row" data-type="divisi">
+                <td>${i + 1}</td>
+                <td>${row.created_at ? row.created_at.split(' ')[0] : '-'}</td>
+                <td>${row.username ?? '-'}</td>
+                <td>${row.nama_divisi}</td>
+                <td>${row.deskripsi ?? '-'}</td>
+                <td>${row.nama_toko ?? '-'}</td>
+                <td class="action-cell">
+                    <div class="action-buttons-container">
+                        <button class="action-btn edit-btn" onclick="editDivisi(${row.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteDivisi(${row.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function deleteDivisi(id) {
+    if (!confirm("Yakin mau hapus divisi ini?")) return;
+
+    const fd = new FormData();
+    fd.append("id", id);
+
+    const res = await fetch("api/get_master_divisi.php?action=delete", {
+        method: "POST",
+        body: fd
+    });
+
+    const json = await res.json();
+    showNotification(json.status ? "success" : "error", "Divisi berhasil dihapus");
+    loadMasterDivisi();
+}
+
+async function editDivisi(id) {
+    const res = await fetch("api/get_master_divisi.php?action=detail&id=" + id);
+    const json = await res.json();
+    const data = json.data; // WAJIB
+
+    activeMasterKey = "DIVISI";
+    currentMasterEditId = id;
+
+    openMasterModal(id);
+
+    setTimeout(() => {
+        document.getElementById("modalInput-namaDivisi").value = data.nama_divisi;
+        document.getElementById("modalInput-deskripsi").value  = data.deskripsi;
+        document.getElementById("modalInput-toko_id").value = data.toko_id;
+
+        document.getElementById("masterForm").onsubmit = (e) => {
+            e.preventDefault();
+            saveDivisi(id);
+        };
+    }, 200);
+}
+
+
+async function saveDivisi(id = null) {
+    const fd = new FormData();
+    fd.append("nama_divisi", document.getElementById("modalInput-namaDivisi").value);
+    fd.append("deskripsi", document.getElementById("modalInput-deskripsi").value);
+    fd.append("toko_id", document.getElementById("modalInput-namaToko").value);
+    fd.append("user_id", 1); // nanti ganti dari session
+
+    let url = "api/get_master_divisi.php?action=add";
+
+    if (id) {
+        url = "api/get_master_divisi.php?action=edit";
+        fd.append("id", id);
+    }
+
+    const res = await fetch(url, { method: "POST", body: fd });
+    const json = await res.json();
+
+    showNotification(json.status ? "success" : "error", "Divisi berhasil disimpan");
+    closeMasterModal();
+    switchMasterTab("DIVISI");
+    loadMasterDivisi();
+}
+
+/*---------------------
+    GET MASTER TOPIK
+-----------------------*/
+async function loadMasterTopik() {
+    const res = await fetch("api/get_master_topik.php?action=get");
+    const data = await res.json();
+
+    const tbody = document.getElementById("masterTableBody");
+    tbody.innerHTML = "";
+
+    if (!Array.isArray(data) || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Data topik kosong.</td></tr>`;
+        return;
+    }
+
+    data.forEach((row, i) => {
+        tbody.innerHTML += `
+            <tr class="master-row" data-type="topik">
+                <td>${i + 1}</td>
+                <td>${row.created_at ? row.created_at.split(' ')[0] : '-'}</td>
+                <td>${row.username ?? '-'}</td>
+                <td>${row.nama_topik}</td>
+                <td>${row.nama_toko ?? '-'}</td>
+                <td>${row.nama_divisi ?? '-'}</td>
+                <td class="action-cell">
+                    <div class="action-buttons-container">
+                        <button class="action-btn edit-btn" onclick="editTopik(${row.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteTopik(${row.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function deleteTopik(id) {
+    if (!confirm("Yakin mau hapus topik ini?")) return;
+
+    const fd = new FormData();
+    fd.append("id", id);
+
+    const res = await fetch("api/get_master_topik.php?action=delete", {
+        method: "POST",
+        body: fd
+    });
+
+    const json = await res.json();
+    showNotification(json.status ? "success" : "error", "Topik berhasil dihapus");
+    loadMasterTopik();
+}
+
+async function editTopik(id) {
+    const res = await fetch("api/get_master_topik.php?action=detail&id=" + id);
+    const json = await res.json();
+    const data = json.data;
+
+    activeMasterKey = "TOPIK";
+    currentMasterEditId = id;
+
+    openMasterModal(id);
+
+    setTimeout(() => {
+        document.getElementById("modalInput-namaTopik").value  = data.nama_topik;
+        document.getElementById("modalInput-toko_id").value = data.toko_id;
+        document.getElementById("modalInput-divisi_id").value = data.divisi_id;
+
+        document.getElementById("masterForm").onsubmit = (e) => {
+            e.preventDefault();
+            saveTopik(id);
+        };
+    }, 200);
+}
+
+
+async function saveTopik(id = null) {
+    const fd = new FormData();
+    fd.append("nama_topik", document.getElementById("modalInput-namaTopik").value);
+    fd.append("toko_id", document.getElementById("modalInput-namaToko").value);
+    fd.append("divisi_id", document.getElementById("modalInput-namaDivisi").value);
+    fd.append("user_id", 1); // nanti ganti session
+
+    let url = "api/get_master_topik.php?action=add";
+
+    if (id) {
+        url = "api/get_master_topik.php?action=edit";
+        fd.append("id", id);
+    }
+
+    const res = await fetch(url, { method: "POST", body: fd });
+    const json = await res.json();
+
+    showNotification(json.status ? "success" : "error", "Topik berhasil disimpan");
+    closeMasterModal();
+    switchMasterTab("TOPIK");
+    loadMasterTopik();
+}
+
+/*----------------------
+    GET MASTER KARYAWAN
+------------------------*/
+async function loadMasterKaryawan() {
+    const res = await fetch("api/get_master_karyawan.php?action=get");
+    const data = await res.json();
+
+    const tbody = document.getElementById("masterTableBody");
+    tbody.innerHTML = "";
+
+    if (!Array.isArray(data) || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Data karyawan kosong.</td></tr>`;
+        return;
+    }
+
+    data.forEach((row, i) => {
+        tbody.innerHTML += `
+            <tr class="master-row" data-type="karyawan">
+                <td>${i + 1}</td>
+                <td>${row.created_at ? row.created_at.split(' ')[0] : '-'}</td>
+                <td>${row.username ?? '-'}</td>
+                <td>${row.nama_karyawan}</td>
+                <td>${row.nama_toko ?? '-'}</td>
+                <td>${row.nama_divisi ?? '-'}</td>
+                <td class="action-cell">
+                    <div class="action-buttons-container">
+                        <button class="action-btn edit-btn" onclick="editKaryawan(${row.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteKaryawan(${row.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function deleteKaryawan(id) {
+    if (!confirm("Yakin mau hapus karyawan ini?")) return;
+
+    const fd = new FormData();
+    fd.append("id", id);
+
+    const res = await fetch("api/get_master_karyawan.php?action=delete", {
+        method: "POST",
+        body: fd
+    });
+
+    const json = await res.json();
+    showNotification(json.status ? "success" : "error", "Karyawan berhasil dihapus");
+    loadMasterKaryawan();
+}
+
+async function editKaryawan(id) {
+    const res = await fetch("api/get_master_karyawan.php?action=detail&id=" + id);
+    const json = await res.json();
+    const data = json.data;
+
+    activeMasterKey = "KARYAWAN";
+    currentMasterEditId = id;
+
+    openMasterModal(id);
+
+    setTimeout(() => {
+        document.getElementById("modalInput-namaKaryawan").value = data.nama_karyawan;
+        document.getElementById("modalInput-toko_id").value = data.toko_id;
+        document.getElementById("modalInput-divisi_id").value = data.divisi_id;
+
+        document.getElementById("masterForm").onsubmit = (e) => {
+            e.preventDefault();
+            saveKaryawan(id);
+        };
+    }, 200);
+}
+
+
+async function saveKaryawan(id = null) {
+    const fd = new FormData();
+    fd.append("nama_karyawan", document.getElementById("modalInput-namaKaryawan").value);
+    fd.append("toko_id", document.getElementById("modalInput-namaToko").value);
+    fd.append("divisi_id", document.getElementById("modalInput-namaDivisi").value);
+    fd.append("user_id", 1);
+
+    let url = "api/get_master_karyawan.php?action=add";
+
+    if (id) {
+        url = "api/get_master_karyawan.php?action=edit";
+        fd.append("id", id);
+    }
+
+    const res = await fetch(url, { method: "POST", body: fd });
+    const json = await res.json();
+
+    showNotification(json.status ? "success" : "error", "Karyawan berhasil disimpan");
+    closeMasterModal();
+    switchMasterTab("KARYAWAN");
+    loadMasterKaryawan();
+}
+
+/*----------------------
+    GET USER ROLE 
+------------------------*/
+/**
+ * Memuat data Role ke dalam tabel Master
+ */
+async function loadRoleTable() {
+    try {
+        const response = await fetch('api/get_user_role.php?action=get');
+        const result = await response.json();
+
+        if (result.status) {
+            const tableBody = document.querySelector('#masterTable tbody');
+            tableBody.innerHTML = '';
+
+            result.data.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${created_at}</td>
+                    <td>${username}</td>
+                    <td>${row.nama_role}</td>
+                    <td><small>${row.permissions || '-'}</small></td>
+                    <td>
+                        <button class="edit-btn" onclick="editRole(${row.id})"><i class="fas fa-edit"></i></button>
+                        <button class="delete-btn" onclick="deleteRole(${row.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+    } catch (error) {
+        console.error("Gagal memuat data role:", error);
+    }
+}
+
+/**
+ * Fungsi untuk menyimpan (Add/Edit) Role
+ */
+async function saveUserRole() {
+    // const roleId = document.getElementById('role_id_input').value; // Hidden input untuk ID
+    var namaRole = document.getElementById('modalInput-namaRole').value;
+    var roleId = 1;
+    console.log(namaRole)
+    
+    // Ambil semua ID dari checkbox permission yang dicentang
+    const selectedKeys = [];
+    document.querySelectorAll('.key-check:checked').forEach(cb => {
+        selectedKeys.push(cb.value);
+        console.log(cb.value);
+    });
+
+    if (!namaRole) {
+        showNotification('error', 'Nama Role tidak boleh kosong');
+        return;
+    }
+
+    try {
+        const ress = await fetch(`api/getCountRole.php`);
+        const datas = await ress.json();
+        // console.log(datas);
+        roleId += datas.data.id_last
+    } catch (error) {
+        showNotification('error', 'Terjadi kesalahan sistem');
+    }
+
+    console.log(roleId);
+
+    const formData = new FormData();
+    formData.append('role_id', roleId);
+    formData.append('role_name', namaRole);
+    // Append keys satu per satu agar PHP membacanya sebagai array
+    selectedKeys.forEach(key => formData.append('keys[]', key));
+    console.log(selectedKeys);
+
+    try {
+        const res = await fetch(`api/get_user_role.php?action=add`, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+
+        if (data.status) {
+            showNotification('success', data.message);
+            closeMasterModal(); // Tutup modal
+            loadRoleTable();    // Refresh tabel
+        } else {
+            showNotification('error', data.message);
+        }
+    } catch (error) {
+        showNotification('error', 'Terjadi kesalahan sistem');
+    }
+}
+
+/**
+ * Menghapus Role
+ */
+async function deleteRole(id) {
+    if (!confirm('Yakin ingin menghapus role ini?')) return;
+
+    const formData = new FormData();
+    formData.append('id', id);
+
+    try {
+        const res = await fetch('api/get_user_role.php?action=delete', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        if (data.status) {
+            showNotification('success', 'Role dihapus');
+            loadRoleTable();
+        }
+    } catch (error) {
+        showNotification('error', 'Gagal menghapus data');
+    }
+}
+
+/**
+ * Fungsi yang dipanggil saat tombol Edit di tabel diklik
+ */
+async function editRole(id) {
+    try {
+        // 1. Ambil detail data dari server
+        const res = await fetch(`api/get_user_role.php?action=detail&id=${id}`);
+        const result = await res.json();
+
+        if (result.status) {
+            const role = result.data;
+
+            // 2. Buka modal Master (pastikan activeMasterKey adalah 'USER ROLE')
+            openMasterModal(null); 
+            
+            // Ubah judul modal dan teks tombol
+            document.querySelector('.modal-title').innerText = "EDIT USER ROLE";
+            document.querySelector('.save-btn').innerText = "UPDATE";
+
+            // 3. Isi input Nama Role dan ID Role (Hidden)
+            // Di master.php pastikan ada input: <input type="hidden" id="role_id_input">
+            const idInput = document.getElementById('role_id_input');
+            if(idInput) idInput.value = role.id;
+            
+            document.getElementById('nama_role_input').value = role.nama_role;
+
+            // 4. Centang Checkbox sesuai permission yang dimiliki (keys)
+            // Reset semua checkbox dulu
+            document.querySelectorAll('.permission-checkbox').forEach(cb => cb.checked = false);
+            
+            // Centang yang sesuai
+            role.keys.forEach(keyId => {
+                const checkbox = document.querySelector(`.permission-checkbox[value="${keyId}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+
+        } else {
+            showNotification('error', result.message);
+        }
+    } catch (error) {
+        console.error("Error editRole:", error);
+        showNotification('error', "Gagal mengambil data detail");
+    }
+}

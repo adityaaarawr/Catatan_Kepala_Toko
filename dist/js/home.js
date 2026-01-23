@@ -1,6 +1,14 @@
 /**
  * =================================================================
- * 1. FUNGSI UTILITAS: NOTIFIKASI & UI SIDEBAR
+ * 1. DEKLARASI VARIABEL GLOBAL
+ * =================================================================
+ */
+let modal, viewModal, modalTitle, noteForm, tableBody, searchBar;
+let deleteTargetId = null;
+
+/**
+ * =================================================================
+ * 2. FUNGSI UTILITAS: NOTIFIKASI & UI SIDEBAR
  * =================================================================
  */
 
@@ -71,12 +79,9 @@ function adjustMainContentMargin() {
     }
 }
 
-// Sinkronisasi ulang saat ukuran layar berubah
-window.addEventListener('resize', adjustMainContentMargin);
-
 /**
  * =================================================================
- * 2. LOGIKA MODAL (OPEN, CLOSE, VIEW, EDIT)
+ * 3. LOGIKA MODAL (OPEN, CLOSE, VIEW, EDIT)
  * =================================================================
  */
 
@@ -117,11 +122,11 @@ window.openModal = function () {
         statusLabel.innerText = "*Wajib isi Catatan atau lampirkan File";
         statusLabel.style.color = "#e74c3c";
     }
-
 }
 
 /**
  * window.closeModal & window.closeViewModal
+ * Menutup modal form dan modal view
  */
 window.closeModal = function () {
     modal = modal || document.getElementById('modal');
@@ -142,6 +147,7 @@ window.closeViewModal = function () {
  * Menampilkan detail lengkap satu catatan secara read-only
  */
 window.openviewModal = function(tr){
+
     document.getElementById("viewInputer").innerText  = tr.dataset.inputer || "-";
     document.getElementById("viewToko").innerText     = tr.dataset.toko || "-";
     document.getElementById("viewKaryawan").innerText = tr.dataset.karyawan || "-";
@@ -150,16 +156,53 @@ window.openviewModal = function(tr){
     document.getElementById("viewDate").innerText     = tr.dataset.tanggal || "-";
     document.getElementById("viewCatatan").innerText  = tr.dataset.catatan || "-";
 
-    const file = tr.dataset.file;
     const lampiran = document.getElementById("viewLampiran");
     const previewBox = document.querySelector(".preview-box");
 
-    if(file){
-        lampiran.innerHTML = `<a href="uploads/${file}" target="_blank">Download File</a>`;
-        previewBox.innerHTML = `<img src="uploads/${file}" style="max-width:100%;border-radius:8px">`;
+    lampiran.innerHTML = "";
+    previewBox.innerHTML = "";
+
+    let files = [];
+
+    try {
+        files = JSON.parse(tr.dataset.file || "[]");
+    } catch(e){
+        files = [];
+    }
+
+    if(files.length > 0){
+
+        files.forEach(file => {
+            const fileUrl = "uploads/" + file;
+            const ext = file.split('.').pop().toLowerCase();
+
+            // link
+            lampiran.innerHTML += `
+                <div>
+                    <a href="${fileUrl}" target="_blank">${file}</a>
+                </div>
+            `;
+
+            // preview
+            if(["jpg","jpeg","png","webp","gif"].includes(ext)){
+                previewBox.innerHTML += `
+                    <a href="${fileUrl}" target="_blank">
+                        <img src="${fileUrl}" 
+                             style="max-width:100%;border-radius:10px;margin-bottom:10px;cursor:zoom-in;">
+                    </a>
+                `;
+            }
+            else if(["mp4","webm","ogg"].includes(ext)){
+                previewBox.innerHTML += `
+                    <video src="${fileUrl}" controls 
+                           style="max-width:100%;border-radius:10px;margin-bottom:10px;"></video>
+                `;
+            }
+        });
+
     } else {
-        lampiran.innerText = "Tidak ada lampiran";
-        previewBox.innerText = "Tidak ada file terlampir";
+        lampiran.innerHTML = "<i>Tidak ada lampiran</i>";
+        previewBox.innerHTML = "<i>Tidak ada file</i>";
     }
 
     document.getElementById("viewModal").style.display = "flex";
@@ -169,31 +212,79 @@ window.openviewModal = function(tr){
  * window.openEditModal
  * Mengambil data lama dan memasukkannya kembali ke form untuk diedit
  */
-window.openEditModal = function(btn){
-    event.stopPropagation();
-    const tr = btn.closest("tr");
+window.openEditModal = function(btn, e){
+    if(e) e.stopPropagation();
+
+    const tr   = btn.closest("tr");
+    const form = document.getElementById("noteForm");
+
+    const idNote     = tr.dataset.id;
+    const idToko     = tr.dataset.toko_id;
+    const idKaryawan = tr.dataset.karyawan_id;
+    const idDivisi   = tr.dataset.divisi_id;
+    const idTopik    = tr.dataset.topik_id;
+    const tanggal    = tr.dataset.tanggal;
+    const catatan    = tr.dataset.catatan;
+    const filesRaw   = tr.dataset.file; // ex: '["a.jpg","b.pdf"]'
 
     document.getElementById("modal-title").innerText = "EDIT CATATAN";
+    form.dataset.editId = idNote || "";
 
-    const form = document.getElementById("noteForm");
-    form.dataset.editId = tr.dataset.id;
+    // ===== SET VALUE FORM =====
+    document.getElementById("inputToko").value = idToko || "";
+    document.getElementById("inputKaryawan").value = idKaryawan || "";
 
-    document.getElementById("inputToko").value     = tr.dataset.toko_id || "";
-    document.getElementById("inputDate").value     = tr.dataset.tanggal || "";
-    document.getElementById("inputCatatan").value  = tr.dataset.catatan || "";
-    document.getElementById("inputKaryawan").value = tr.dataset.karyawan_id || "";
+    updateDivisi(); 
+    const divisiEl = document.getElementById("divisi_id");
+    if(divisiEl) divisiEl.value = idDivisi || "";
 
-    updateDivisi();
-    checkOptionalFields();
+    document.getElementById("inputTopik").value   = idTopik || "";
+    document.getElementById("inputDate").value    = tanggal || "";
+    document.getElementById("inputCatatan").value = catatan || "";
 
+    // ===== RESET INPUT FILE (biar bisa pilih file baru) =====
+    const fileInput = document.getElementById("inputFile");
+    if(fileInput) fileInput.value = "";
+
+    // ===== TAMPILKAN FILE LAMA =====
+    const oldFilesBox = document.getElementById("oldFilesBox");
+    if(oldFilesBox){
+        oldFilesBox.innerHTML = "<b>File sebelumnya:</b><br>";
+
+        let files = [];
+        if(filesRaw){
+            try {
+                files = JSON.parse(filesRaw);
+            } catch(err){
+                console.error("Format data-file tidak valid:", err);
+            }
+        }
+
+        if(files.length){
+            files.forEach(file => {
+                oldFilesBox.innerHTML += `
+                    <div class="old-file-item" style="margin:4px 0;">
+                        <label style="cursor:pointer;">
+                            <input type="checkbox" name="delete_files[]" value="${file}">
+                            <span> Hapus</span>
+                        </label>
+                        &nbsp;|&nbsp;
+                        <a href="uploads/${file}" target="_blank">${file}</a>
+                    </div>
+                `;
+            });
+        } else {
+            oldFilesBox.innerHTML += "<i>Tidak ada file</i>";
+        }
+    }
+
+    if(typeof checkOptionalFields === "function") checkOptionalFields();
     document.getElementById("modal").style.display = "flex";
 }
 
-
-
 /**
  * =================================================================
- * 3. OPERASI DATA (SAVE, AUTO-FILL, DELETE)
+ * 4. FUNGSI AUTO-FILL & VALIDASI FORM
  * =================================================================
  */
 
@@ -201,7 +292,6 @@ window.openEditModal = function(btn){
  * window.updateDivisi
  * Otomatis mengisi kolom Divisi saat nama karyawan dipilih
  */
-
 window.updateDivisi = function () {
     const select = document.getElementById('inputKaryawan');
     const divisiText = document.getElementById('inputDivisi');
@@ -221,11 +311,14 @@ window.updateDivisi = function () {
     divisiHidden.value = opt.dataset.divisiId || '';
 }
 
+/**
+ * initSearchKaryawan
+ * Inisialisasi fitur pencarian pada dropdown karyawan
+ */
 function initSearchKaryawan() {
     const input = document.getElementById("searchKaryawanInput");
     const select = document.getElementById("inputKaryawan");
 
-    // ✅ kalau salah satu tidak ada, hentikan
     if (!input || !select) return;
 
     input.addEventListener('input', function () {
@@ -239,7 +332,6 @@ function initSearchKaryawan() {
         });
     });
 }
-
 
 /**
  * checkOptionalFields
@@ -265,7 +357,14 @@ function checkOptionalFields() {
 }
 
 /**
+ * =================================================================
+ * 5. OPERASI DATA (SAVE, DELETE)
+ * =================================================================
+ */
+
+/**
  * window.saveNote
+ * Menyimpan atau mengupdate catatan ke server
  */
 window.saveNote = function () {
     const form = document.getElementById('noteForm');
@@ -318,32 +417,62 @@ window.saveNote = function () {
 
 /**
  * window.deleteNote
+ * Menampilkan konfirmasi dan menghapus catatan
  */
-window.deleteNote = function(id){
-    if(!confirm("Yakin hapus catatan ini?")) return;
+let deleteId = null;
 
-    const fd = new FormData();
-    fd.append("ajax_delete", "1");
-    fd.append("id", id);
+window.deleteNote = function(id, e){
+    if(e) e.stopPropagation();
 
-    fetch("home.php", { method:"POST", body:fd })
+    deleteTargetId = id;
+    document.getElementById("confirmModal").style.display = "flex";
+}
+
+document.getElementById("confirmCancel").onclick = function(){
+    deleteId = null;
+    document.getElementById("confirmModal").style.display = "none";
+}
+
+document.getElementById("confirmDelete").onclick = function(){
+    if(!deleteId) return;
+
+    const formData = new FormData();
+    formData.append("ajax_delete", "1");
+    formData.append("id", deleteId);
+
+    fetch(window.location.href, {
+        method: "POST",
+        body: formData
+    })
     .then(res => res.text())
     .then(res => {
+        console.log(res);
+
         if(res.trim() === "success"){
-            showNotification("Catatan dihapus", "success");
-            setTimeout(() => location.reload(), 500);
+            showNotification("Catatan berhasil dihapus ✅");
+            setTimeout(() => location.reload(), 600);
         } else {
-            showNotification("Gagal menghapus data", "error");
+            showNotification("Gagal menghapus data ❌<br>" + res, "error");
         }
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification("Terjadi kesalahan server ⚠️", "error");
     });
+
+    document.getElementById("confirmModal").style.display = "none";
 }
 
 /**
  * =================================================================
- * 4. LOGIKA TABEL (RENDER & FILTERING)
+ * 6. LOGIKA TABEL (RENDER & FILTERING)
  * =================================================================
  */
 
+/**
+ * window.applyFilters
+ * Menerapkan filter pada tabel berdasarkan input pencarian
+ */
 window.applyFilters = function () {
     tableBody = tableBody || document.getElementById('noteTableBody');
     searchBar = searchBar || document.getElementById('searchBar');
@@ -352,6 +481,7 @@ window.applyFilters = function () {
     const rows = tableBody.querySelectorAll('tr');
     const searchTerm = searchBar ? searchBar.value.toLowerCase().trim() : '';
 
+    // Helper function untuk mendapatkan nilai filter
     const getVal = (placeholderText) => {
         const el = document.querySelector(`#filterCard input[placeholder="${placeholderText}"]`);
         return el ? el.value.toLowerCase().trim() : '';
@@ -369,7 +499,8 @@ window.applyFilters = function () {
     let visibleCount = 0;
 
     rows.forEach(row => {
-
+        const cells = row.querySelectorAll('td');
+        
         const rowData = {
             tanggal: cells[1]?.innerText.toLowerCase() || '',
             inputer: cells[2]?.innerText.toLowerCase() || '',
@@ -406,21 +537,27 @@ window.applyFilters = function () {
 
 /**
  * =================================================================
- * 5. INISIALISASI & DOM READY
+ * 7. INISIALISASI EVENT LISTENER & DOM READY
  * =================================================================
  */
-let modal, viewModal, modalTitle, noteForm, tableBody, searchBar;
 
+/**
+ * initApplication
+ * Fungsi utama untuk inisialisasi seluruh aplikasi
+ */
 function initApplication() {
+    // Inisialisasi variabel global
     modal = document.getElementById('modal');
     viewModal = document.getElementById('viewModal');
     modalTitle = document.getElementById('modal-title');
     noteForm = document.getElementById('noteForm');
     tableBody = document.getElementById('noteTableBody');
     searchBar = document.getElementById('searchBar');
+    
+    // Inisialisasi fitur pencarian karyawan
     initSearchKaryawan();
 
-
+    // Setup toggle sidebar
     const btnToggleSidebar = document.getElementById('toggle-btn');
     if (btnToggleSidebar) {
         btnToggleSidebar.addEventListener('click', () => {
@@ -429,6 +566,7 @@ function initApplication() {
         });
     }
 
+    // Setup toggle filter card
     const btnToggleFilter = document.getElementById('btnToggleFilter');
     const filterCard = document.getElementById('filterCard');
     if (btnToggleFilter && filterCard) {
@@ -437,6 +575,7 @@ function initApplication() {
         });
     }
 
+    // Setup close modal ketika klik di luar konten
     [modal, viewModal].forEach(m => {
         if (m) {
             m.addEventListener('click', (e) => {
@@ -445,6 +584,7 @@ function initApplication() {
         }
     });
 
+    // Setup event listener untuk Escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === "Escape") {
             window.closeModal();
@@ -452,6 +592,7 @@ function initApplication() {
         }
     });
 
+    // Setup filter events
     if (searchBar) {
         searchBar.addEventListener('input', window.applyFilters);
     }
@@ -460,12 +601,46 @@ function initApplication() {
         el.addEventListener('input', window.applyFilters);
     });
 
+    // Setup validasi form real-time
     const inputCatatan = document.getElementById('inputCatatan');
     const inputFile = document.getElementById('inputFile');
     if (inputCatatan) inputCatatan.addEventListener('input', checkOptionalFields);
     if (inputFile) inputFile.addEventListener('change', checkOptionalFields);
 
+    // Setup konfirmasi delete
+    document.getElementById("confirmCancel").onclick = () => {
+        document.getElementById("confirmModal").style.display = "none";
+        deleteTargetId = null;
+    };
+
+    document.getElementById("confirmDelete").onclick = () => {
+        if(!deleteTargetId) return;
+
+        const fd = new FormData();
+        fd.append("ajax_delete", "1");
+        fd.append("id", deleteTargetId);
+
+        fetch("home.php", { method:"POST", body:fd })
+        .then(res => res.text())
+        .then(res => {
+            if(res.trim() === "success"){
+                showNotification("Catatan berhasil dihapus", "success");
+                setTimeout(() => location.reload(), 600);
+            } else {
+                showNotification("Gagal menghapus data", "error");
+            }
+        });
+
+        document.getElementById("confirmModal").style.display = "none";
+    };
+
+    // Sinkronisasi ulang margin sidebar
     adjustMainContentMargin();
+    
 }
 
+// Event listener untuk resize window
+window.addEventListener('resize', adjustMainContentMargin);
+
+// Inisialisasi aplikasi saat DOM siap
 document.addEventListener('DOMContentLoaded', initApplication);
