@@ -9,12 +9,14 @@ function callAPI($url, $method = "POST", $data = null, $headers = [])
     if ($data) {
         $jsonData = $data;
         curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-        $headers[] = "Content-Type: application/json";
+        
     }
 
     if (!empty($headers)) {
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     }
+
+    // echo $data["username"];
 
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);

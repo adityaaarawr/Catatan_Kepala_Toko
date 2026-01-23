@@ -15,8 +15,6 @@ function loginAPI($username, $password)
         "password" => $password
     ]);
 
-    echo $response;
-
     $datas = json_decode($response, true);
 
     if (!is_array($datas)) {
@@ -56,13 +54,13 @@ function loginAPI($username, $password)
     $_SESSION['is_login'] = true;
     $_SESSION['nama']     = $datas['nama'] ?? $datas['username'];
     $_SESSION['user_id'] = $detailArr['id'];
-    $_SESSION['role']    = $detailArr['role'];
+    $_SESSION['role']    = $detailArr['role_id'];
 
     return [
         "status" => true,
         "user" => [
             "nama" => $_SESSION['nama'],
-            "username" => $_SESSION['username']
+            "username" => $datas['username']
         ],
         "role" => $_SESSION['role']
     ];

@@ -29,7 +29,7 @@ if ($result['status'] === true) {
         "status" => true,
         "message" => "Login berhasil",
         "redirect" => "home.php",
-        "role" => $result['roles']
+        "role" => $result['role']
     ]);
 } else {
     echo json_encode([
