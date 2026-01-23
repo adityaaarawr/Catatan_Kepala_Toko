@@ -5,6 +5,11 @@ $jsFile = 'user.js';
 
 include './direct/config.php';
 
+$sqlRoles = "SELECT id, role_name FROM roles ORDER BY role_name ASC";
+$stmtRoles = $conn->prepare($sqlRoles);
+$stmtRoles->execute();
+$roles = $stmtRoles->fetchAll(PDO::FETCH_ASSOC);
+
 /*menyimpan ID user yang login di session $_SESSION['user_id']*/
 if (isset($_SESSION['user_id'])) {
     $stmtUpdate = $conn->prepare("UPDATE users SET last_active = NOW() WHERE id = ?");
@@ -81,13 +86,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 /* ==========================
    AMBIL DATA DARI API (LIVE)
 ========================== */
-$apiUrl = "https://toyomatsu.ddns.net/master/api/?login=true";
+$apiUrl = "https://toyomatsu.ddns.net/master/api/?data=true";
 $context = stream_context_create(["ssl" => ["verify_peer"=>false, "verify_peer_name"=>false]]);
 $jsonData = @file_get_contents($apiUrl, false, $context);
 $karyawan_api = json_decode($jsonData, true) ?? [];
 
 /* ==========================
-   AMBIL DATA DARI DB LOKAL (USERS & ROLES)
+   AMBIL DATA DARI DB LOKAL ROLES)
 ========================== */
 // Ini tetap ambil dari DB karena ini data akun untuk login web kamu
 $sqlUsers = "SELECT u.id, u.name, u.username, u.last_active, r.role_name
@@ -219,10 +224,10 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
                         <select id="selectUser" name="selected_user_id">
                             <option value="">Pilih user</option>
                            <?php foreach ($karyawan_api as $k): ?>
-            <option value="<?= $k['nip']; ?>" 
-                    data-name="<?= htmlspecialchars($k['nama_lengkap']); ?>" 
-                    data-username="<?= strtolower(str_replace(' ', '', $k['nama_panggilan'])) . $k['id']; ?>">
-                <?= strtoupper($k['nama_lengkap']); ?> (@<?= $k['nip']; ?>)
+            <option value="<?= $k['id']; ?>" 
+                    data-name="<?= htmlspecialchars($k['nama']); ?>" 
+                    data-username="<?= strtolower(str_replace(' ', '', $k['username'])) ?>">
+                <?= strtoupper($k['nama']); ?>
             </option>
         <?php endforeach; ?>
     </select>
