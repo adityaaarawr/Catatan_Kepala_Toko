@@ -50,21 +50,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // --- Proses Delete ---
     if (isset($_POST['ajax_delete'])) {
+
         $id = (int)$_POST['id'];
+    
+        // ambil file lama
+        $stmt = $conn->prepare("SELECT file_name FROM notes WHERE id=?");
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+        if($row && !empty($row['file_name'])){
+            $files = json_decode($row['file_name'], true);
+            if(is_array($files)){
+                foreach($files as $f){
+                    $path = "uploads/".$f;
+                    if(file_exists($path)){
+                        unlink($path);
+                    }
+                }
+            }
+        }
+    
+        // hapus data
         $stmt = $conn->prepare("DELETE FROM notes WHERE id=?");
         echo $stmt->execute([$id]) ? "success" : "gagal";
         exit;
     }
+    
 
     // --- Proses Update ---
     if (isset($_POST['ajax_update'])) {
+
         $id = (int)$_POST['id'];
+    
+        // ===== ambil file lama =====
+        $stmt = $conn->prepare("SELECT file_name FROM notes WHERE id=?");
+        $stmt->execute([$id]);
+        $oldFiles = json_decode($stmt->fetchColumn(), true) ?? [];
+    
+        // ===== hapus file dicentang =====
+        if(!empty($_POST['delete_files'])){
+            foreach($_POST['delete_files'] as $df){
+                if(in_array($df, $oldFiles)){
+                    @unlink("uploads/".$df);
+                    $oldFiles = array_diff($oldFiles, [$df]);
+                }
+            }
+        }
+    
+        // ===== upload file baru =====
+        $newFiles = [];
+    
+        if (!empty($_FILES['lampiran']['name'][0])) {
+            foreach ($_FILES['lampiran']['name'] as $i => $name) {
+    
+                if ($_FILES['lampiran']['error'][$i] !== 0) continue;
+    
+                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                $newName = uniqid("note_") . "." . $ext;
+    
+                move_uploaded_file($_FILES['lampiran']['tmp_name'][$i], "uploads/" . $newName);
+                $newFiles[] = $newName;
+            }
+        }
+    
+        // ===== gabung =====
+        $finalFiles = array_values(array_merge($oldFiles, $newFiles));
+        $file_name = json_encode($finalFiles);
+    
+        // ===== update DB =====
         $stmt = $conn->prepare("
             UPDATE notes SET 
-                toko_id=?, karyawan_id=?, divisi_id=?, topik_id=?, tanggal=?, catatan=?
+                toko_id=?, karyawan_id=?, divisi_id=?, topik_id=?, tanggal=?, catatan=?, file_name=?
             WHERE id=?
         ");
-
+    
         echo $stmt->execute([
             $_POST['toko_id'],
             $_POST['karyawan_id'],
@@ -72,61 +131,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_POST['topik_id'],
             $_POST['tanggal'],
             $_POST['catatan'],
+            $file_name,
             $id
         ]) ? "success" : "gagal";
+    
         exit;
     }
+    
 
     // --- Proses Insert (Simpan Baru) ---
     if (isset($_POST['ajax_save'])) {
         try {
+    
             $toko_id     = $_POST['toko_id'] ?? null;
             $karyawan_id = $_POST['karyawan_id'] ?? null;
             $divisi_id   = $_POST['divisi_id'] ?? null;
             $topik_id    = $_POST['topik_id'] ?? null;
             $tanggal     = $_POST['tanggal'] ?? null;
             $catatan     = $_POST['catatan'] ?? null;
-            $user_id     = 1; 
-
-            // Validasi input
+            $user_id     = 1;
+    
             if (!$toko_id || !$karyawan_id || !$topik_id || !$tanggal) {
                 exit("Data wajib belum lengkap!");
             }
-            if (empty($catatan) && empty($_FILES['file']['name'])) {
+    
+            if (empty($catatan) && empty($_FILES['lampiran']['name'][0])) {
                 exit("Catatan atau file wajib diisi!");
             }
-
-            $file_name = null;
-            // Handle upload file/gambar
-            if (!empty($_FILES['file']['name'])) {
-                $allow = ['jpg','jpeg','png','webp','pdf'];
-                $ext = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
-
-                if(!in_array($ext, $allow)) exit("Format file tidak diizinkan!");
-                if($_FILES['file']['size'] > 2 * 1024 * 1024) exit("Ukuran file maksimal 2MB!");
+    
+            $uploadedFiles = [];
+    
+            if (!empty($_FILES['lampiran']['name'][0])) {
+    
+                $allow = [
+                    'jpg','jpeg','png','webp','gif',
+                    'pdf','doc','docx','xls','xlsx','ppt','pptx','zip','rar','mp4','webm'
+                ];
+    
                 if (!is_dir("uploads")) mkdir("uploads", 0777, true);
-
-                $file_name = uniqid("note_") . "." . $ext;
-                move_uploaded_file($_FILES['file']['tmp_name'], "uploads/" . $file_name);
+    
+                foreach ($_FILES['lampiran']['name'] as $i => $name) {
+    
+                    if ($_FILES['lampiran']['error'][$i] !== 0) continue;
+    
+                    if ($_FILES['lampiran']['size'][$i] > 100 * 1024 * 1024) {
+                        exit("Ukuran file maksimal 100MB / file");
+                    }
+    
+                    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                    if (!in_array($ext, $allow)) {
+                        exit("Format file tidak diizinkan: $name");
+                    }
+    
+                    $newName = uniqid("note_") . "." . $ext;
+                    move_uploaded_file($_FILES['lampiran']['tmp_name'][$i], "uploads/" . $newName);
+    
+                    $uploadedFiles[] = $newName;
+                }
             }
-
+    
+            $file_name = json_encode($uploadedFiles);
+    
             $sql = "INSERT INTO notes 
-                    (user_id, toko_id, karyawan_id, divisi_id, topik_id, tanggal, catatan, file_name, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-
+                (user_id, toko_id, karyawan_id, divisi_id, topik_id, tanggal, catatan, file_name, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+    
             $stmt = $conn->prepare($sql);
             echo $stmt->execute([
-                $user_id, $toko_id, $karyawan_id, $divisi_id, 
+                $user_id, $toko_id, $karyawan_id, $divisi_id,
                 $topik_id, $tanggal, $catatan, $file_name
             ]) ? "success" : "gagal";
-
+    
         } catch (Exception $e) {
             echo "Error: " . $e->getMessage();
         }
         exit;
     }
-}
-
+}    
 
 //================================//
 // QUERY TAMPIL DATA UTAMA       //
@@ -193,7 +274,7 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <table id="noteTable" class="display nowrap" style="width:100%">
                 <thead>
                     <tr>
-                        <th>NO</th>
+                        <th>NO</th>                                 
                         <th>TANGGAL</th>
                         <th>INPUTER</th>
                         <th>TOKO</th>
@@ -212,16 +293,19 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 data-id="<?= $row['id'] ?>"
                                 data-toko_id="<?= $row['toko_id'] ?>"
                                 data-karyawan_id="<?= $row['karyawan_id'] ?>"
+                                data-divisi_id="<?= $row['divisi_id'] ?>"   
                                 data-topik_id="<?= $row['topik_id'] ?>"
-                                data-divisi="<?= $row['nama_divisi'] ?>"
-                                data-topik="<?= $row['nama_topik'] ?>"
+                                data-divisi="<?= htmlspecialchars($row['nama_divisi']) ?>"
+                                data-topik="<?= htmlspecialchars($row['nama_topik']) ?>"
                                 data-tanggal="<?= $row['tanggal'] ?>"
                                 data-catatan="<?= htmlspecialchars($row['catatan']) ?>"
                                 data-inputer="<?= htmlspecialchars($row['username']) ?>"
                                 data-toko="<?= htmlspecialchars($row['nama_toko']) ?>"
                                 data-karyawan="<?= htmlspecialchars($row['nama_karyawan']) ?>"
-                                data-file="<?= $row['file_name'] ?>"
+                                data-file='<?= htmlspecialchars($row['file_name'], ENT_QUOTES) ?>'
+
                             >
+
                                 <td><?= $no++ ?></td>
                                 <td><?= $row['tanggal'] ?></td>
                                 <td><?= $row['username'] ?? '-' ?></td>
@@ -236,11 +320,27 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         ? htmlspecialchars(substr($row['catatan'], 0, 10)) . '...' 
                                         : htmlspecialchars($row['catatan']); ?>
                                 </td>
-                                <td>
-                                    <?php if($row['file_name']): ?>
-                                        <a href="uploads/<?= $row['file_name'] ?>" target="_blank">Lihat</a>
-                                    <?php else: ?> - <?php endif; ?>
+                                <td class="file-cell">
+                                    <?php 
+                                        $files = json_decode($row['file_name'], true);
+                                        if ($files && count($files) > 0):
+                                            foreach($files as $f):
+
+                                                $short = strlen($f) > 10 ? substr($f, 0, 10) . '...' : $f;
+                                    ?>
+                                        <a href="uploads/<?= $f ?>" 
+                                        target="_blank"
+                                        title="<?= htmlspecialchars($f) ?>">
+                                            <?= htmlspecialchars($short) ?>
+                                        </a><br>
+                                    <?php 
+                                            endforeach; 
+                                        else: 
+                                            echo "-";
+                                        endif; 
+                                    ?>
                                 </td>
+
                                 <td>
                                     <span class="action-cell">
                                         <span class="edit-btn" onclick="openEditModal(this, event)" title="Edit">
@@ -318,7 +418,12 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <textarea id="inputCatatan" name="catatan" placeholder="Bisa dikosongkan jika sudah ada file..."></textarea>
 
             <label for="inputFile">AMBIL GAMBAR / FILE</label>
-            <input type="file" name="lampiran" id="inputFile" accept="image/*,video/*" capture="environment">
+            <input type="file" name="lampiran[]" id="inputFile" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar">
+            <div id="oldFilesBox" class="old-files" style="display:none; margin-top:10px;">
+                <h4>FILE SEBELUMNYA</h4>
+                <div id="oldFilesList"></div>
+            </div>
+
 
             <p id="optionalStatus" style="font-size: 12px; margin-top: -10px; margin-bottom: 15px; color: #e74c3c;">
                 *Wajib isi Catatan atau lampirkan File

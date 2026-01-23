@@ -95,7 +95,7 @@ $karyawan_api = json_decode($jsonData, true) ?? [];
    AMBIL DATA DARI DB LOKAL ROLES)
 ========================== */
 // Ini tetap ambil dari DB karena ini data akun untuk login web kamu
-$sqlUsers = "SELECT u.id, u.name, u.username, u.last_active, r.role_name
+$sqlUsers = "SELECT u.id, u.name, u.username, u.last_login, r.role_name
             FROM users u
             LEFT JOIN roles r ON r.id = u.role_id
             ORDER BY u.id ASC";
@@ -183,7 +183,7 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
             <?php endif; ?>
         </div>
     <?php endif; ?>
-</td>
+    </td>
    
                         <td>
                             <div class="action-icons">
@@ -231,7 +231,7 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
             </option>
         <?php endforeach; ?>
     </select>
-</div>
+    </div>
                     <div class="popup-group">
                         <label>NAME :</label>
                         <input type="text" id="name" name="name" readonly>

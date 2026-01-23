@@ -10,11 +10,24 @@ $dataTopik = $conn->query("SELECT tp.*, t.nama_toko, d.nama_divisi FROM topik tp
     LEFT JOIN toko t ON tp.toko_id = t.id 
     LEFT JOIN divisi d ON tp.divisi_id = d.id ORDER BY tp.id DESC")->fetchAll(PDO::FETCH_ASSOC);
 
-$dataKaryawan = $conn->query("SELECT k.*, t.nama_toko, d.nama_divisi FROM karyawan k 
+$dataKaryawan = $conn->query("SELECT k.*, t.nama_toko, d.nama_divisi FROM karyawan k    
     LEFT JOIN toko t ON k.toko_id = t.id 
     LEFT JOIN divisi d ON k.divisi_id = d.id ORDER BY k.id DESC")->fetchAll(PDO::FETCH_ASSOC);
 
-$dataRoles = $conn->query("SELECT * FROM transaksi_user_role ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
+$dataTransaksi_user_role = $conn->query("
+    SELECT 
+        r.id, 
+        r.role_name, 
+        u.username,
+        r.created_at,
+        GROUP_CONCAT(rk.role_key_name SEPARATOR ', ') as permissions
+    FROM roles r
+    LEFT JOIN users u ON r.created_by = u.id
+    LEFT JOIN transaksi_user_role tur ON r.id = tur.role_id
+    LEFT JOIN role_key rk ON tur.role_key_name = rk.id 
+    GROUP BY r.id, r.role_name, u.username, r.created_at
+    ORDER BY r.id ASC 
+")->fetchAll(PDO::FETCH_ASSOC);
 
 $pageTitle = 'Master'; 
 $cssFile = 'master.css'; 
@@ -71,16 +84,22 @@ include 'modules/header.php';
                                     <td><?= $no++ ?></td>
                                     <td><?= ($row['created_at']) ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
                                     <td><?= htmlspecialchars($row['username'] ?? '-') ?></td>    
-                                    <td><strong><?= htmlspecialchars($row['nama_toko']) ?></strong></td>
+                                    <td><?= htmlspecialchars($row['nama_toko']) ?></td>
                                     <td><span class="badge"><?= htmlspecialchars($row['kode']) ?></span></td>
-                                    <td>
-                                        <button class="edit-btn" onclick="editMaster('toko', <?= $row['id'] ?>)"><i class="fas fa-edit"></i></button>
-                                        <button class="delete-btn" onclick="deleteMaster('toko', <?= $row['id'] ?>)"><i class="fas fa-trash"></i></button>
+                                    <td class="action-cell">
+                                        <div class="action-buttons-container">
+                                            <button class="action-btn edit-btn" onclick="editToko(<?= $row['id'] ?>)" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="action-btn delete-btn" onclick="deleteToko(<?= $row['id'] ?>)" title="Hapus">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan="6" style="text-align:center;">Data tidak ditemukan.</td></tr>
+                            <tr><td colspan="6" style="text-align:center;">Data toko tidak ditemukan.</td></tr>
                         <?php endif;?>
 
                         <?php if(count($dataDivisi) > 0): ?>
@@ -92,9 +111,15 @@ include 'modules/header.php';
                                     <td><?= htmlspecialchars($row['nama_divisi']) ?></td>
                                     <td><?= htmlspecialchars($row['deskripsi']) ?></td>
                                     <td><?= htmlspecialchars($row['nama_toko']) ?></td>
-                                    <td>
-                                        <button class="edit-btn" onclick="editMaster('divisi', <?= $row['id'] ?>)"><i class="fas fa-edit"></i></button>
-                                        <button class="delete-btn" onclick="deleteMaster('divisi', <?= $row['id'] ?>)"><i class="fas fa-trash"></i></button>
+                                    <td class="action-cell">
+                                        <div class="action-buttons-container">
+                                            <button class="action-btn edit-btn" onclick="editDivisi(<?= $row['id'] ?>)" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="action-btn delete-btn" onclick="deleteDivisi(<?= $row['id'] ?>)" title="Hapus">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; endif;?>
@@ -108,9 +133,15 @@ include 'modules/header.php';
                                     <td><?= htmlspecialchars($row['nama_topik']) ?></td>
                                     <td><?= htmlspecialchars($row['nama_toko']) ?></td>
                                     <td><?= htmlspecialchars($row['nama_divisi']) ?></td>
-                                    <td>
-                                        <button class="edit-btn" onclick="editMaster('topik', <?= $row['id'] ?>)"><i class="fas fa-edit"></i></button>
-                                        <button class="delete-btn" onclick="deleteMaster('topik', <?= $row['id'] ?>)"><i class="fas fa-trash"></i></button>
+                                    <td class="action-cell">
+                                        <div class="action-buttons-container">
+                                            <button class="action-btn edit-btn" onclick="editTopik(<?= $row['id'] ?>)" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="action-btn delete-btn" onclick="deleteTopik(<?= $row['id'] ?>)" title="Hapus">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; endif;?>
@@ -122,29 +153,46 @@ include 'modules/header.php';
                                     <td><?= $row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
                                     <td><?= $row['username'] ?? '-' ?></td>
                                     <td><?= htmlspecialchars($row['name']) ?></td>
-                                    <td><?= htmlspecialchars($row['nama_divisi']) ?></td>
                                     <td><?= htmlspecialchars($row['nama_toko']) ?></td>
-                                    <td>
-                                        <button class="edit-btn" onclick="editMaster('karyawan', <?= $row['id'] ?>)"><i class="fas fa-edit"></i></button>
-                                        <button class="delete-btn" onclick="deleteMaster('karyawan', <?= $row['id'] ?>)"><i class="fas fa-trash"></i></button>
+                                    <td><?= htmlspecialchars($row['nama_divisi']) ?></td>
+                                    <td class="action-cell">
+                                        <div class="action-buttons-container">
+                                            <button class="action-btn edit-btn" onclick="editKaryawan(<?= $row['id'] ?>)" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="action-btn delete-btn" onclick="deleteKaryawan(<?= $row['id'] ?>)" title="Hapus">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; endif;?>
 
-                        <?php if(count($dataRoles) > 0): ?>
-                            <?php $no = 1; foreach($dataRoles as $row): ?>
+                        <?php if(count($dataTransaksi_user_role) > 0): ?>
+                            <?php $no = 1; foreach($dataTransaksi_user_role as $row): ?>
                                 <tr class="master-row" data-type="user-role">
                                     <td><?= $no++ ?></td>
-                                    <td><?= $row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
-                                    <td><?= $row['username'] ?? '-' ?></td>
-                                    <td><?= htmlspecialchars($row['role_id']) ?></td>
-                                    <td><?= htmlspecialchars($row['role_key_name']) ?></td>
+                                    <td><?= (!empty($row['created_at']) && $row['created_at'] != '0000-00-00 00:00:00') ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
+                                    <td><?= htmlspecialchars($row['created_by'] ?? '-') ?></td>
+                                    <td><?= htmlspecialchars($row['role_name']) ?></td>
                                     <td>
-                                        <button class="edit-btn" onclick="editMaster('user-role', <?= $row['id'] ?>)"><i class="fas fa-edit"></i></button>
-                                        <button class="delete-btn" onclick="deleteMaster('user-role', <?= $row['id'] ?>)"><i class="fas fa-trash"></i></button>
+                                        <span style="font-size: 0.85rem; color: #666;">
+                                            <?= !empty($row['permissions']) ? htmlspecialchars($row['permissions']) : '<i style="color: #ccc;">Tidak ada akses</i>' ?>
+                                        </span>
+                                    </td>
+                                    <td class="action-cell">
+                                        <div class="action-buttons-container">
+                                            <button class="action-btn edit-btn" onclick="editRole(<?= $row['id'] ?>)" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="action-btn delete-btn" onclick="deleteRole(<?= $row['id'] ?>)" title="Hapus">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
-                            <?php endforeach; endif;?>
+                            <?php endforeach; ?>
+                        <?php endif; ?> 
                     </tbody>
                 </table>
             </div>
@@ -174,7 +222,7 @@ include 'modules/header.php';
         
         <form id="userRoleForm">
             <label for="roleName" class="required-label">NAMA ROLE</label>
-            <input type="text" id="roleName" name="roleName" placeholder="Masukkan nama role" required>
+            <input type="text" id="roleName"value ="testt" name="roleName" placeholder="Masukkan nama role" required>
             
             <div class="divider" style="margin: 20px 0;"></div>
             
@@ -190,35 +238,35 @@ include 'modules/header.php';
                     <label>KEYS</label>
                     <div id="key-list-container">
                         <div class="key-item">
-                            <input type="checkbox" id="key_update_toko" name="keys[]" value="UPDATE_TOKO">
+                            <input type="checkbox" id="key_update_toko" class="key-check" name="keys[]" value="UPDATE_TOKO">
                             <label for="key_update_toko">UPDATE TOKO</label>
                         </div>
                         <div class="key-item">
-                            <input type="checkbox" id="key_manage_user" name="keys[]" value="MANAGE_USER">
+                            <input type="checkbox" id="key_manage_user" class="key-check" name="keys[]" value="MANAGE_USER">
                             <label for="key_manage_user">MANAGE USER</label>
                         </div>
                         <div class="key-item">
-                            <input type="checkbox" id="key_update_role" name="keys[]" value="UPDATE_ROLE">
+                            <input type="checkbox" id="key_update_role" class="key-check" name="keys[]" value="UPDATE_ROLE">
                             <label for="key_update_role">UPDATE ROLE</label>
                         </div>
                         <div class="key-item">
-                            <input type="checkbox" id="key_manage_divisi" name="keys[]" value="MANAGE_DIVISI">
+                            <input type="checkbox" id="key_manage_divisi" class="key-check" name="keys[]" value="MANAGE_DIVISI">
                             <label for="key_manage_divisi">MANAGE DIVISI</label>
                         </div>
                         <div class="key-item">
-                            <input type="checkbox" id="key_view_report" name="keys[]" value="VIEW_REPORT">
+                            <input type="checkbox" id="key_view_report" class="key-check" name="keys[]" value="VIEW_REPORT">
                             <label for="key_view_report">VIEW REPORT</label>
                         </div>
                         <div class="key-item">
-                            <input type="checkbox" id="key_manage_catatan" name="keys[]" value="MANAGE_CATATAN">
+                            <input type="checkbox" id="key_manage_catatan" class="key-check" name="keys[]" value="MANAGE_CATATAN">
                             <label for="key_manage_catatan">MANAGE CATATAN</label>
                         </div>
                         <div class="key-item">
-                            <input type="checkbox" id="key_manage_topik" name="keys[]" value="MANAGE_TOPIK">
+                            <input type="checkbox" id="key_manage_topik" class="key-check" name="keys[]" value="MANAGE_TOPIK">
                             <label for="key_manage_topik">MANAGE TOPIK</label>
                         </div>
                         <div class="key-item">
-                            <input type="checkbox" id="key_manage_karyawan" name="keys[]" value="MANAGE_KARYAWAN">
+                            <input type="checkbox" id="key_manage_karyawan" class="key-check" name="keys[]" value="MANAGE_KARYAWAN">
                             <label for="key_manage_karyawan">MANAGE KARYAWAN</label>
                         </div>
                     </div>
