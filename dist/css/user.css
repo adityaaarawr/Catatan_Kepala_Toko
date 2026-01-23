@@ -76,11 +76,17 @@ body {
 }
 
 .table-container {
-    width: 100%;
-    -webkit-overflow-scrolling: touch;
-    margin-top: 10px;
+   width: 100%;
+    margin-top: 20px;
     padding: 0 12px;
-    box-sizing: border-box;
+}
+
+.table-wrap {
+    background: #ffffff;
+    border-radius: 12px; /* Melengkung kyak data catatan */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Shadow halus */
+    overflow: hidden; /* Supaya header nempel lengkungan */
+    border: 1px solid #e5e7eb;
 }
 
 h2 {
@@ -147,71 +153,92 @@ table {
 
 /* HEADER */
 #userTable thead th {
-    padding: 14px 12px;
-    font-size: 14px;
+   padding: 16px 12px;
+    font-size: 13px;
     font-weight: bold;
-    text-align: start;
-    white-space: nowrap;
+    text-align: center; /* JUDUL JADI TENGAH */
     background: #8BD5D3;
-
-    border-bottom: 2px solid #d1d5db;
+    color: #374151;
+    border-bottom: 2px solid rgba(0,0,0,0.05);
 }
 
 /* BODY */
 #userTable tbody td {
-    padding: 14px 12px;
+  padding: 16px 12px;
     font-size: 14px;
     vertical-align: middle;
-    text-align: start;
-    white-space: nowrap;
-    line-height: 1.6;
+    text-align: center; /* ISI JADI TENGAH */
+    border-bottom: 1px solid #f3f4f6;
+}
 
-    border-bottom: 1px solid #e5e7eb; /* 🔥 PASTI KELIHATAN */
+/* FIX KHUSUS KOLOM USER */
+#userTable tbody td:nth-child(2) {
+    text-align: center !important; 
 }
 
 .user-cell {
-    display: flex;
+    display: flex !important;
     align-items: center;
-    gap: 10px;
+    justify-content: flex-start !important; /* Teks di dalam box wajib kiri */
+    gap: 12px;
+    width: 200px; 
+    margin: 0 auto; 
+    text-align: left !important; 
+}
+
+/* Pastikan jika ada avatar, dia tidak mengecil */
+.user-cell img, 
+.user-cell svg,
+.user-cell .avatar-placeholder {
+    flex-shrink: 0;
+}
+
+/* Pastikan teks nama user mengambil sisa ruang dan tetap rata kiri */
+.user-cell span {
+    text-align: left !important;
+    display: block;
+    width: 100%;
 }
 
 /* CONTAINER ICON */
 .action-icons {
-    display: flex;
+     display: flex;
+    justify-content: center; /* Icon jadi tengah */
     align-items: center;
-    gap: 14px;
-    min-height: 32px;
+    gap: 15px;
 }
 
 /* SEMUA SVG */
 .action-icons svg {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     cursor: pointer;
-    vertical-align: middle;
 
-    /* 🔥 PAKSA WARNA */
-    fill: currentColor !important;
+    fill: currentColor;
+    stroke: none;
+    stroke-width: 2.2;              /* 🔥 lebih tebal */
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
     transition: transform 0.15s ease, color 0.15s ease;
 }
 
-/* EDIT → HIJAU */
 .icon-edit {
-    color: #16a34a; /* green */
+    color: #374151;
 }
 
 .icon-edit:hover {
-    color: #15803d;
+    color: #374151;
     transform: scale(1.1);
 }
 
 /* DELETE → MERAH */
 .icon-delete {
-    color: #dc2626; /* red */
+    color: #ef4444; /* red */
 }
 
 .icon-delete:hover {
-    color: #b91c1c;
+    color: #ef4444;
     transform: scale(1.1);
 }
 
@@ -465,6 +492,10 @@ tbody tr:hover {
    MOBILE
 ===================== */
 @media (max-width: 768px) {
+     html, body {
+        overflow-x: hidden;
+     }
+     
  .top-bar {
        display: flex;
         flex-direction: row;      /* tetap satu baris */
@@ -505,37 +536,40 @@ tbody tr:hover {
 
   /* ROW JADI CARD */
   #userTable tbody tr {
-    position: relative;
-    display: block;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    margin-bottom: 14px;
-    padding: 10px 12px;
+   display: block;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
     background: #fff;
+    padding: 10px;
   }
 
   /* ===== CELL ===== */
   #userTable tbody td {
-    display: flex;
-    justify-content: space-between;
+   display: flex; /* Bikin label dan teks sebaris */
+    justify-content:空间-between;
     align-items: center;
-    padding: 6px 0;
-    font-size: 13px;
-    border: none;
+    text-align: right;
+    padding: 8px 5px;
+    border-bottom: 1px dashed #eee;
+    width: 100% !important;
   }
 
   /* LABEL */
   #userTable tbody td::before {
-    font-weight: 600;
-    color: #555;
+   content: attr(data-label); /* Mengambil teks dari atribut data-label */
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: var(--muted);
+    flex: 1; /* Memberi ruang label agar teks kanan sejajar */
+    text-align: left;
   }
 
   #userTable tbody td:nth-child(1)::before { content: "No"; }
   #userTable tbody td:nth-child(2)::before { content: "User"; }
   #userTable tbody td:nth-child(3)::before { content: "Role"; }
   #userTable tbody td:nth-child(4)::before { content: "Status"; }
-  #userTable tbody td:nth-child(5)::before { content: "Last modified"; }
-  #userTable tbody td:nth-child(6)::before { content: "Last login"; }
   #userTable tbody td:nth-child(7)::before { content: "Action"; }
 
   /* ===== RINGKAS (DEFAULT) ===== */
@@ -552,11 +586,11 @@ tbody tr:hover {
 
   /* ===== ACTION ICON ===== */
   #userTable tbody td:nth-child(7) {
-  display: flex;
   flex-wrap: wrap;          /* PENTING */
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   row-gap: 6px;
+  overflow: visible;
 }
 
 /* BIKIN TEKS "ACTION" MUNCUL */
@@ -569,6 +603,7 @@ tbody tr:hover {
 /* ICON EDIT & DELETE SEBARIS */
 #userTable tbody td:nth-child(7) svg {
   margin-left: 6px;
+   flex-shrink: 0;
 }
 
 #userTable tbody td:nth-child(7) svg:first-of-type {
