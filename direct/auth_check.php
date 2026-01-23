@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$RBAC = require __DIR__ . "direct/permission.php";
+$RBAC = require __DIR__ . "direct/permission_role.php";
 
 // ===== CEK LOGIN =====
 if (empty($_SESSION['is_login'])) {
