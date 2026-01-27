@@ -1,5 +1,4 @@
 <?php
-
 //================================//
 // CONFIG HALAMAN & HEADER       //
 //==============================//
@@ -17,31 +16,34 @@ require_once "direct/config.php";
 // AMBIL MASTER DATA (DROPDOWN)  //
 //==============================//
 
-// --- Data Toko ---
-$stmt = $conn->prepare("SELECT id, nama_toko FROM toko ORDER BY nama_toko");
-$stmt->execute();
-$tokoList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+function fetch_api_data($url) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $response = curl_exec($ch);
+    curl_close($ch);
+    return json_decode($response, true);
+}
 
-// --- Data Karyawan & Divisi ---
-$stmt = $conn->prepare("
-    SELECT 
-        k.id, 
-        k.name, 
-        k.nama_karyawan, 
-        d.id AS divisi_id, 
-        d.nama_divisi
-    FROM karyawan k
-    LEFT JOIN divisi d ON k.divisi_id = d.id
-    ORDER BY k.name
-");
-$stmt->execute();
-$karyawanList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$apiUrl = "https://toyomatsu.ddns.net/master/api/";
+$karyawanAPI = fetch_api_data($apiUrl) ?? [];
+
+$mapNamaKaryawan = [];
+$mapToko = [];
+$mapDivisi = [];
+
+foreach ($karyawanAPI as $k) {
+    $mapNamaKaryawan[$k['id']] = $k['nama_lengkap'];
+    $mapToko[$k['store']]      = $k['store'];
+    $mapDivisi[$k['posisi']]   = $k['posisi'];
+}
 
 // --- Data Topik ---
 $stmt = $conn->prepare("SELECT id, nama_topik FROM topik ORDER BY nama_topik");
 $stmt->execute();
 $topikList = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 
 //================================//
 // AJAX HANDLER (POST REQUEST)   //
@@ -75,7 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo $stmt->execute([$id]) ? "success" : "gagal";
         exit;
     }
-    
 
     // --- Proses Update ---
     if (isset($_POST['ajax_update'])) {
@@ -137,7 +138,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
         exit;
     }
-    
 
     // --- Proses Insert (Simpan Baru) ---
     if (isset($_POST['ajax_save'])) {
@@ -215,19 +215,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $sqlFetch = "
     SELECT n.*, 
            u.username, 
-           t.nama_toko, 
-           k.name AS nama_karyawan,
-           k.nama_karyawan AS nama_lengkap,
-           d.nama_divisi,
            tp.nama_topik
     FROM notes n
     LEFT JOIN users u ON n.user_id = u.id
-    LEFT JOIN toko t ON n.toko_id = t.id
-    LEFT JOIN karyawan k ON n.karyawan_id = k.id
-    LEFT JOIN divisi d ON n.divisi_id = d.id
     LEFT JOIN topik tp ON n.topik_id = tp.id
     ORDER BY n.created_at DESC
 ";
+
 
 $stmt = $conn->prepare($sqlFetch);
 $stmt->execute();
@@ -295,25 +289,21 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 data-karyawan_id="<?= $row['karyawan_id'] ?>"
                                 data-divisi_id="<?= $row['divisi_id'] ?>"   
                                 data-topik_id="<?= $row['topik_id'] ?>"
-                                data-divisi="<?= htmlspecialchars($row['nama_divisi']) ?>"
                                 data-topik="<?= htmlspecialchars($row['nama_topik']) ?>"
-                                data-tanggal="<?= $row['tanggal'] ?>"
+                                data-tanggal="<?= $row['tanggal'] ?>"   
                                 data-catatan="<?= htmlspecialchars($row['catatan']) ?>"
                                 data-inputer="<?= htmlspecialchars($row['username']) ?>"
-                                data-toko="<?= htmlspecialchars($row['nama_toko']) ?>"
-                                data-karyawan="<?= htmlspecialchars($row['nama_karyawan']) ?>"
                                 data-file='<?= htmlspecialchars($row['file_name'], ENT_QUOTES) ?>'
-
                             >
 
                                 <td><?= $no++ ?></td>
                                 <td><?= $row['tanggal'] ?></td>
                                 <td><?= $row['username'] ?? '-' ?></td>
-                                <td><?= $row['nama_toko'] ?? '-' ?></td>
-                                <td title="<?= $row['nama_lengkap'] ?? '' ?>">
-                                    <?= $row['nama_karyawan'] ?? '-' ?>
+                                <td><?= strtoupper($mapToko[$row['toko_id']] ?? $row['toko_id'] ?? '-') ?></td>
+                                <td title="<?= $mapNamaKaryawan[$row['karyawan_id']] ?? '' ?>">
+                                    <?= strtoupper($mapNamaKaryawan[$row['karyawan_id']] ?? 'ID '.$row['karyawan_id'].' TIDAK ADA DI API') ?>
                                 </td>
-                                <td><?= $row['nama_divisi'] ?? '-' ?></td>
+                                <td><?= strtoupper($mapDivisi[$row['divisi_id']] ?? $row['divisi_id'] ?? '-') ?></td>
                                 <td><?= $row['nama_topik'] ?? '-' ?></td>
                                 <td class="catatan-cell" title="<?= htmlspecialchars($row['catatan']) ?>">
                                     <?= strlen($row['catatan']) > 10 
@@ -340,7 +330,6 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         endif; 
                                     ?>
                                 </td>
-
                                 <td>
                                     <span class="action-cell">
                                         <span class="edit-btn" onclick="openEditModal(this, event)" title="Edit">
@@ -378,25 +367,16 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="divider"></div>
         
         <form id="noteForm" enctype="multipart/form-data">
-            <label for="inputToko">TOKO</label>
-            <select id="inputToko" name="toko_id" required>
+            <label>TOKO</label>
+            <select name="toko_id" id="inputToko" required>
                 <option value="">Pilih Toko</option>
-                <?php foreach($tokoList as $t): ?>
-                    <option value="<?= $t['id'] ?>"><?= $t['nama_toko'] ?></option>
-                <?php endforeach; ?>
+                
             </select>
 
             <label>KARYAWAN</label>
-            <select name="karyawan_id" id="inputKaryawan" onchange="updateDivisi()">
+            <select name="karyawan_id" id="inputKaryawan" onchange="updateDivisi()" required>
                 <option value="">Pilih Karyawan</option>
-                <?php foreach($karyawanList as $k): ?>
-                    <option value="<?= $k['id'] ?>" 
-                            data-divisi-id="<?= $k['divisi_id'] ?>"
-                            data-divisi-nama="<?= $k['nama_divisi'] ?>"
-                            data-search="<?= strtolower($k['name'].' '.$k['nama_karyawan']) ?>">
-                        <?= htmlspecialchars($k['name']) ?>
-                    </option>
-                <?php endforeach; ?>
+                
             </select>
 
             <label>DIVISI</label>
@@ -423,7 +403,6 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <h4>FILE SEBELUMNYA</h4>
                 <div id="oldFilesList"></div>
             </div>
-
 
             <p id="optionalStatus" style="font-size: 12px; margin-top: -10px; margin-bottom: 15px; color: #e74c3c;">
                 *Wajib isi Catatan atau lampirkan File
