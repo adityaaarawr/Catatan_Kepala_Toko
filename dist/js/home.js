@@ -92,21 +92,28 @@ function adjustMainContentMargin() {
 window.openModal = function () {
     console.log("openModal dipanggil");
 
-    modal = modal || document.getElementById('modal');
-    noteForm = noteForm || document.getElementById('noteForm');
-    modalTitle = modalTitle || document.getElementById('modal-title');
+    const modal = document.getElementById('modal');
+    const noteForm = document.getElementById('noteForm');
+    const modalTitle = document.getElementById('modal-title');
 
     if (!modal || !noteForm || !modalTitle) {
         console.error("Modal elements not found!");
         return;
     }
 
+    // ===== SET MODE TAMBAH =====
     modalTitle.textContent = "TAMBAH CATATAN";
     noteForm.reset();
-    noteForm.dataset.noteId = 0; // Menandakan ini data baru (ID: 0)
+    noteForm.dataset.noteId = 0;
     noteForm.dataset.editId = "";
 
-    // Set limit tanggal maksimal adalah hari ini
+    // ===== RESET DROPDOWN API =====
+    document.getElementById("inputToko").innerHTML = '<option value="">Loading toko...</option>';
+    document.getElementById("inputKaryawan").innerHTML = '<option value="">Pilih Karyawan</option>';
+    document.getElementById("inputDivisi").value = "";
+    document.getElementById("divisi_id").value = "";
+
+    // ===== SET DATE DEFAULT =====
     const inputDate = document.getElementById('inputDate');
     if (inputDate) {
         const today = new Date().toISOString().split('T')[0];
@@ -114,15 +121,18 @@ window.openModal = function () {
         inputDate.setAttribute('max', today);
     }
 
-    window.updateDivisi(); // Reset tampilan divisi
-    modal.style.display = 'flex';
-
-    const statusLabel = document.getElementById('optionalStatus');
-    if(statusLabel){
-        statusLabel.innerText = "*Wajib isi Catatan atau lampirkan File";
-        statusLabel.style.color = "#e74c3c";
+    // ===== LOAD TOKO DARI API =====
+    if (typeof loadToko === "function") {
+        loadToko();
     }
-}
+    
+
+    // ===== TAMPILKAN MODAL (INI YANG KURANG) =====
+    modal.classList.add("show");
+    modal.style.display = "flex"; // jaga-jaga kalau pakai display none
+    
+};
+
 
 /**
  * window.closeModal & window.closeViewModal
@@ -146,16 +156,37 @@ window.closeViewModal = function () {
  * window.openViewModal
  * Menampilkan detail lengkap satu catatan secara read-only
  */
-window.openviewModal = function(tr){
+window.openviewModal = async function(tr){
+
+    // pastikan master API sudah ada
+    if (!window.masterAPI || masterAPI.karyawan.length === 0) {
+        await loadMasterAPI();
+    }
+
+    const toko   = tr.dataset.toko_id || "";
+    const karId  = tr.dataset.karyawan_id || "";
+    const divisi = tr.dataset.divisi_id || "";
+
+    const kar = masterAPI.karyawan.find(k => k.id == karId);
 
     document.getElementById("viewInputer").innerText  = tr.dataset.inputer || "-";
-    document.getElementById("viewToko").innerText     = tr.dataset.toko || "-";
-    document.getElementById("viewKaryawan").innerText = tr.dataset.karyawan || "-";
     document.getElementById("viewTopik").innerText    = tr.dataset.topik || "-";
-    document.getElementById("viewDivisi").innerText   = tr.dataset.divisi || "-";
     document.getElementById("viewDate").innerText     = tr.dataset.tanggal || "-";
     document.getElementById("viewCatatan").innerText  = tr.dataset.catatan || "-";
 
+    // ====== FIX UTAMA ======
+    document.getElementById("viewToko").innerText = 
+        kar ? kar.toko.toUpperCase() : (toko ? toko.toUpperCase() : "-");
+
+    document.getElementById("viewKaryawan").innerText = 
+        kar ? kar.nama.toUpperCase() : ("ID " + karId + " TIDAK ADA DI API");
+
+    document.getElementById("viewDivisi").innerText = 
+        kar ? kar.divisi.toUpperCase() : (divisi ? divisi.toUpperCase() : "-");
+    // =======================
+
+
+    // ================= FILE (TIDAK DIUBAH) =================
     const lampiran = document.getElementById("viewLampiran");
     const previewBox = document.querySelector(".preview-box");
 
@@ -176,14 +207,12 @@ window.openviewModal = function(tr){
             const fileUrl = "uploads/" + file;
             const ext = file.split('.').pop().toLowerCase();
 
-            // link
             lampiran.innerHTML += `
                 <div>
                     <a href="${fileUrl}" target="_blank">${file}</a>
                 </div>
             `;
 
-            // preview
             if(["jpg","jpeg","png","webp","gif"].includes(ext)){
                 previewBox.innerHTML += `
                     <a href="${fileUrl}" target="_blank">
@@ -204,6 +233,7 @@ window.openviewModal = function(tr){
         lampiran.innerHTML = "<i>Tidak ada lampiran</i>";
         previewBox.innerHTML = "<i>Tidak ada file</i>";
     }
+    // =======================================================
 
     document.getElementById("viewModal").style.display = "flex";
 }
@@ -212,52 +242,66 @@ window.openviewModal = function(tr){
  * window.openEditModal
  * Mengambil data lama dan memasukkannya kembali ke form untuk diedit
  */
-window.openEditModal = function(btn, e){
+window.openEditModal = async function(btn, e){
     if(e) e.stopPropagation();
+
+    if (!window.masterAPI || !masterAPI.karyawan || masterAPI.karyawan.length === 0) {
+        await loadMasterAPI();
+    }
+
+    loadToko(); // pastikan dropdown toko terisi
 
     const tr   = btn.closest("tr");
     const form = document.getElementById("noteForm");
 
     const idNote     = tr.dataset.id;
-    const idToko     = tr.dataset.toko_id;
     const idKaryawan = tr.dataset.karyawan_id;
-    const idDivisi   = tr.dataset.divisi_id;
     const idTopik    = tr.dataset.topik_id;
     const tanggal    = tr.dataset.tanggal;
     const catatan    = tr.dataset.catatan;
-    const filesRaw   = tr.dataset.file; // ex: '["a.jpg","b.pdf"]'
+    const filesRaw   = tr.dataset.file;
 
     document.getElementById("modal-title").innerText = "EDIT CATATAN";
     form.dataset.editId = idNote || "";
 
-    // ===== SET VALUE FORM =====
-    document.getElementById("inputToko").value = idToko || "";
-    document.getElementById("inputKaryawan").value = idKaryawan || "";
+    const tokoEl   = document.getElementById("inputToko");
+    const karEl    = document.getElementById("inputKaryawan");
 
-    updateDivisi(); 
-    const divisiEl = document.getElementById("divisi_id");
-    if(divisiEl) divisiEl.value = idDivisi || "";
+    // ====== AMBIL DATA KARYAWAN DARI API ======
+    const kar = getKaryawanById(idKaryawan);
 
+    if(kar){
+
+        // ================= TOKO =================
+        tokoEl.value = kar.toko; // ⚠️ NAMA TOKO
+        await loadKaryawanByToko(kar.toko);
+
+        // ================= KARYAWAN =================
+        karEl.value = kar.id;
+
+        // ================= DIVISI =================
+        updateDivisi(); // auto ambil dari data-divisi
+
+    } else {
+        console.warn("Karyawan tidak ditemukan di masterAPI");
+    }
+
+    // ================= FIELD LAIN =================
     document.getElementById("inputTopik").value   = idTopik || "";
     document.getElementById("inputDate").value    = tanggal || "";
     document.getElementById("inputCatatan").value = catatan || "";
 
-    // ===== RESET INPUT FILE (biar bisa pilih file baru) =====
+    // ================= FILE (TIDAK DIUBAH) =================
     const fileInput = document.getElementById("inputFile");
     if(fileInput) fileInput.value = "";
 
-    // ===== TAMPILKAN FILE LAMA =====
     const oldFilesBox = document.getElementById("oldFilesBox");
     if(oldFilesBox){
         oldFilesBox.innerHTML = "<b>File sebelumnya:</b><br>";
 
         let files = [];
         if(filesRaw){
-            try {
-                files = JSON.parse(filesRaw);
-            } catch(err){
-                console.error("Format data-file tidak valid:", err);
-            }
+            try { files = JSON.parse(filesRaw); } catch(err){}
         }
 
         if(files.length){
@@ -287,29 +331,6 @@ window.openEditModal = function(btn, e){
  * 4. FUNGSI AUTO-FILL & VALIDASI FORM
  * =================================================================
  */
-
-/**
- * window.updateDivisi
- * Otomatis mengisi kolom Divisi saat nama karyawan dipilih
- */
-window.updateDivisi = function () {
-    const select = document.getElementById('inputKaryawan');
-    const divisiText = document.getElementById('inputDivisi');
-    const divisiHidden = document.getElementById('divisi_id');
-
-    if (!select || !divisiText || !divisiHidden) return;
-
-    const opt = select.options[select.selectedIndex];
-
-    if (!opt || !opt.value) {
-        divisiText.value = '';
-        divisiHidden.value = '';
-        return;
-    }
-
-    divisiText.value = opt.dataset.divisiNama || '-';
-    divisiHidden.value = opt.dataset.divisiId || '';
-}
 
 /**
  * initSearchKaryawan
@@ -644,3 +665,67 @@ window.addEventListener('resize', adjustMainContentMargin);
 
 // Inisialisasi aplikasi saat DOM siap
 document.addEventListener('DOMContentLoaded', initApplication);
+
+// LOAD API // 
+let masterAPI = {
+    toko: [],
+    karyawan: []
+};
+
+async function loadMasterAPI() {
+    const res = await fetch("routines/base_api.php");
+    const data = await res.json();
+    masterAPI = data;
+}
+
+function loadToko() {
+    const tokoSelect = document.getElementById("inputToko");
+    tokoSelect.innerHTML = `<option value="">Pilih Toko</option>`;
+
+    masterAPI.toko.forEach(t => {
+        tokoSelect.innerHTML += `<option value="${t}">${t.toUpperCase()}</option>`;
+    });
+}
+
+function loadKaryawanByToko(namaToko) {
+    const karSelect = document.getElementById("inputKaryawan");
+    karSelect.innerHTML = `<option value="">Pilih Karyawan</option>`;
+
+    masterAPI.karyawan
+        .filter(k => k.toko === namaToko)
+        .forEach(k => {
+            karSelect.innerHTML += `
+                <option 
+                    value="${k.id}" 
+                    data-divisi="${k.divisi}">
+                    ${k.nama.toUpperCase()}
+                </option>`;
+        });
+}
+
+function getKaryawanById(id) {
+    return masterAPI.karyawan.find(k => k.id == id);
+}
+
+
+document.getElementById("inputToko").addEventListener("change", function () {
+    document.getElementById("inputDivisi").value = "";
+    document.getElementById("divisi_id").value = "";
+
+    if (this.value) {
+        loadKaryawanByToko(this.value);
+    }
+});
+
+function updateDivisi() {
+    const kar = document.querySelector("#inputKaryawan option:checked");
+    if (!kar) return;
+
+    document.getElementById("inputDivisi").value = kar.dataset.divisi || "-";
+    document.getElementById("divisi_id").value = kar.dataset.divisi || "";
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadMasterAPI();
+});
+

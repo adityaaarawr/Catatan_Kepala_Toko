@@ -68,28 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// async function Login(){
-//     try{
-//         const postData = {
-//             user: document.getElementById('username').value,
-//             pass: document.getElementById('password').value
-//         }
-//         var ress  = await fetch('routines/auth.php', {
-//             method: 'POST',
-//             body: JSON.stringify(postData)
-//         });
-    
-//         if (!ress.ok) {
-//             console.error("error")
-//         }
-
-//         var data = await ress.json();
-        
-//     }catch(ex){
-//         console.error(ex);
-//     }
-// }
-
 /**
  * ==================================================================
  * 2. FUNGSI: SHOW NOTIFICATION (TOAST)

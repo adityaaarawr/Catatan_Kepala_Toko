@@ -753,6 +753,32 @@ document.addEventListener('DOMContentLoaded', () => {
       
 });
 
+// LOAD API //
+window.masterAPI = {
+    toko: [],
+    divisi: [],
+};
+
+async function loadMasterAPI() {
+    try {
+        const [tokoRes, divisiRes] = await Promise.all([
+            fetch("https://toyomatsu.ddns.net/master/api/?toko=true"),
+            fetch("https://toyomatsu.ddns.net/master/api/?divisi=true"),
+        ]);
+
+        const tokoJson = await tokoRes.json();
+        const divisiJson = await divisiRes.json();
+
+        masterAPI.toko   = tokoJson.data || tokoJson || [];
+        masterAPI.divisi = divisiJson.data || divisiJson || [];
+
+        console.log("MASTER API:", masterAPI);
+    } catch (e) {
+        console.error("Gagal load master API", e);
+    }
+}
+
+
 /*-------------------
     GET MASTER TOKO
 -------------------*/
