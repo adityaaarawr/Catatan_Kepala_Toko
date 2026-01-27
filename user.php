@@ -2,7 +2,6 @@
 $pageTitle = 'User Management'; 
 $cssFile = 'user.css'; 
 $jsFile = 'user.js';
-
 include './direct/config.php';
 
 $sqlRoles = "SELECT id, role_name FROM roles ORDER BY role_name ASC";
@@ -90,11 +89,11 @@ $context = stream_context_create(["ssl" => ["verify_peer"=>false, "verify_peer_n
 $jsonData = @file_get_contents($apiUrl, false, $context);
 $karyawan_api = json_decode($jsonData, true) ?? [];
 
-/* =================================
+/* ==========================
    AMBIL DATA DARI DB LOKAL ROLES)
-================================= */
+========================== */
 // Ini tetap ambil dari DB karena ini data akun untuk login web kamu
-$sqlUsers = "SELECT u.id, u.name, u.username, u.last_login, r.role_name
+$sqlUsers = "SELECT u.id, u.name, u.username, u.last_active, r.role_name
             FROM users u
             LEFT JOIN roles r ON r.id = u.role_id
             ORDER BY u.id ASC";
@@ -138,63 +137,62 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
                 </thead>
                 
                 <tbody id="userTableBody">
-                    <?php if (!empty($users)): $no = 1; foreach ($users as $u): ?>
-                        <?php 
-                            // Logika: Cek apakah user aktif dalam 5 menit terakhir
-                            $isActive = false;
-                            if (!empty($u['last_active'])) {
-                                $lastSeen = strtotime($u['last_active']);
-                                $now = time();
-                                if (($now - $lastSeen) < 300) { // 300 detik = 5 menit
-                                    $isActive = true;
-                                }
-                            }
-                        ?>
-                        <tr>
-                            <td><?= $no++; ?></td>
-                            <td class="user-cell">
-                                <?= htmlspecialchars($u['name']); ?>
-                                <small style="color:#6b7280;">(@<?= htmlspecialchars($u['username']); ?>)</small>
-                            </td>
-                            <td><span class="role-bubble"><?= strtoupper($u['role_name'] ?? '-'); ?></span></td>
-                        <td>
-                        <?php if ($isActive): ?>
-                            <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                                <span class="role-bubble active">ACTIVE</span>
-                                <small style="color: #10b981; font-size: 10px; font-weight: 500;">
-                                    <?= date('d/m H:i', strtotime($u['last_active'])); ?>
-                                </small>
-                            </div>
-                        <?php else: ?>
-                            <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                                <span class="role-bubble inactive">INACTIVE</span>
-                                <?php 
-                                // Cek apakah kolom last_active ada isinya di database
-                                if (!empty($u['last_active']) && $u['last_active'] != '0000-00-00 00:00:00'): 
-                                ?>
-                                    <small style="color: #6b7280; font-size: 10px; font-weight: 500;">
-                                        <?= date('d/m H:i', strtotime($u['last_active'])); ?>
-                                    </small>
-                                <?php else: ?>
-                                    <small style="color: #ef4444; font-size: 10px; font-weight: 500;">
-                                        NEVER ACTIVE
-                                    </small>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-                        </td>
+                   <?php if (!empty($users)): $no = 1; foreach ($users as $u): ?>
+    <?php 
+        // Logika: Cek apakah user aktif dalam 5 menit terakhir
+        $isActive = false;
+        if (!empty($u['last_active'])) {
+            $lastSeen = strtotime($u['last_active']);
+            $now = time();
+            if (($now - $lastSeen) < 300) { // 300 detik = 5 menit
+                $isActive = true;
+            }
+        }
+    ?>
+    <tr>
+        <td><?= $no++; ?></td>
+        <td class="user-cell">
+            <?= htmlspecialchars($u['name']); ?>
+            <small style="color:#6b7280;">(@<?= htmlspecialchars($u['username']); ?>)</small>
+        </td>
+        <td><span class="role-bubble"><?= strtoupper($u['role_name'] ?? '-'); ?></span></td>
+     <td>
+    <?php if ($isActive): ?>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+            <span class="role-bubble active">ACTIVE</span>
+            <small style="color: #10b981; font-size: 10px; font-weight: 500;">
+                <?= date('d/m H:i', strtotime($u['last_active'])); ?>
+            </small>
+        </div>
+    <?php else: ?>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+            <span class="role-bubble inactive">INACTIVE</span>
+            <?php 
+            // Cek apakah kolom last_active ada isinya di database
+            if (!empty($u['last_active']) && $u['last_active'] != '0000-00-00 00:00:00'): 
+            ?>
+                <small style="color: #6b7280; font-size: 10px; font-weight: 500;">
+                    <?= date('d/m H:i', strtotime($u['last_active'])); ?>
+                </small>
+            <?php else: ?>
+                <small style="color: #ef4444; font-size: 10px; font-weight: 500;">
+                    NEVER ACTIVE
+                </small>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+</td>
    
                         <td>
                             <div class="action-icons">
                                 <svg class="icon-edit" data-id="<?= $u['id']; ?>" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"/></svg>
                                 <svg class="icon-delete" data-id="<?= $u['id']; ?>" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm120-400v320h40v-320h-40Zm160 0v320h40v-320h-40Z"/></svg>
                             </div>
+                            <div class="toggle-detail">LIHAT DETAIL</div>
                         </td>
                     </tr>
                     <?php endforeach; else: ?>
-                    <tr>
-                        <td colspan="5" style="text-align:center;">DATA USER TIDAK ADA</td>
-                    </tr>
+                    <tr><td colspan="5" style="text-align:center;">DATA USER TIDAK DITEMUKAN</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -224,16 +222,15 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
                         <label>PILIH KARYAWAN :</label>
                         <select id="selectUser" name="selected_user_id">
                             <option value="">Pilih user</option>
-                            <?php foreach ($karyawan_api as $k): ?>
-                                <option value="<?= $k['id']; ?>" 
-                                        data-name="<?= htmlspecialchars($k['nama']); ?>" 
-                                        data-username="<?= strtolower(str_replace(' ', '', $k['username'])) ?>">
-                                    <?= strtoupper($k['nama']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
+                           <?php foreach ($karyawan_api as $k): ?>
+            <option value="<?= $k['id']; ?>" 
+                    data-name="<?= htmlspecialchars($k['nama']); ?>" 
+                    data-username="<?= strtolower(str_replace(' ', '', $k['username'])) ?>">
+                <?= strtoupper($k['nama']); ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
                     <div class="popup-group">
                         <label>NAME :</label>
                         <input type="text" id="name" name="name" readonly>
@@ -272,5 +269,4 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </main>
 </div>
-
 <?php include 'modules/footer.php'; ?>
