@@ -1,9 +1,8 @@
 $(document).ready(function () {
+
     /* =============================
        1️⃣ ELEMENT & STATE
     ============================== */
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('main');
     const popup = document.getElementById("popupAddUser");
     const btnAdd = document.querySelector(".btn-add");
     const closeBtn = document.getElementById("popupClose");
@@ -13,11 +12,8 @@ $(document).ready(function () {
     const foreverBtn = document.querySelector(".forever-text");
     const enableCheckbox = document.getElementById("enable");
     const searchInput = document.getElementById("searchUser");
-    
-
     const today = new Date().toISOString().split("T")[0];
     expDate.min = today;
-
     let isEditMode = false;
     let isForever = false;
 
@@ -34,29 +30,6 @@ $(document).ready(function () {
     popup.addEventListener("click", e => {
         if (e.target === popup) popup.style.display = "none";
     });
-
-/* =============================
-   SIDEBAR TOGGLE
-============================== */
-const toggleBtn = document.querySelector('.toggle-btn');
-
-if (toggleBtn && sidebar && mainContent) {
-    toggleBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('collapsed');
-        mainContent.classList.toggle('expanded');
-
-        // optional: simpan state sidebar
-        localStorage.setItem("sidebar", sidebar.classList.contains("collapsed") ? "closed" : "open");
-    });
-
-    // restore state saat reload
-    if (localStorage.getItem("sidebar") === "closed") {
-        sidebar.classList.add("collapsed");
-        mainContent.classList.add("expanded");
-    }
-}
-
-
 
     /* =============================
        3️⃣ EXPIRATION / FOREVER
@@ -203,7 +176,6 @@ if (toggleBtn && sidebar && mainContent) {
     formData.append('enable', document.getElementById("enable").checked ? 1 : 0);
     formData.append('expired_at', expDate.value);
 
-
     fetch(window.location.href, { method: 'POST', body: formData })
     .then(response => response.text()) // Menggunakan text() untuk menghindari error parsing JSON langsung
     .then(text => {
@@ -272,4 +244,20 @@ if (toggleBtn && sidebar && mainContent) {
     $(".page-btn.next").on("click", () => { table.page("next").draw("page"); renderPages(); });
 
     renderPages();
-});
+
+    /* ============================================================
+       9️⃣ TOGGLE DETAIL MOBILE (Tambahkan di bawah sini)
+    ============================================================ */
+    $(document).on('click', '.toggle-detail', function() {
+        const $tr = $(this).closest('tr');
+        $tr.toggleClass('show-detail');
+        
+        // Logika ganti teks tombol
+        if ($tr.hasClass('show-detail')) {
+            $(this).text('TUTUP DETAIL');
+        } else {
+            $(this).text('LIHAT DETAIL');
+        }
+    });
+
+}); // <--- Ini adalah tanda penutup asli file user.js Anda
