@@ -1152,6 +1152,11 @@ table td input[type="checkbox"] {
         display: block;
     }
 
+    table {
+        min-width: unset !important; /* WAJIB: Agar tabel tidak memaksa lebar 700px */
+        width: 100% !important;
+    }
+
     /* Reset Tabel ke mode Stack */
     .table-wrap {
         overflow-x: hidden !important;
@@ -1161,7 +1166,7 @@ table td input[type="checkbox"] {
 
     table, thead, tbody, th, td, tr {
         display: block;
-        width: 100% !important;
+        max-width: 100% !important;
         box-sizing: border-box;
     }
 
@@ -1179,6 +1184,7 @@ table td input[type="checkbox"] {
     }
 
     table td {
+        width: 100% !important;
         display: flex !important;
         justify-content: space-between !important;
         align-items: center;

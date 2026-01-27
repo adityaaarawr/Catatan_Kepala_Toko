@@ -332,7 +332,6 @@ td[data-label="CATATAN"] {
 }
 
 .catatan-cell {
-    max-width: 260px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -340,7 +339,6 @@ td[data-label="CATATAN"] {
 
 /* --- Action Column --- */
 .action-cell {
-    width: 100px;
     text-align: center;
 }
 
@@ -984,7 +982,7 @@ td[data-label="CATATAN"] {
         margin: 0 -15px;
         width: calc(100% + 30px);
     }
-    
+
     .table-wrap table {
         min-width: 100% !important;
         width: 100%;
@@ -1107,7 +1105,7 @@ td[data-label="CATATAN"] {
         box-sizing: border-box;
     }
 
-    table td {
+    table td{
         text-align: right !important;
         padding: 12px 15px !important;
         border-bottom: 1px dashed #eee;
@@ -1117,6 +1115,11 @@ td[data-label="CATATAN"] {
         align-items: flex-start;
         min-height: 45px;
         box-sizing: border-box;
+    }
+
+    table td a{
+        text-align: right !important;
+        margin-right: -50px;
     }
 
     table td:last-child {
@@ -1433,9 +1436,9 @@ td[data-label="CATATAN"] {
     .table-wrap {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        margin: 0 -15px;
-        width: calc(100% + 30px);
-        padding: 0 15px;
+        margin: 0 0px;
+        width: 100% !important;
+        padding: 0 25px;
         box-sizing: border-box;
     }
 
