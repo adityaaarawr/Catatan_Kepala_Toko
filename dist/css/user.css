@@ -484,6 +484,10 @@ tbody tr:hover {
     font-weight: bold;
 }
 
+.toggle-detail {
+    display: none;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -491,10 +495,12 @@ tbody tr:hover {
 /* =====================
    MOBILE
 ===================== */
+
 @media (max-width: 768px) {
      html, body {
         overflow-x: hidden;
      }
+    
      
  .top-bar {
        display: flex;
@@ -546,69 +552,59 @@ tbody tr:hover {
 
   /* ===== CELL ===== */
   #userTable tbody td {
-   display: flex; /* Bikin label dan teks sebaris */
-    justify-content:空间-between;
+  display: flex;
+    justify-content: space-between;
     align-items: center;
-    text-align: right;
     padding: 8px 5px;
     border-bottom: 1px dashed #eee;
-    width: 100% !important;
+    width: 100%;
   }
 
   /* LABEL */
   #userTable tbody td::before {
-   content: attr(data-label); /* Mengambil teks dari atribut data-label */
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 11px;
-    color: var(--muted);
-    flex: 1; /* Memberi ruang label agar teks kanan sejajar */
-    text-align: left;
+  flex: 1;
+  text-align: left;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+  color: var(--muted);
   }
 
-  #userTable tbody td:nth-child(1)::before { content: "No"; }
-  #userTable tbody td:nth-child(2)::before { content: "User"; }
-  #userTable tbody td:nth-child(3)::before { content: "Role"; }
-  #userTable tbody td:nth-child(4)::before { content: "Status"; }
-  #userTable tbody td:nth-child(7)::before { content: "Action"; }
+#userTable tbody td:nth-child(1)::before { content: "No"; }
+#userTable tbody td:nth-child(2)::before { content: "User"; }
+#userTable tbody td:nth-child(3)::before { content: "Role"; }
+#userTable tbody td:nth-child(4)::before { content: "Status"; }
+#userTable tbody td:nth-child(5)::before { content: "Action"; }
 
-  /* ===== RINGKAS (DEFAULT) ===== */
-  #userTable tbody td:nth-child(5),
-  #userTable tbody td:nth-child(6) {
+   /* SEMBUNYIKAN ROLE & STATUS */
+  #userTable tbody td:nth-child(3),
+  #userTable tbody td:nth-child(4) {
     display: none;
   }
 
-  /* ===== DETAIL MODE ===== */
-  #userTable tbody tr.show-detail td:nth-child(5),
-  #userTable tbody tr.show-detail td:nth-child(6) {
-    display: flex !important;
+  /* ACTION TETAP ADA */
+  #userTable tbody td:nth-child(5) {
+  display: flex;
+  flex-direction: row;          /* ✅ BARIS */
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap; 
   }
 
-  /* ===== ACTION ICON ===== */
-  #userTable tbody td:nth-child(7) {
-  flex-wrap: wrap;          /* PENTING */
-  justify-content: flex-start;
-  align-items: center;
-  row-gap: 6px;
-  overflow: visible;
-}
+  .toggle-detail {
+    display: block;
+  }
 
-/* BIKIN TEKS "ACTION" MUNCUL */
-#userTable tbody td:nth-child(7)::before {
-  align-self: flex-start !important;      /* teks di kiri */
-  margin-bottom: 4px;
-  margin-right: auto;
-}
+   /* ROLE & STATUS MUNCUL */
+  #userTable tbody tr.show-detail td:nth-child(3),
+  #userTable tbody tr.show-detail td:nth-child(4) {
+    display: flex;
+  }
 
-/* ICON EDIT & DELETE SEBARIS */
-#userTable tbody td:nth-child(7) svg {
-  margin-left: 6px;
-   flex-shrink: 0;
-}
-
-#userTable tbody td:nth-child(7) svg:first-of-type {
-  margin-left: 0;
-}
+  tr.show-detail .toggle-detail::after {
+    color: #999;
+  }
 
   /* TOMBOL DETAIL (BARIS BAWAH) */
   .toggle-detail {
@@ -622,14 +618,4 @@ tbody tr:hover {
     border-top: 1px dashed #e5e7eb;
     cursor: pointer;
   }
-
-  .toggle-detail::after {
-    content: "DETAIL";
-  }
-
-  tr.show-detail .toggle-detail::after {
-    content: "HIDE";
-    color: #999;
-  }
-
 }
