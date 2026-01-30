@@ -20,8 +20,7 @@ function fetch_api_data($url) {
 
 $apiUrl  = "https://toyomatsu.ddns.net/master/api/";
 $karyawanList = fetch_api_data($apiUrl) ?? [];
-
-
+$namaKaryawanMap = [];
 $divisiList = [];
 $tokoList   = [];
 
@@ -29,7 +28,6 @@ foreach ($karyawanList as $k) {
     $divisiList[$k['posisi']] = $k['posisi'];
     $tokoList[$k['store']]   = $k['store'];
 }
-
 
 include 'modules/header.php'; 
 
@@ -41,7 +39,7 @@ $f_start    = $_POST['start_date'] ?? date('Y-m-d');
 $f_end      = $_POST['end_date'] ?? date('Y-m-d');
 
 // 3. Query Utama (Perbaikan Token SQL)
-$sqlNotes = "SELECT n.*, u.name as inputer, t.nama_topik 
+$sqlNotes = "SELECT n.*, u.name as nama_inputer, t.nama_topik 
              FROM notes n
              LEFT JOIN users u ON n.user_id = u.id
              LEFT JOIN topik t ON n.topik_id = t.id
@@ -52,23 +50,25 @@ $params = []; // Gunakan array untuk menampung parameter
 if(!empty($f_karyawan)) { $sqlNotes .= " AND n.karyawan_id = :karyawan"; $params[':karyawan'] = $f_karyawan; }
 if(!empty($f_divisi))   { $sqlNotes .= " AND n.divisi_id = :divisi";     $params[':divisi']   = $f_divisi;   }
 if(!empty($f_toko))     { $sqlNotes .= " AND n.toko_id = :toko";         $params[':toko']     = $f_toko;     }
-// Ubah dari n.tanggal ke n.created_at jika n.tanggal di DB banyak yang kosong
-if(!empty($f_start)) { $sqlNotes .= " AND DATE(n.created_at) >= :start"; $params[':start'] = $f_start; }
-if(!empty($f_end))   { $sqlNotes .= " AND DATE(n.created_at) <= :end";   $params[':end']   = $f_end; }
+// Gunakan n.tanggal agar sesuai dengan input manual Anda
+if (!empty($f_start) && !empty($f_end)) {
+    $sqlNotes .= " AND n.tanggal BETWEEN :start AND :end";
+    $params[':start'] = $f_start;
+    $params[':end']   = $f_end;
+}
 
 $stmt = $conn->prepare($sqlNotes . " ORDER BY n.created_at DESC");
 $stmt->execute($params); // Eksekusi dengan array parameter agar jumlah token cocok
 $notesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Helper Map untuk menampilkan Nama dari NIP/ID API di Tabel
-$namaKaryawanMap = array_column($karyawanList, 'nama_karyawan', 'id');
-$namaDivisiMap = array_column($divisiList, 'nama_divisi', 'id');
-$namaTokoMap = array_column($tokoList, 'nama_toko', 'id');
-
+$namaKaryawanMap = array_column($karyawanList, 'nama_lengkap', 'id');
+$namaTokoMap     = array_column($karyawanList, 'store', 'toko_id');   // Gunakan toko_id
+$namaDivisiMap   = array_column($karyawanList, 'posisi', 'divisi_id'); // Gunakan divisi_id
 
 // JIKA PILIH KARYAWAN → AUTO ISI DIVISI & TOKO (Cari dari hasil API)
 if (!empty($f_karyawan)) {
-    foreach ($karyawanList as $k) {
+     foreach ($karyawanList as $k) {
         if ($k['id'] == $f_karyawan) {
             $f_divisi = $k['divisi_id'];
             $f_toko   = $k['toko_id'];
@@ -155,20 +155,16 @@ if (!empty($f_karyawan)) {
               <tbody>
     <?php if(!empty($notesList)): ?>
         <?php foreach($notesList as $i => $note): ?>
+
             <tr>
                 <td><?= $i + 1 ?></td>
                 <td><?= date('d-m-Y H:i', strtotime($note['created_at'])) ?></td>
-                <td><?= strtoupper($note['inputer'] ?? '-') ?></td>
-                
-              <td><?= strtoupper($namaTokoMap[$note['toko_id']] ?? 'ID '.$note['toko_id'].' TAK ADA DI API') ?></td>
-
-<td><?= strtoupper($namaDivisiMap[$note['divisi_id']] ?? 'ID '.$note['divisi_id'].' TAK ADA DI API') ?></td>
-
-  <td><?= strtoupper($note['nama_topik'] ?? '-') ?></td>
-
-<td><?= strtoupper($namaKaryawanMap[$note['karyawan_id']] ?? 'ID '.$note['karyawan_id'].' TAK ADA DI API') ?></td>
-                
-                <td><?= nl2br(htmlspecialchars($note['catatan'])) ?></td>
+                <td><?= strtoupper($note['nama_inputer'] ?? '-') ?></td>
+                <td><?= strtoupper($namaTokoMap[$note['toko_id']] ?? $note['toko_id'] ?? 'TANPA TOKO') ?></td>
+                <td><?= strtoupper($namaDivisiMap[$note['divisi_id']] ?? $note['divisi_id'] ?? 'TANPA DIVISI') ?></td>
+                 <td><?= strtoupper($note['nama_topik'] ?? '-') ?></td>
+                 <td><?= strtoupper($namaKaryawanMap[$note['karyawan_id']] ?? 'NIP: '.$note['karyawan_id']) ?></td>
+                 <td><?= nl2br(htmlspecialchars($note['catatan'])) ?></td>
                 <td>
                     <?php if (!empty($note['file_name'])): ?>
                         <a href="uploads/<?= $note['file_name'] ?>" target="_blank">Lihat File</a>
