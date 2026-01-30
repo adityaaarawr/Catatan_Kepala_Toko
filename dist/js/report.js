@@ -3,12 +3,13 @@ $(document).ready(function () {
     const $divisi   = $('#filterDivisi');
     const $toko     = $('#filterToko');
 
-    $('.select2').select2({ width: '100%' });
+    $('.select2').select2({ width: '100%', dropdownAutoWidth: false });
 
     // Simpan semua opsi asli untuk dikembalikan saat reset
     const original = {
         karyawan: $karyawan.html(),
-        divisi: $divisi.html()
+        divisi: $divisi.html(),
+        toko: $toko.html()
     };
 
     // 1. JIKA PILIH KARYAWAN -> AUTO ISI TOKO & DIVISI
@@ -21,8 +22,7 @@ $(document).ready(function () {
         if (d) $divisi.val(d).trigger('change.select2', [true]);
         if (t) $toko.val(t).trigger('change.select2', [true]);
     });
-
-    // 2. JIKA PILIH TOKO/DIVISI -> KARYAWAN MENGERUCUT
+     // 2. JIKA PILIH TOKO/DIVISI -> KARYAWAN MENGERUCUT
     function filterKaryawan() {
         const d = $divisi.val();
         const t = $toko.val();
@@ -52,6 +52,7 @@ $(document).ready(function () {
         filterKaryawan();
     });
 
+
     // Script untuk Toggle Detail di Mobile
 $(document).on('click', '.toggle-detail', function() {
     const $tr = $(this).closest('tr');
@@ -64,6 +65,33 @@ $(document).on('click', '.toggle-detail', function() {
         $(this).text('LIHAT DETAIL');
     }
 });
+
+
+/* ============================================================
+       🔟 SIDEBAR TOGGLE (SINKRON DENGAN SIDEBAR.JS)
+    ============================================================ */
+    const toggleSidebarBtn = document.getElementById("toggle-btn");
+    const sidebar = document.querySelector(".sidebar");
+    const mainContent = document.querySelector('main');
+    const icon = toggleSidebarBtn ? toggleSidebarBtn.querySelector('i') : null;
+
+    if (toggleSidebarBtn && sidebar) {
+        // Cek status saat halaman dimuat (LocalStorage)
+        if (localStorage.getItem("sidebarStatus") === "true") {
+            sidebar.classList.add("hide");
+            if (mainContent) mainContent.classList.add('sidebar-collapsed');
+            if (icon) icon.className = 'fas fa-bars';
+        }
+
+        // Event klik yang sinkron
+        toggleSidebarBtn.addEventListener("click", function() {
+            // Kita biarkan sidebar.js bekerja, tapi kita tambahkan fungsi simpan status
+            setTimeout(() => {
+                const isHidden = sidebar.classList.contains("hide");
+                localStorage.setItem("sidebarStatus", isHidden ? "true" : "false");
+            }, 50); 
+        });
+    }
 });
 
 function toggleMobileFilter() {
