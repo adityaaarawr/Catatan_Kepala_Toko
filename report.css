@@ -1,0 +1,738 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Inter", "Arial", sans-serif;
+}
+
+:root {
+    /* --- 1. COLOR PALETTE --- */
+    --primary: #113F67;
+    --primary-dark: #34699A;
+    --primary-light: #408AB4;
+    --secondary-color: #8BD5D3;
+    
+    /* --- 2. TEXT & GENERAL COLORS --- */
+    --text-primary: #1f2937;
+    --text-color: var(--text-primary);
+    --muted: #6b7280;
+    --muted-text: var(--muted);
+    
+    /* --- 3. BACKGROUND & BORDER --- */
+    --bg: #f4f6f9;
+    --bg-light: var(--bg);
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    
+    /* --- 4. ACTION & STATUS COLORS --- */
+    --danger: #ef4444;
+    --danger-dark: #b91c1c;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --info-color: #2196F3;
+    --error-color: var(--danger);
+    --action-primary: var(--primary);
+    --action-danger: var(--danger);
+    
+    /* --- 5. SIDEBAR --- */
+    --sidebar-bg: #1f2937;
+    --sidebar-border: #374151;
+    --sidebar-item: #9ca3af;
+    --sidebar-active: #ffffff;
+    
+    /* --- 6. SHADOWS & AESTHETICS --- */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.1);
+    --hover-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    --focus-border-color: var(--primary);
+}
+
+body {
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--text-primary);
+}
+
+/* ======================================= */
+/* 2. TEXT TRANSFORM UTILITIES */
+/* ======================================= */
+.sidebar, 
+.topbar, 
+.table-wrap table, 
+.modal-title, 
+.modal-box label,
+.view-data-field,
+.catatan-display,
+.filter-card,
+.btn-primary {
+    text-transform: uppercase;
+}
+
+.modal-box input, 
+.modal-box select, 
+.modal-box textarea,
+.filter-input {
+    text-transform: uppercase;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f9;
+    padding: 20px;
+}
+
+.filter-card {
+    padding-bottom: 13px;
+    margin-top: 35px;
+}
+
+:root {
+  --filter-width: 100%;   /* full width agar card kanan tidak kosong */
+  --filter-height: 50px;  /* lebih tinggi agar terlihat proporsional */
+  --filter-font: 15px;    /* font lebih besar */
+  --filter-border: 1px solid #e2e8f0;
+  --filter-radius: 6px;
+}
+
+/* FILTER GRID FULL WIDTH */
+.filter-grid {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+   min-width: 0;
+}
+
+.filter-grid select {
+    width: 100%;
+    min-width: 0;
+}
+
+/* --- SOLUSI PATEN SELECT2 LEBAR 100% --- */
+/* Paksa Container Utama */
+.select2-container {
+   width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+}
+
+/* Paksa Kotak Pilihan */
+.select2-container--default .select2-selection--single {
+     width: 100% !important;
+    height: var(--filter-height) !important;
+    display: flex !important;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+/* Paksa Teks di Dalam */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    width: 100% !important;
+    padding-right: 30px !important;
+    box-sizing: border-box;
+    line-height: var(--filter-height) !important;
+    text-transform: uppercase;
+}
+
+/* Paksa Panah di Pojok */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 50px !important;
+    top: 0 !important;
+    right: 10px !important;
+}
+
+.select2-selection__arrow {
+  height: var(--filter-height);
+}
+
+/* PAKSA SEMUA DROPDOWN SELECT2 KE BAWAH */
+.select2-dropdown--above {
+  top: 100% !important;
+  bottom: auto !important;
+}
+
+
+/* DATE INPUT */
+input[type="date"] {
+  width: var(--filter-width);
+  height: var(--filter-height);
+  padding: 0 10px;
+  line-height: calc(var(--filter-height) - 2px);
+  font-size: var(--filter-font);
+  border: var(--filter-border);
+  border-radius: var(--filter-radius);
+  box-sizing: border-box;
+}
+
+/* DATE RANGE FULL WIDTH */
+.date-range {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+}
+
+.date-range input[type="date"] {
+  flex: 1; /* biar input date membesar penuh */
+}
+
+/* =========================
+   SEARCH INPUT DROPDOWN
+   INI KUNCINYA 🔥
+========================= */
+.select2-dropdown {
+  padding: 6px;
+}
+
+.select2-search--dropdown {
+  padding: 0;
+}
+
+.select2-search--dropdown .select2-search__field {
+  width: 100% !important;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 5px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+}
+
+.btn-generate {
+  width: var(--filter-width);
+  height: var(--filter-height);
+  background-color: #113F67;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+  font-size: var(--filter-font);
+   color: #f4f6f9;     
+  }
+
+
+.btn-generate:hover {
+    background-color: #113F67;
+}
+
+/* Table Design */
+.table-container {
+     background: #ffffff;
+    padding: 18px;
+    border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+}
+
+.table-title {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+th {
+    background-color: #a8dad8;
+    border-bottom: 1px solid #d1d5db;
+    padding: 12px 10px;
+    font-weight: 700;
+}
+
+/* Lengkungan di pojok kiri atas */
+th:first-child {
+    border-top-left-radius: 10px;
+}
+
+th:last-child {
+  border-top-right-radius: 10px;
+    border-right: none;
+}
+
+td {
+    padding: 10px 8px;
+    font-size: 14px;
+    text-align: center;
+     white-space: nowrap;      /* ⬅️ kunci 1 baris */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+td:nth-child(8) {
+    white-space: normal !important;  /* Hanya kolom ini yang boleh turun ke bawah */
+    word-break: break-word !important;         /* Patahkan kata jika terlalu panjang */
+    text-align: left !important;               /* Catatan panjang lebih rapi rata kiri */
+}
+
+td:nth-child(9) {
+    width: 140px;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+td:nth-child(9) a {
+    display: block;   /* WAJIB */
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+td:last-child {
+    border-right: none;
+}
+
+/* CONTAINER ICON */
+.action-icons {
+   display: none !important;
+}
+
+/* SVG UMUM */
+.action-icons svg {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    fill: currentColor; /* 🔥 penting */
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+/* EDIT */
+.icon-edit {
+    color: #16a34a; /* hijau */
+}
+
+.icon-edit:hover {
+    color: #15803d;
+    transform: scale(1.1);
+}
+
+/* DELETE */
+.icon-delete {
+    color: #ef4444; /* merah */
+}
+
+.icon-delete:hover {
+    color: #ef4444;
+    transform: scale(1.1);
+}
+
+/* DATA PADA TABEL KAPITAL */
+#reportTable th,
+#reportTable td {
+  text-transform: uppercase;
+}
+
+/* LIST PILIHAN SAAT DROPDOWN TERBUKA */
+.select2-results__option {
+  text-transform: uppercase;
+}
+
+/* ======================
+   MODAL (CARD STYLE)
+====================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: none;             /* flexbox */
+  justify-content: center;   /* horizontal center */
+  align-items: center;       /* vertical center */
+  background: rgba(0,0,0,0.45);
+  z-index: 9999;
+  padding: 0;                /* reset padding */
+  box-sizing: border-box;
+}
+
+/* BOX MODAL */
+.modal-box {
+  background: #8BD5D3;
+  width: 360px;
+  max-width: 90%;      /* responsive */
+  border-radius: 12px;
+  padding: 18px;
+  box-sizing: border-box;
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: visible;
+}
+
+/* HEADER */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.modal-close {
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* 🔥 CARD FORM (1 KOLOM KE BAWAH) */
+.modal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-grid > div {
+  display: flex;
+  flex-direction: column;
+}
+
+/* LABEL */
+.modal-grid label {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+/* INPUT */
+.modal-grid input,
+.modal-grid select,
+.modal-grid textarea {
+  width: 100%;
+  height: 36px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.modal-grid textarea {
+  height: auto;
+  resize: vertical;
+}
+
+/* FOOTER */
+.modal-footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.btn-cancel {
+  flex: 1;
+  background: #e5e7eb;
+  border: none;
+  height: 36px;
+  font-weight: bold;
+  border-radius: 6px;
+}
+
+.btn-save {
+  flex: 1;
+  background: #113F67;
+  color: #fff;
+  border: none;
+  height: 36px;
+  font-weight: bold;
+  border-radius: 6px;
+}
+
+/* =====================
+   MODALS JARAK KHUSUS SELECT KARYAWAN
+===================== */
+.modal-box .form-group {
+  margin-bottom: 16px;
+}
+
+/* =============================
+   RUANG DROPDOWN SELECT2 MODAL
+============================= */
+.modal-body {
+  margin-top: 8px;
+  padding-bottom: 0;  
+}
+/* MODAL POPUP Toko & Karyawan SAMAKAN PANJANG DENGAN LAIN */
+#modalToko,
+#modalKaryawan {
+    min-height: 400px; /* sesuaikan dengan modal lain */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* biar isi modal tetap di atas */
+    padding-bottom: 20px;        /* jarak bawah biar rapi */
+}
+
+.toggle-detail {
+    display: none !important; /* Sembunyikan di desktop secara default */
+    cursor: pointer;
+    user-select: none;
+}
+
+/* --- Desktop Default --- */
+.mobile-filter-trigger {
+    display: none; /* Sembunyikan di desktop */
+}
+
+/* Mencegah pergeseran layout saat Select2 dibuka */
+.select2-container {
+    display: block;
+    width: 100% !important; /* Paksa lebar tetap 100% */
+}
+
+/* Mengunci tinggi minimal agar saat list muncul, layout di bawahnya tidak kaget */
+.filter-grid-system {
+    align-items: flex-start;
+    min-height: 50px; 
+}
+
+/* Menghilangkan potensi scrollbar ganda yang bikin layar geser */
+body.select2-container--open {
+    overflow: hidden;
+}
+
+/* ============================================
+   RESPONSIVE MOBILE (max-width: 768px)
+   TANPA MENGUBAH TAMPILAN DESKTOP
+============================================ */
+
+@media (max-width: 768px) {
+   html, body {
+        overflow-x: hidden;
+        padding: 12px !important;
+   }
+
+ .title {
+    font-size: 13px !important;         /* Ukuran font diperkecil agar teks muat satu baris */
+    white-space: nowrap !important;     /* Kunci tetap satu baris */
+    overflow: visible !important;       /* Biarkan teks terlihat jika sedikit meluber */
+    text-overflow: clip !important;     /* Hapus efek titik-titik (...) */
+    display: block !important;
+    text-align: center !important;
+    width: 100% !important;
+    letter-spacing: 0px !important;    /* Rapatkan jarak antar huruf agar hemat ruang */
+  }
+
+  /* Berikan ruang lebih pada container judul */
+  .topbar {
+    padding: 10px 0 !important;
+  }
+
+  
+   .mobile-filter-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        padding: 12px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+    }
+
+    /* Sembunyikan grid filter secara default di mobile */
+    .filter-grid {
+        display: none !important; /* Pakai !important agar tidak kalah dengan grid display default */
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+        background: #fff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+    }
+
+    /* Class ini akan ditambahkan via JS saat tombol diklik */
+    .filter-grid.show-mobile {
+        display: flex !important;
+    }
+
+    .date-range {
+        flex-direction: column;
+    }
+
+  /* 2. FILTER AREA - STACK VERTIKAL */
+  .filter-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  
+  .filter-grid > * {
+    width: 100% !important;
+     min-width: 0;
+  }
+  
+  /* 4. DATE RANGE - STACK VERTIKAL */
+  .date-range {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  
+  .date-range input[type="date"] {
+    width: 100% !important;
+  }
+  
+  /* 5. BUTTON GENERATE */
+  .btn-generate {
+    width: 100% !important;
+    height: 45px !important;
+    font-size: 14px !important;
+  }
+  
+  /* 6. TABLE CONTAINER */
+  .table-container {
+    padding: 12px !important;
+    overflow-x: auto !important;
+  }
+  
+  .table-title {
+   font-size: 14px !important;         /* Perkecil agar muat di lebar HP */
+    white-space: nowrap !important;     /* PAKSA 1 BARIS */
+    overflow: hidden !important;        /* Potong jika meluber */
+    text-overflow: ellipsis !important; /* Beri tanda ... jika terlalu panjang */
+    margin-bottom: 15px !important;
+  }
+  
+  /* 7. TABLE - MOBILE CARD VIEW */
+  #reportTable {
+    min-width: 100% !important;
+    border: none !important;
+  }
+  
+  #reportTable thead {
+    display: none !important;
+  }
+  
+  #reportTable tbody tr {
+    display: block !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    margin-bottom: 12px !important;
+    padding: 15px !important;
+    background: #fff !important;
+    position: relative !important;
+  }
+  
+  #reportTable tbody td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 0 !important;
+    border: none !important;
+    border-bottom: 1px solid #eee !important;
+    text-align: left !important;
+    font-size: 13px !important;
+  }
+  
+  #reportTable tbody td:last-child {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* 8. TABLE LABEL (::before) - JUDUL KOLOM */
+  #reportTable tbody td::before {
+    font-weight: 600 !important;
+    color: #555 !important;
+    min-width: 90px !important;
+    margin-right: 10px !important;
+  }
+  
+  /* Label untuk setiap kolom */
+  #reportTable tbody td:nth-child(1)::before { content: "NO" !important; }
+  #reportTable tbody td:nth-child(2)::before { content: "DATETIME" !important; }
+  #reportTable tbody td:nth-child(3)::before { content: "INPUTER" !important; }
+  #reportTable tbody td:nth-child(4)::before { content: "TOKO" !important; }
+  #reportTable tbody td:nth-child(5)::before { content: "DIVISI" !important; }
+  #reportTable tbody td:nth-child(6)::before { content: "TOPIK" !important; }
+  #reportTable tbody td:nth-child(7)::before { content: "KARYAWAN" !important; }
+  #reportTable tbody td:nth-child(8)::before { content: "CATATAN" !important; }
+  #reportTable tbody td:nth-child(9)::before { content: "FILE" !important; }
+  #reportTable tbody td:nth-child(10)::before { content: "" !important; }
+  
+  #reportTable tbody td.mobile-toggle-cell {
+    display: flex !important;
+    justify-content: center;
+    border-bottom: none !important;
+  }
+
+  /* ACTION ICON TETAP HILANG */
+  #reportTable tbody td.action-icons {
+    display: none !important;
+  }
+  
+  /* 10. DEFAULT: HIDE SOME COLUMNS (RINGKASAN) */
+  #reportTable tbody tr:not(.show-detail) td:nth-child(3),
+  #reportTable tbody tr:not(.show-detail) td:nth-child(4),
+  #reportTable tbody tr:not(.show-detail) td:nth-child(5),
+  #reportTable tbody tr:not(.show-detail) td:nth-child(6),
+  #reportTable tbody tr:not(.show-detail) td:nth-child(8),
+  #reportTable tbody tr:not(.show-detail) td:nth-child(9) {
+    display: none !important;
+  }
+  
+  /* 11. DETAIL MODE - SHOW ALL COLUMNS (kecuali action) */
+  #reportTable tbody tr.show-detail td {
+    display: flex !important;
+  }
+  
+#reportTable tbody tr.show-detail td.action-icons {
+    display: none !important;  /* tetap sembunyikan action di mobile */
+}
+
+  #reportTable tbody tr.show-detail td:last-child {
+    display: flex !important; 
+  }
+  
+  /* 12. TOGGLE DETAIL BUTTON - DI BAWAH KARTU */
+  .toggle-detail {
+    display: block !important;
+    margin-top: 8px;
+    padding: 8px;
+    text-align: center;
+    background: #f0f4f8;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .toggle-detail:hover {
+    background: #e2e8f0 !important;
+  }
+  
+  /* 13. MODAL - FULL SCREEN */
+  .modal-box {
+    width: 95% !important;
+    max-width: 95% !important;
+    border-radius: 8px !important;
+  }
+  
+  .modal-footer {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  
+  .modal-footer button {
+    width: 100% !important;
+  }
+
+  /* HIDE ACTION ICONS SAJA, TAPI TOMBOL TOGGLE TAMPIL */
+#reportTable tbody td.action-icons {
+    display: none !important;  /* icon edit/delete tetap hilang */
+}
+
+#reportTable tbody .toggle-detail {
+    display: block !important; /* tombol toggle selalu muncul */
+}
+}
+
