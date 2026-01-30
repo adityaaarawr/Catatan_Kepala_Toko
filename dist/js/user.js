@@ -72,7 +72,14 @@ $(document).ready(function () {
         $("#userId").val("");
         $("#name").val("");
         $("#username").val("");
+        $("#password").val("");
         
+        enableCheckbox.checked = false; // <--- TAMBAH BARU WAJIB KOSONG DULU
+    expDate.disabled = true;        // <--- TANGGAL TERKUNCI (Wajib centang dulu)
+    
+    isForever = false;              // Reset status forever
+    $(".forever-text").removeClass("active");
+
         // Reset Select2
         $('#selectUser').val(null).trigger('change');
         $('#role').val(null).trigger('change');
@@ -120,46 +127,75 @@ $(document).ready(function () {
         });
     }
 }
+// --- EDIT ---
+if (editBtn) {
+    const id = editBtn.dataset.id;
+    const row = editBtn.closest("tr");
+    
+    // 1. Ambil nilai enable DAN expired dari data-attribute
+    const isEnabled = editBtn.getAttribute("data-enable");
+    const expiredAt = editBtn.getAttribute("data-expired");
 
-        // --- EDIT ---
-        if (editBtn) {
-            resetForm();
-            isEditMode = true;
-            const id = editBtn.dataset.id;
-            const row = editBtn.closest("tr");
+    // 2. Ambil data dari baris tabel DULU sebelum dimasukkan ke form
+    const name = row.querySelector(".user-cell").childNodes[0].textContent.trim();
+    const username = row.querySelector("small").textContent.replace(/[(@)]/g, "").trim();
+    const roleName = row.querySelector(".role-bubble").innerText.trim();
+    const isActive = row.querySelector(".role-bubble").classList.contains("active");
 
-            // Ambil data dari baris tabel
-            const name = row.querySelector(".user-cell").childNodes[0].textContent.trim();
-            const username = row.querySelector("small").textContent.replace(/[(@)]/g, "").trim();
-            const roleName = row.querySelector(".role-bubble").innerText.trim();
-            const isActive = row.querySelector(".role-bubble").classList.contains("active");
+    // 3. Reset Form
+    resetForm(); 
 
-            // Isi ke Modal
-            $("#userId").val(id);
-            $("#name").val(name);
-            $("#username").val(username);
-            $("#formAction").val("edit_user");
-            document.querySelector(".popup-box h3").innerText = "EDIT USER";
-            $(".popup-group:first-of-type").hide(); // Sembunyikan pilih karyawan saat edit
+    // 4. Set state Edit Mode & Isi nilai ke Form
+    isEditMode = true;
+    $("#userId").val(id);
+    $("#name").val(name.toUpperCase()); 
+    $("#username").val(username.toUpperCase());
+    $("#formAction").val("edit_user");
+    document.querySelector(".popup-box h3").innerText = "EDIT USER";
+    $(".popup-group:first-of-type").hide(); 
 
-            // Set Role di Select2
-            $('#role option').filter(function() {
-                return $(this).text().trim().toUpperCase() === roleName.toUpperCase();
-            }).prop('selected', true).trigger('change');
+    // 5. ISI STATUS CHECKBOX (ENABLE)
+    enableCheckbox.checked = (isEnabled == "1");
 
-            enableCheckbox.checked = isActive;
-            expDate.disabled = !isActive;
-
-            popup.style.display = "flex";
+    // 6. Atur input tanggal
+    if (enableCheckbox.checked) {
+        // Cek apakah ada tanggal kadaluwarsa
+        if (expiredAt && expiredAt !== "0000-00-00 00:00:00" && expiredAt !== "null") {
+            // Ambil format YYYY-MM-DD saja untuk input date
+            expDate.value = expiredAt.split(' ')[0];
+        expDate.disabled = false; 
+        isForever = false;
+            foreverBtn.classList.remove("active");
+            } else {
+            // Jika kosong, berarti statusnya FOREVER
+            expDate.value = "";
+            expDate.disabled = true;
+            isForever = true;
+            foreverBtn.classList.add("active");
         }
-    });
+    } else {
+        expDate.disabled = true;
+        expDate.value = "";
+        isForever = false;
+        foreverBtn.classList.remove("active");
+    }
 
+    // Set Role di Select2
+    $('#role option').filter(function() {
+        return $(this).text().trim().toUpperCase() === roleName.toUpperCase();
+    }).prop('selected', true).trigger('change');
+    
+    popup.style.display = "flex";
+}
+});
     /* =============================
        6️⃣ SAVE USER (SINKRON KE DB)
     ============================== */
    saveBtn.addEventListener("click", function() {
     const nameVal = document.getElementById("name").value;
-    const usernameVal = document.getElementById("username").value;
+    const name = document.getElementById("name").value.trim().toUpperCase(); 
+    const usernameVal = document.getElementById("username").value.trim().toUpperCase();
+    const passwordVal = document.getElementById("password").value;
     const roleVal = $('#role').val();
 
     if (!usernameVal || !roleVal) {
@@ -172,6 +208,7 @@ $(document).ready(function () {
     formData.append('id', document.getElementById("userId").value);
     formData.append('name', nameVal);
     formData.append('username', usernameVal);
+    formData.append('password', passwordVal);
     formData.append('role_id', roleVal);
     formData.append('enable', document.getElementById("enable").checked ? 1 : 0);
     formData.append('expired_at', expDate.value);
@@ -203,10 +240,23 @@ $(document).ready(function () {
     ============================== */
     const table = $('#userTable').DataTable({
         dom: 't',
-        ordering: false,
+        ordering: true,
         paging: true,
-        pageLength: 10
+        pageLength: 10,
+        autoWidth: false, // Tambahkan ini untuk mencegah error perhitungan kolom
+    columnDefs: [
+       { targets: [0, 4], // Kolom 0 (No) dan Kolom 4 (Action) tidak bisa disortir
+            orderable: false }
+    ],
+
+    // Default sorting ke kolom User (indeks 1) secara ascending saat pertama dimuat
+    order: [[1, 'asc']]
     });
+
+    // Update nomor halaman setiap kali user melakukan sorting
+table.on('order.dt', function () {
+    renderPages();
+});
 
     $('#selectUser').select2({ dropdownParent: $('#popupAddUser'), width: '100%' });
     $('#role').select2({ dropdownParent: $('#popupAddUser'), width: '100%', dropdownPosition: 'below' });
@@ -214,8 +264,11 @@ $(document).ready(function () {
     // Auto fill name & username
     $('#selectUser').on('change', function () {
         const selected = $(this).find(':selected');
-        $('#name').val(selected.data('name') || '');
-        $('#username').val(selected.data('username') || '');
+        const nameVal = (selected.data('name') || '').toUpperCase();
+        const usernameVal = (selected.data('username') || '').toUpperCase();
+
+     $('#name').val(nameVal);
+     $('#username').val(usernameVal);
     });
 
     /* =============================
@@ -259,5 +312,47 @@ $(document).ready(function () {
             $(this).text('LIHAT DETAIL');
         }
     });
+
+/* ============================================================
+       🔟 SIDEBAR TOGGLE (SINKRON DENGAN SIDEBAR.JS)
+    ============================================================ */
+    const toggleSidebarBtn = document.getElementById("toggle-btn");
+    const sidebar = document.querySelector(".sidebar");
+    const mainContent = document.querySelector('main');
+    const icon = toggleSidebarBtn ? toggleSidebarBtn.querySelector('i') : null;
+
+    if (toggleSidebarBtn && sidebar) {
+        // Cek status saat halaman dimuat (LocalStorage)
+        if (localStorage.getItem("sidebarStatus") === "true") {
+            sidebar.classList.add("hide");
+            if (mainContent) mainContent.classList.add('sidebar-collapsed');
+            if (icon) icon.className = 'fas fa-bars';
+        }
+
+        // Event klik yang sinkron
+        toggleSidebarBtn.addEventListener("click", function() {
+            // Kita biarkan sidebar.js bekerja, tapi kita tambahkan fungsi simpan status
+            setTimeout(() => {
+                const isHidden = sidebar.classList.contains("hide");
+                localStorage.setItem("sidebarStatus", isHidden ? "true" : "false");
+            }, 50); 
+        });
+    }
+
+    document.getElementById('sortUserMobile').addEventListener('change', function() {
+    const order = this.value; // 'asc' atau 'desc'
+    const tbody = document.getElementById('userTableBody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    rows.sort((a, b) => {
+        const nameA = a.querySelector('.user-cell').innerText.trim().toLowerCase();
+        const nameB = b.querySelector('.user-cell').innerText.trim().toLowerCase();
+        
+        if (order === 'asc') return nameA.localeCompare(nameB);
+        return nameB.localeCompare(nameA);
+    });
+
+    rows.forEach(row => tbody.appendChild(row));
+});
 
 }); // <--- Ini adalah tanda penutup asli file user.js Anda
