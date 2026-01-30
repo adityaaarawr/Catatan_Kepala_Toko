@@ -164,10 +164,10 @@ table {
 
 /* BODY */
 #userTable tbody td {
-  padding: 16px 12px;
+    padding: 16px 12px;
     font-size: 14px;
     vertical-align: middle;
-    text-align: center; /* ISI JADI TENGAH */
+    text-align: center; 
     border-bottom: 1px solid #f3f4f6;
 }
 
@@ -359,7 +359,7 @@ tbody tr:hover {
     color: var(--primary);
     margin-bottom: 20px;
     font-size: 18px;
-    text-align: left;
+    text-align: center;
 }
 
 /* POPUP INPUT GROUP */
@@ -488,6 +488,10 @@ tbody tr:hover {
     display: none;
 }
 
+.mobile-sort-container {
+    display: none;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -500,6 +504,43 @@ tbody tr:hover {
      html, body {
         overflow-x: hidden;
      }
+
+    .topbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar h1 {
+    width: 100%;
+    text-align: center;
+    margin: 0 0 12px 0;
+    font-size: 20px;
+  }
+     
+   .search-filter {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* Jarak antara kotak search dan select */
+        margin-bottom: 12px;
+    }
+
+    .mobile-sort-container {
+        display: block;
+        flex-shrink: 0; /* Agar kotak sort tidak gepeng */
+    }
+
+    #sortUserMobile {
+        padding: 0 10px;
+        border: 1px solid #fff; /* Samakan dengan border search-box */
+        border-radius: 6px;
+        background-color: #fff;
+        font-size: 13px;
+        font-weight: bold;
+        color: var(--primary);
+        height: 46px; /* Samakan tinggi dengan search box kamu */
+        outline: none;
+    }
     
      
  .top-bar {
@@ -542,17 +583,19 @@ tbody tr:hover {
 
   /* ROW JADI CARD */
   #userTable tbody tr {
-   display: block;
+    display: flex;
+    flex-direction: column;
     margin-bottom: 15px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    background: #fff;
     padding: 10px;
+    background: #fff;
+    position: relative;
   }
 
   /* ===== CELL ===== */
   #userTable tbody td {
-  display: flex;
+    display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 8px 5px;
@@ -570,16 +613,32 @@ tbody tr:hover {
   color: var(--muted);
   }
 
-#userTable tbody td:nth-child(1)::before { content: "No"; }
+/* #userTable tbody td:nth-child(1)::before { content: "No"; } */
 #userTable tbody td:nth-child(2)::before { content: "User"; }
 #userTable tbody td:nth-child(3)::before { content: "Role"; }
 #userTable tbody td:nth-child(4)::before { content: "Status"; }
 #userTable tbody td:nth-child(5)::before { content: "Action"; }
 
-   /* SEMBUNYIKAN ROLE & STATUS */
+/* 1. SEMBUNYIKAN KOLOM NOMOR (No) SEPENUHNYA */
+  #userTable tbody td:nth-child(1) {
+    display: none !important;
+  }
+
+  /* 3. PASTIKAN KOLOM USER DAN ACTION SELALU MUNCUL */
+  #userTable tbody td:nth-child(2),
+  #userTable tbody td:nth-child(5) {
+    display: flex !important;
+  }
+
+  /* 4. LOGIKA SHOW/HIDE DETAIL (Role & Status) */
   #userTable tbody td:nth-child(3),
   #userTable tbody td:nth-child(4) {
-    display: none;
+    display: none; /* Sembunyi saat awal */
+  }
+
+  #userTable tbody tr.show-detail td:nth-child(3),
+  #userTable tbody tr.show-detail td:nth-child(4) {
+    display: flex !important; /* Muncul saat tombol diklik */
   }
 
   /* ACTION TETAP ADA */
