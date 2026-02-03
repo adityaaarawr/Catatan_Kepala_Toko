@@ -491,9 +491,8 @@ td:last-child {
     min-height: 50px; 
 }
 
-/* Menghilangkan potensi scrollbar ganda yang bikin layar geser */
-body.select2-container--open {
-    overflow: hidden;
+html {
+    scrollbar-gutter: stable;
 }
 
 /* ============================================
