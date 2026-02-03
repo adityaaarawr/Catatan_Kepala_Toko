@@ -65,17 +65,6 @@ $notesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $namaKaryawanMap = array_column($karyawanList, 'nama_lengkap', 'id');
 $namaTokoMap     = array_column($karyawanList, 'store', 'toko_id');   // Gunakan toko_id
 $namaDivisiMap   = array_column($karyawanList, 'posisi', 'divisi_id'); // Gunakan divisi_id
-
-// JIKA PILIH KARYAWAN → AUTO ISI DIVISI & TOKO (Cari dari hasil API)
-if (!empty($f_karyawan)) {
-     foreach ($karyawanList as $k) {
-        if ($k['id'] == $f_karyawan) {
-            $f_divisi = $k['divisi_id'];
-            $f_toko   = $k['toko_id'];
-            break;
-        }
-    }
-}
 ?>
 
 <div class="layout"> 
