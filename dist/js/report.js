@@ -55,35 +55,46 @@ $(document).ready(function () {
     filterToko();
     filterKaryawan();
 });
-
-   function filterDivisi() {
+function filterDivisi() {
     const t = $toko.val();
+    const selectedDivisi = $divisi.val(); // SIMPAN PILIHAN
 
     $divisi.html(original.divisi);
 
-    if (!t) return;
+    if (t) {
+        $divisi.find('option').each(function () {
+            if (!$(this).val()) return;
 
-    $divisi.find('option').each(function () {
-        if (!$(this).val()) return;
+            const d = $(this).val();
+            let found = false;
 
-        const d = $(this).val();
-        let found = false;
+            $(original.karyawan).each(function () {
+                const opt = $(this);
+                if (
+                    opt.data('toko') === t &&
+                    opt.data('divisi') === d
+                ) {
+                    found = true;
+                }
+            });
 
-        $(original.karyawan).each(function () {
-            const opt = $(this);
-            if (
-                opt.data('toko') === t &&
-                opt.data('divisi') === d
-            ) {
-                found = true;
-            }
+            if (!found) $(this).remove();
         });
+    }
 
-        if (!found) $(this).remove();
-    });
+    // 🔐 BALIKIN DIVISI JIKA MASIH ADA
+    if (
+        selectedDivisi &&
+        $divisi.find(`option[value="${selectedDivisi}"]`).length
+    ) {
+        $divisi.val(selectedDivisi);
+    } else {
+        $divisi.val(null);
+    }
 
     $divisi.trigger('change.select2', [true]);
 }
+
 
 /* ============================================================
       3. JIKA PILIH TOKO -> DIVISI & KARYAWAN MENGERUCUT
@@ -93,35 +104,46 @@ $toko.on('change', function (e, isAuto) {
     filterDivisi();
     filterKaryawan();
 });
-
 function filterToko() {
     const d = $divisi.val();
+    const selectedToko = $toko.val(); // SIMPAN PILIHAN
 
     $toko.html(original.toko);
 
-    if (!d) return;
+    if (d) {
+        $toko.find('option').each(function () {
+            if (!$(this).val()) return;
 
-    $toko.find('option').each(function () {
-        if (!$(this).val()) return;
+            const t = $(this).val();
+            let found = false;
 
-        const t = $(this).val();
-        let found = false;
+            $(original.karyawan).each(function () {
+                const opt = $(this);
+                if (
+                    opt.data('divisi') === d &&
+                    opt.data('toko') === t
+                ) {
+                    found = true;
+                }
+            });
 
-        $(original.karyawan).each(function () {
-            const opt = $(this);
-            if (
-                opt.data('divisi') === d &&
-                opt.data('toko') === t
-            ) {
-                found = true;
-            }
+            if (!found) $(this).remove();
         });
+    }
 
-        if (!found) $(this).remove();
-    });
+    // 🔐 BALIKIN TOKO JIKA MASIH ADA
+    if (
+        selectedToko &&
+        $toko.find(`option[value="${selectedToko}"]`).length
+    ) {
+        $toko.val(selectedToko);
+    } else {
+        $toko.val(null);
+    }
 
     $toko.trigger('change.select2', [true]);
 }
+
 
 /* ==============================================
       Script untuk Toggle Detail di Mobile
@@ -137,6 +159,19 @@ $(document).on('click', '.toggle-detail', function() {
         $(this).text('LIHAT DETAIL');
     }
 });
+
+  function toggleMobileFilter() {
+    const filterGrid = document.getElementById('filterGrid');
+    const triggerBtn = document.querySelector('.mobile-filter-trigger');
+    
+    if (filterGrid.classList.contains('show-mobile')) {
+        filterGrid.classList.remove('show-mobile');
+        triggerBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M440-120v-240h80v80h320v80H520v80h-80Zm-320-80v-80h240v80H120Zm160-160v-80H120v-80h160v-80h80v240h-80Zm160-80v-80h400v80H440Zm160-160v-240h80v80h160v80H680v80h-80Zm-480-80v-80h400v80H120Z"/></svg> FILTER DATA';
+    } else {
+        filterGrid.classList.add('show-mobile');
+        triggerBtn.innerHTML = 'TUTUP FILTER';
+    }
+}
 
 /* ============================================================
        🔟 SIDEBAR TOGGLE (SINKRON DENGAN SIDEBAR.JS)
@@ -164,16 +199,3 @@ $(document).on('click', '.toggle-detail', function() {
         });
     }
 });
-
-function toggleMobileFilter() {
-    const filterGrid = document.getElementById('filterGrid');
-    const triggerBtn = document.querySelector('.mobile-filter-trigger');
-    
-    if (filterGrid.classList.contains('show-mobile')) {
-        filterGrid.classList.remove('show-mobile');
-        triggerBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M440-120v-240h80v80h320v80H520v80h-80Zm-320-80v-80h240v80H120Zm160-160v-80H120v-80h160v-80h80v240h-80Zm160-80v-80h400v80H440Zm160-160v-240h80v80h160v80H680v80h-80Zm-480-80v-80h400v80H120Z"/></svg> FILTER DATA';
-    } else {
-        filterGrid.classList.add('show-mobile');
-        triggerBtn.innerHTML = 'TUTUP FILTER';
-    }
-}
