@@ -120,16 +120,11 @@ $context = stream_context_create(["ssl" => ["verify_peer"=>false, "verify_peer_n
 $jsonData = @file_get_contents($apiUrl, false, $context);
 $karyawan_api = json_decode($jsonData, true) ?? [];
 
-// echo '<pre>';
-// print_r($karyawan_api[0]);
-// exit;
-
-
 /* ==========================
    AMBIL DATA DARI DB LOKAL ROLES)
 ========================== */
 // Ini tetap ambil dari DB karena ini data akun untuk login web kamu
-$sqlUsers = "SELECT u.id, u.name, u.username, u.last_active, u.enable, u.expired_at, r.role_name
+$sqlUsers = "SELECT u.id, u.name, u.username, u.enable, u.expired_at, r.role_name
             FROM users u
             LEFT JOIN roles r ON r.id = u.role_id
             ORDER BY u.id ASC";
@@ -182,21 +177,6 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
                 
                 <tbody id="userTableBody">
                    <?php if (!empty($users)): $no = 1; foreach ($users as $u): ?>
-                   <?php 
-        // Logika: Cek apakah user aktif dalam 5 menit terakhir
-        $isActive = false;
-        $lastSeenTime = "-";
-        if (!empty($u['last_active']) && $u['last_active'] != '0000-00-00 00:00:00') {
-            $lastSeen = strtotime($u['last_active']);
-            $now = time();
-            $displayTime = date('d/m H:i', $lastSeen); // Contoh: 28/01 14:30
-
-            // Cek jika aktifitas terakhir masih di bawah 5 menit
-            if (($now - $lastSeen) < 300) { 
-                $isActive = true;
-            }
-        }
-    ?>
     <tr>
         <td><?= $no++; ?></td>
         <td class="user-cell">
@@ -205,49 +185,25 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
         </td>
         <td><span class="role-bubble"><?= strtoupper($u['role_name'] ?? '-'); ?></span></td>
         <td>
-    <?php 
-        // 1. Ambil data dasar
-        $isEnabled = (int)$u['enable'] === 1;
-        $expiryDate = !empty($u['expired_at']) ? strtotime($u['expired_at']) : null;
-        $now = time();
-        
-        // 2. Cek apakah akun kedaluwarsa (jika expiryDate tidak null)
-        $isExpired = ($expiryDate !== null && $now > $expiryDate);
+            <?php
+    $isEnabled   = (int)$u['enable'] === 1;
+    $expiryDate = !empty($u['expired_at']) ? strtotime($u['expired_at']) : null;
+    $now        = time();
 
-        // 3. Tentukan status utama (SUSPENDED / EXPIRED / ACTIVE / INACTIVE)
-        if (!$isEnabled) {
-            $statusLabel = "SUSPENDED";
-            $statusClass = "inactive"; // Anda bisa buat class CSS khusus jika ingin warna berbeda
-            $subText = "DISABLED BY ADMIN";
-            $subColor = "#ef4444";
-        } elseif ($isExpired) {
-            $statusLabel = "EXPIRED";
-            $statusClass = "inactive";
-            $subText = date('d/m/Y', $expiryDate);
-            $subColor = "#f59e0b"; // Warna orange/kuning
-        } else {
-            // Logika Aktivitas (Online/Offline)
-            $lastSeen = !empty($u['last_active']) && $u['last_active'] != '0000-00-00 00:00:00' ? strtotime($u['last_active']) : null;
-            
-            if ($lastSeen && ($now - $lastSeen) < 300) {
-                $statusLabel = "ACTIVE";
-                $statusClass = "active";
-                $subText = date('H:i', $lastSeen);
-                $subColor = "#10b981";
-            } else {
-                $statusLabel = "INACTIVE";
-                $statusClass = "inactive";
-                $subText = $lastSeen ? date('d/m H:i', $lastSeen) : "NEVER ACTIVE";
-                $subColor = ($lastSeen) ? "#6b7280" : "#ef4444";
-            }
-        }
-    ?>
+    if (!$isEnabled) {
+        $statusLabel = "SUSPENDED";
+        $statusClass = "inactive";
+    } elseif ($expiryDate !== null && $now > $expiryDate) {
+        $statusLabel = "EXPIRED";
+        $statusClass = "inactive";
+    } else {
+        $statusLabel = "ACTIVE";
+        $statusClass = "active";
+    }
+?>
 
     <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
         <span class="role-bubble <?= $statusClass ?>"><?= $statusLabel ?></span>
-        <small style="color: <?= $subColor ?>; font-size: 10px; font-weight: 500; text-transform: uppercase;">
-            <?= $subText ?>
-        </small>
     </div>
 </td>
    
@@ -308,7 +264,6 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
                 <?= strtoupper($nama ?: '-') ?>
             </option>
         <?php endforeach; ?>
-
     </select>
 </div>
 
