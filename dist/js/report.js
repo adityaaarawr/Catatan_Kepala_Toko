@@ -12,7 +12,9 @@ $(document).ready(function () {
         toko: $toko.html()
     };
 
-    // 1. JIKA PILIH KARYAWAN -> AUTO ISI TOKO & DIVISI
+    /* ============================================================
+        1. JIKA PILIH KARYAWAN -> AUTO ISI TOKO & DIVISI
+    ============================================================ */
     $karyawan.on('change', function (e, isAuto) {
         if (isAuto) return;
         const opt = $(this).find(':selected');
@@ -22,7 +24,10 @@ $(document).ready(function () {
         if (d) $divisi.val(d).trigger('change.select2', [true]);
         if (t) $toko.val(t).trigger('change.select2', [true]);
     });
-     // 2. JIKA PILIH TOKO/DIVISI -> KARYAWAN MENGERUCUT
+
+    /* ============================================================
+       2. JIKA PILIH TOKO/DIVISI -> KARYAWAN MENGERUCUT
+    ============================================================ */
     function filterKaryawan() {
         const d = $divisi.val();
         const t = $toko.val();
@@ -42,18 +47,85 @@ $(document).ready(function () {
         $karyawan.trigger('change.select2', [true]);
     }
 
+    /* ============================================================
+      3. JIKA PILIH DIVISI -> TOKO & KARYAWAN MENGERUCUT
+    ============================================================ */
     $divisi.on('change', function (e, isAuto) {
-        if (isAuto) return;
-        filterKaryawan();
+    if (isAuto) return;
+    filterToko();
+    filterKaryawan();
+});
+
+   function filterDivisi() {
+    const t = $toko.val();
+
+    $divisi.html(original.divisi);
+
+    if (!t) return;
+
+    $divisi.find('option').each(function () {
+        if (!$(this).val()) return;
+
+        const d = $(this).val();
+        let found = false;
+
+        $(original.karyawan).each(function () {
+            const opt = $(this);
+            if (
+                opt.data('toko') === t &&
+                opt.data('divisi') === d
+            ) {
+                found = true;
+            }
+        });
+
+        if (!found) $(this).remove();
     });
 
-    $toko.on('change', function (e, isAuto) {
-        if (isAuto) return;
-        filterKaryawan();
+    $divisi.trigger('change.select2', [true]);
+}
+
+/* ============================================================
+      3. JIKA PILIH TOKO -> DIVISI & KARYAWAN MENGERUCUT
+    ============================================================ */
+$toko.on('change', function (e, isAuto) {
+    if (isAuto) return;
+    filterDivisi();
+    filterKaryawan();
+});
+
+function filterToko() {
+    const d = $divisi.val();
+
+    $toko.html(original.toko);
+
+    if (!d) return;
+
+    $toko.find('option').each(function () {
+        if (!$(this).val()) return;
+
+        const t = $(this).val();
+        let found = false;
+
+        $(original.karyawan).each(function () {
+            const opt = $(this);
+            if (
+                opt.data('divisi') === d &&
+                opt.data('toko') === t
+            ) {
+                found = true;
+            }
+        });
+
+        if (!found) $(this).remove();
     });
 
+    $toko.trigger('change.select2', [true]);
+}
 
-    // Script untuk Toggle Detail di Mobile
+/* ==============================================
+      Script untuk Toggle Detail di Mobile
+    =================================================== */
 $(document).on('click', '.toggle-detail', function() {
     const $tr = $(this).closest('tr');
     $tr.toggleClass('show-detail');
@@ -65,7 +137,6 @@ $(document).on('click', '.toggle-detail', function() {
         $(this).text('LIHAT DETAIL');
     }
 });
-
 
 /* ============================================================
        🔟 SIDEBAR TOGGLE (SINKRON DENGAN SIDEBAR.JS)
