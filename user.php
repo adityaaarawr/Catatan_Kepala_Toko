@@ -1,8 +1,29 @@
 <?php 
+session_start();
 $pageTitle = 'User Management'; 
 $cssFile = 'user.css'; 
 $jsFile = 'user.js';
 include './direct/config.php';
+
+// ===============================
+// PROTEKSI USER MANAGEMENT PAGE
+// ===============================
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+$stmtCheck = $conn->prepare("SELECT enable FROM users WHERE id = ?");
+$stmtCheck->execute([$_SESSION['user_id']]);
+$authUser = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+// ⛔ HANYA enable = 0 yang diblokir
+if (!$authUser || (int)$authUser['enable'] === 0) {
+    session_destroy();
+    header("Location: login.php?error=disabled");
+    exit;
+}
 
 $sqlRoles = "SELECT id, role_name FROM roles ORDER BY role_name ASC";
 $stmtRoles = $conn->prepare($sqlRoles);
@@ -32,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user_id  = $_POST['id'] ?? null;
         
         // Ambil data tambahan untuk kolom baru
-        $enable   = isset($_POST['enable']) ? 1 : 0;
+        $enable = (!empty($_POST['enable']) && $_POST['enable'] == '1') ? 1 : 0;
         $expired  = !empty($_POST['expired_at']) ? $_POST['expired_at'] : null;
 
         if ($action === 'add_user') {
@@ -334,4 +355,5 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </main>
 </div>
-<?php include 'modules/footer.php'; ?>
+<?php include 'modules/footer.php'; ?>  
+
