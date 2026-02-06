@@ -1,11 +1,10 @@
-
 <link rel="stylesheet" href="dist/css/sidebar.css">
 
+<aside class="sidebar">
     <button id="toggle-btn" class="toggle-btn">
         <i class="fas fa-bars"></i>
     </button>
 
-    <aside class="sidebar">
     <div class="logo">
         <span class="logo-text">
             <?php 
