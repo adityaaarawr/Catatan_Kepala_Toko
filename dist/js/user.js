@@ -238,7 +238,12 @@ if (editBtn) {
     /* =============================
        7️⃣ DATATABLE & SELECT2 INIT
     ============================== */
-    const table = $('#userTable').DataTable({
+    let table;
+if ($.fn.dataTable.isDataTable('#userTable')) {
+    table = $('#userTable').DataTable();
+} else {
+    table = $('#userTable').DataTable({
+        destroy: true,
         dom: 't',
         ordering: true,
         paging: true,
@@ -252,6 +257,7 @@ if (editBtn) {
     // Default sorting ke kolom User (indeks 1) secara ascending saat pertama dimuat
     order: [[1, 'asc']]
     });
+}
 
     // Update nomor halaman setiap kali user melakukan sorting
 table.on('order.dt', function () {
@@ -311,45 +317,34 @@ table.on('order.dt', function () {
 
     /* ============================================================
        9️⃣ TOGGLE DETAIL MOBILE (Tambahkan di bawah sini)
-    ============================================================ */
-    $(document).on('click', '.toggle-detail', function() {
-        const $tr = $(this).closest('tr');
-        $tr.toggleClass('show-detail');
-        
-        // Logika ganti teks tombol
-        if ($tr.hasClass('show-detail')) {
-            $(this).text('TUTUP DETAIL');
-        } else {
-            $(this).text('LIHAT DETAIL');
-        }
-    });
+    ============================================================ *//* ============================================================
+   9️⃣ TOGGLE DETAIL MOBILE (SOLUSI FIX)
+============================================================ */
+// Gunakan $(document).off().on() untuk memastikan tidak ada double click event
+$(document).off('click', '.toggle-detail').on('click', '.toggle-detail', function (e) {
+    // 1. Mencegah link default & menghentikan klik agar tidak tembus ke fungsi Edit/Delete
+    e.preventDefault();
+    e.stopPropagation();
 
-/* ============================================================
-       🔟 SIDEBAR TOGGLE (SINKRON DENGAN SIDEBAR.JS)
-    ============================================================ */
-    const toggleSidebarBtn = document.getElementById("toggle-btn");
-    const sidebar = document.querySelector(".sidebar");
-    const mainContent = document.querySelector('main');
-    const icon = toggleSidebarBtn ? toggleSidebarBtn.querySelector('i') : null;
+    // 2. Cari baris (tr) terdekat dari tombol yang diklik
+    const $row = $(this).closest('tr');
+    
+    // 3. Toggle class 'show-detail' (Ini yang memicu CSS Anda bekerja)
+    $row.toggleClass('show-detail');
 
-    if (toggleSidebarBtn && sidebar) {
-        // Cek status saat halaman dimuat (LocalStorage)
-        if (localStorage.getItem("sidebarStatus") === "true") {
-            sidebar.classList.add("hide");
-            if (mainContent) mainContent.classList.add('sidebar-collapsed');
-            if (icon) icon.className = 'fas fa-bars';
-        }
-
-        // Event klik yang sinkron
-        toggleSidebarBtn.addEventListener("click", function() {
-            // Kita biarkan sidebar.js bekerja, tapi kita tambahkan fungsi simpan status
-            setTimeout(() => {
-                const isHidden = sidebar.classList.contains("hide");
-                localStorage.setItem("sidebarStatus", isHidden ? "true" : "false");
-            }, 50); 
-        });
+    // 4. Ubah teks & warna tombol secara langsung di JS untuk kepastian
+    if ($row.hasClass('show-detail')) {
+        $(this).text('TUTUP DETAIL');
+    } else {
+        $(this).text('LIHAT DETAIL');
+        $(this).attr('style', ''); // Kembalikan ke style awal dari CSS
     }
 
+    console.log("Toggle Detail diklik, class 'show-detail' berhasil dipasang.");
+});
+    /* =======================
+           SORT MOBILE
+    ================================ */
     document.getElementById('sortUserMobile').addEventListener('change', function() {
     const order = this.value; // 'asc' atau 'desc'
     const tbody = document.getElementById('userTableBody');
@@ -365,5 +360,9 @@ table.on('order.dt', function () {
 
     rows.forEach(row => tbody.appendChild(row));
 });
+
+
+
+
 
 }); // <--- Ini adalah tanda penutup asli file user.js Anda

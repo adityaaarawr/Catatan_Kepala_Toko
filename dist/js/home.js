@@ -2,9 +2,10 @@
  * =================================================================
  * 1. DEKLARASI VARIABEL GLOBAL
  * =================================================================
+ * PROBLEM: Variabel dideklarasikan di dua tempat berbeda
  */
 let modal, viewModal, modalTitle, noteForm, tableBody, searchBar;
-let deleteTargetId = null;
+let deleteTargetId = null; // 🔴 Variabel ganda: juga ada deleteId di line 278
 
 /**
  * =================================================================
@@ -19,6 +20,7 @@ const toggleBtn = document.querySelector('#toggle-btn');
 /**
  * window.showNotification
  * Menampilkan pesan pop-up (Toast) di pojok layar
+ * PROBLEM: Tidak ada CSS untuk class 'hide-notification'
  */
 window.showNotification = function (message, type = 'info') {
     let container = document.getElementById('notification-container');
@@ -82,12 +84,14 @@ function adjustMainContentMargin() {
 /**
  * =================================================================
  * 3. LOGIKA MODAL (OPEN, CLOSE, VIEW, EDIT)
+ * PROBLEM: Nama fungsi tidak konsisten (openviewModal vs openViewModal)
  * =================================================================
  */
 
 /**
  * window.openModal
  * Menyiapkan form untuk penambahan data baru
+ * PROBLEM: Tidak ada loading indicator saat fetch API
  */
 window.openModal = function () {
     console.log("openModal dipanggil");
@@ -133,7 +137,6 @@ window.openModal = function () {
     
 };
 
-
 /**
  * window.closeModal & window.closeViewModal
  * Menutup modal form dan modal view
@@ -153,8 +156,9 @@ window.closeViewModal = function () {
 };
 
 /**
- * window.openViewModal
+ * window.openviewModal
  * Menampilkan detail lengkap satu catatan secara read-only
+ * PROBLEM: Nama fungsi typo (openviewModal, harusnya openViewModal)
  */
 window.openviewModal = async function(tr){
 
@@ -241,6 +245,7 @@ window.openviewModal = async function(tr){
 /**
  * window.openEditModal
  * Mengambil data lama dan memasukkannya kembali ke form untuk diedit
+ * PROBLEM: Tidak ada error handling jika API gagal load
  */
 window.openEditModal = async function(btn, e){
     if(e) e.stopPropagation();
@@ -335,6 +340,7 @@ window.openEditModal = async function(btn, e){
 /**
  * initSearchKaryawan
  * Inisialisasi fitur pencarian pada dropdown karyawan
+ * PROBLEM: Tidak ada debounce untuk performa
  */
 function initSearchKaryawan() {
     const input = document.getElementById("searchKaryawanInput");
@@ -380,12 +386,14 @@ function checkOptionalFields() {
 /**
  * =================================================================
  * 5. OPERASI DATA (SAVE, DELETE)
+ * PROBLEM: Logika delete duplikat (dua implementasi berbeda)
  * =================================================================
  */
 
 /**
  * window.saveNote
  * Menyimpan atau mengupdate catatan ke server
+ * PROBLEM: URL 'home.php' hardcoded, tidak fleksibel
  */
 window.saveNote = function () {
     const form = document.getElementById('noteForm');
@@ -439,8 +447,9 @@ window.saveNote = function () {
 /**
  * window.deleteNote
  * Menampilkan konfirmasi dan menghapus catatan
+ * PROBLEM: Variabel deleteId shadowing variabel global deleteTargetId
  */
-let deleteId = null;
+let deleteId = null; // 🔴 GANDA: sudah ada deleteTargetId di line 6
 
 window.deleteNote = function(id, e){
     if(e) e.stopPropagation();
@@ -449,6 +458,12 @@ window.deleteNote = function(id, e){
     document.getElementById("confirmModal").style.display = "flex";
 }
 
+/**
+ * 🔴 PROBLEM BESAR: Implementasi delete dua kali dengan logika berbeda
+ * Ada di line 278-313 dan line 357-382
+ */
+
+// Implementasi pertama (mungkin tidak terpakai)
 document.getElementById("confirmCancel").onclick = function(){
     deleteId = null;
     document.getElementById("confirmModal").style.display = "none";
@@ -493,6 +508,7 @@ document.getElementById("confirmDelete").onclick = function(){
 /**
  * window.applyFilters
  * Menerapkan filter pada tabel berdasarkan input pencarian
+ * PROBLEM: Tidak ada debounce, bisa lambat pada tabel besar
  */
 window.applyFilters = function () {
     tableBody = tableBody || document.getElementById('noteTableBody');
@@ -559,6 +575,7 @@ window.applyFilters = function () {
 /**
  * =================================================================
  * 7. INISIALISASI EVENT LISTENER & DOM READY
+ * PROBLEM: Dua DOMContentLoaded listener (line 423 dan 478)
  * =================================================================
  */
 
@@ -628,7 +645,7 @@ function initApplication() {
     if (inputCatatan) inputCatatan.addEventListener('input', checkOptionalFields);
     if (inputFile) inputFile.addEventListener('change', checkOptionalFields);
 
-    // Setup konfirmasi delete
+    // Setup konfirmasi delete - 🔴 IMPLEMENTASI KEDUA
     document.getElementById("confirmCancel").onclick = () => {
         document.getElementById("confirmModal").style.display = "none";
         deleteTargetId = null;
@@ -666,6 +683,13 @@ window.addEventListener('resize', adjustMainContentMargin);
 // Inisialisasi aplikasi saat DOM siap
 document.addEventListener('DOMContentLoaded', initApplication);
 
+/**
+ * =================================================================
+ * 8. MASTER API MANAGEMENT
+ * PROBLEM: DataTable initialization di dalam fungsi loadToko (line 452)
+ * =================================================================
+ */
+
 // LOAD API // 
 let masterAPI = {
     toko: [],
@@ -685,6 +709,18 @@ function loadToko() {
     masterAPI.toko.forEach(t => {
         tokoSelect.innerHTML += `<option value="${t}">${t.toUpperCase()}</option>`;
     });
+
+    // 🔴 PROBLEM: DataTable initialization tidak seharusnya di sini
+    $("#master-table-all").DataTable({
+        "responsive": true,
+        "lengthChange": false,
+        "autoWidth": false,
+        "paging": true,
+        "pageLength": 10,
+        "searching": false,
+        "info": true,
+        "ordering": false
+    })
 }
 
 function loadKaryawanByToko(namaToko) {
@@ -707,7 +743,6 @@ function getKaryawanById(id) {
     return masterAPI.karyawan.find(k => k.id == id);
 }
 
-
 document.getElementById("inputToko").addEventListener("change", function () {
     document.getElementById("inputDivisi").value = "";
     document.getElementById("divisi_id").value = "";
@@ -725,7 +760,7 @@ function updateDivisi() {
     document.getElementById("divisi_id").value = kar.dataset.divisi || "";
 }
 
+// 🔴 DOMContentLoaded kedua - HARUSNYA SATU SAJA
 document.addEventListener("DOMContentLoaded", async () => {
     await loadMasterAPI();
 });
-

@@ -1,3 +1,29 @@
+/* ==============================================
+   Script untuk Toggle Detail di Mobile
+=================================================== */
+$(document).ready(function() {
+    // Gunakan $(document).on agar elemen yang baru muncul/di-render DataTable tetap bisa diklik
+    $(document).on('click', '.toggle-detail', function(e) {
+        e.preventDefault();
+        e.stopPropagation(); // Mencegah bentrokan klik
+
+        const $tr = $(this).closest('tr');
+        $tr.toggleClass('show-detail');
+
+        if ($tr.hasClass('show-detail')) {
+            $(this).text('TUTUP DETAIL').css('background-color', '#ff4d4d');
+        } else {
+            $(this).text('LIHAT DETAIL').css('background-color', '#007bff');
+        }
+        
+        console.log("Toggle diklik pada baris:", $tr.index()); // Untuk debug di inspect element
+    });
+});
+
+/* ==============================================
+       LOGIKA SELECT KARYAWAN, DIVISI, TOKO
+    ===================================================== */
+
 $(document).ready(function () {
     const $karyawan = $('#filterKaryawan');
     const $divisi   = $('#filterDivisi');
@@ -159,52 +185,42 @@ $(document).on('click', '.toggle-detail', function() {
         $(this).text('LIHAT DETAIL');
     }
 });
-
-/* ============================================================
-       🔟 SIDEBAR TOGGLE (SINKRON DENGAN SIDEBAR.JS)
-    ============================================================ */
-    const toggleSidebarBtn = document.getElementById("toggle-btn");
-    const sidebar = document.querySelector(".sidebar");
-    const mainContent = document.querySelector('main');
-    const icon = toggleSidebarBtn ? toggleSidebarBtn.querySelector('i') : null;
-
-    if (toggleSidebarBtn && sidebar) {
-        // Cek status saat halaman dimuat (LocalStorage)
-        if (localStorage.getItem("sidebarStatus") === "true") {
-            sidebar.classList.add("hide");
-            if (mainContent) mainContent.classList.add('sidebar-collapsed');
-            if (icon) icon.className = 'fas fa-bars';
-        }
-
-        // Event klik yang sinkron
-        toggleSidebarBtn.addEventListener("click", function() {
-            // Kita biarkan sidebar.js bekerja, tapi kita tambahkan fungsi simpan status
-             setTimeout(() => {
-        const isHidden = sidebar.classList.contains("hide");
-
-        // 🔥 INI YANG KURANG
-        if (mainContent) {
-            mainContent.classList.toggle('sidebar-collapsed', isHidden);
-        }
-
-        localStorage.setItem(
-            "sidebarStatus",
-            isHidden ? "true" : "false"
-        );
-    }, 50);
-        });
-    }
 });
 
- function toggleMobileFilter() {
+// 1. FUNGSI FILTER MOBILE
+function toggleMobileFilter() {
     const filterGrid = document.getElementById('filterGrid');
     const triggerBtn = document.querySelector('.mobile-filter-trigger');
     
-    if (filterGrid.classList.contains('show-mobile')) {
+    if (!filterGrid) return;
+
+    // Paksa paksa buka/tutup
+    if (filterGrid.style.display === 'grid' || filterGrid.classList.contains('show-mobile')) {
         filterGrid.classList.remove('show-mobile');
-        triggerBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M440-120v-240h80v80h320v80H520v80h-80Zm-320-80v-80h240v80H120Zm160-160v-80H120v-80h160v-80h80v240h-80Zm160-80v-80h400v80H440Zm160-160v-240h80v80h160v80H680v80h-80Zm-480-80v-80h400v80H120Z"/></svg> FILTER DATA';
+        filterGrid.style.display = 'none'; // Paksa sembunyi
+        triggerBtn.innerText = 'FILTER DATA';
     } else {
         filterGrid.classList.add('show-mobile');
-        triggerBtn.innerHTML = 'TUTUP FILTER';
+        filterGrid.style.display = 'grid'; // Paksa muncul
+        triggerBtn.innerText = 'TUTUP FILTER';
+    }
+}
+
+// 2. FUNGSI DETAIL MOBILE (Gunakan ini jika CSS tidak mau diubah)
+function handleDetailClick(element, event) {
+    event.preventDefault();
+    event.stopPropagation(); // Stop klik tembus ke elemen di bawahnya
+
+    const $tr = $(element).closest('tr');
+    $tr.toggleClass('show-detail');
+
+    if ($tr.hasClass('show-detail')) {
+        element.innerText = 'TUTUP DETAIL';
+        element.style.backgroundColor = '#ff4d4d'; // Beri warna tanda tutup
+        element.style.color = 'white';
+    } else {
+        element.innerText = 'LIHAT DETAIL';
+        element.style.backgroundColor = '#f0f4f8'; // Warna asli CSS Anda
+        element.style.color = 'black';
     }
 }
