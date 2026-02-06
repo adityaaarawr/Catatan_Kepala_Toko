@@ -21,12 +21,12 @@ $result = [
     "karyawan" => []
 ];
 
-foreach ($data as $k) {
+foreach ($data as $k) { 
     $result["karyawan"][] = [
         "id"     => $k["id"],
         "nama"   => $k["nama_lengkap"],
         "toko"   => $k["store"],
-        "divisi" => $k["posisi"]
+        "divisi" => $k["divisi"]
     ];
 
     $result["toko"][$k["store"]] = $k["store"];
