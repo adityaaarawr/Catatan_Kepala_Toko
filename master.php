@@ -1,19 +1,44 @@
 <?php 
 require_once "direct/config.php";
 
-$dataToko = $conn->query("SELECT * FROM toko ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
+/* ==============================================
+   SECTION 1: DATA RETRIEVAL FROM DATABASE
+   ============================================== */
 
-$dataDivisi = $conn->query("SELECT d.*, t.nama_toko FROM divisi d 
-    LEFT JOIN toko t ON d.toko_id = t.id ORDER BY d.id DESC")->fetchAll(PDO::FETCH_ASSOC);
+// DATA TOKO - PROBLEM: Tidak ada join dengan users table untuk username
+$dataToko = $conn->query("
+    SELECT * 
+    FROM toko 
+    ORDER BY id DESC
+")->fetchAll(PDO::FETCH_ASSOC);
 
-$dataTopik = $conn->query("SELECT tp.*, t.nama_toko, d.nama_divisi FROM topik tp 
+// DATA DIVISI - PROBLEM: Nama tabel 'divisi' perlu konsistensi (biasanya 'divisi' bukan 'divisi')
+$dataDivisi = $conn->query("
+    SELECT d.*, t.nama_toko 
+    FROM divisi d 
+    LEFT JOIN toko t ON d.toko_id = t.id 
+    ORDER BY d.id DESC
+")->fetchAll(PDO::FETCH_ASSOC);
+
+// DATA TOPIK - GOOD: Sudah join dengan tabel terkait
+$dataTopik = $conn->query("
+    SELECT tp.*, t.nama_toko, d.nama_divisi 
+    FROM topik tp 
     LEFT JOIN toko t ON tp.toko_id = t.id 
-    LEFT JOIN divisi d ON tp.divisi_id = d.id ORDER BY tp.id DESC")->fetchAll(PDO::FETCH_ASSOC);
+    LEFT JOIN divisi d ON tp.divisi_id = d.id 
+    ORDER BY tp.id DESC
+")->fetchAll(PDO::FETCH_ASSOC);
 
-$dataKaryawan = $conn->query("SELECT k.*, t.nama_toko, d.nama_divisi FROM karyawan k    
+// DATA KARYAWAN - PROBLEM: Indentation tidak konsisten
+$dataKaryawan = $conn->query("
+    SELECT k.*, t.nama_toko, d.nama_divisi 
+    FROM karyawan k    
     LEFT JOIN toko t ON k.toko_id = t.id 
-    LEFT JOIN divisi d ON k.divisi_id = d.id ORDER BY k.id DESC")->fetchAll(PDO::FETCH_ASSOC);
+    LEFT JOIN divisi d ON k.nama_divisi = d.id 
+    ORDER BY k.id DESC
+")->fetchAll(PDO::FETCH_ASSOC);
 
+// DATA USER ROLE - PROBLEM: Query kompleks, mungkin perlu dioptimasi
 $dataTransaksi_user_role = $conn->query("
     SELECT 
         r.id, 
@@ -29,6 +54,9 @@ $dataTransaksi_user_role = $conn->query("
     ORDER BY r.id ASC 
 ")->fetchAll(PDO::FETCH_ASSOC);
 
+/* ==============================================
+   SECTION 2: PAGE CONFIGURATION
+   ============================================== */
 $pageTitle = 'Master'; 
 $cssFile = 'master.css'; 
 $jsFile = 'master.js';
@@ -36,22 +64,28 @@ include 'modules/header.php';
 
 ?>
 
+<!-- ==============================================
+     SECTION 3: MAIN LAYOUT
+     ============================================== -->
 <div class="layout">
     <?php include 'modules/sidebar.php'; ?>
     
     <main>
+        <!-- TOP BAR -->
         <div class="topbar">
             <h1 class="title">MASTER MANAGEMENT</h1>
         </div>
 
+        <!-- NAVIGATION TABS -->
         <div class="master-nav">
-            <button class="master-tab active" data-type="toko">TOKO</button>
+            <button class="master-tab" data-type="toko">TOKO</button>
             <button class="master-tab" data-type="divisi">DIVISI</button>
             <button class="master-tab" data-type="topik">TOPIK</button>
             <button class="master-tab" data-type="karyawan">KARYAWAN</button>
             <button class="master-tab" data-type="user-role">USER ROLE</button>
         </div>
 
+        <!-- TABLE HEADER -->
         <div class="master-header">
             <h2 class="section-title">TOKO</h2>
             <button id="btnAddMaster" class="btn-primary">
@@ -59,13 +93,16 @@ include 'modules/header.php';
             </button>
         </div>
 
+        <!-- MAIN TABLE -->
         <div class="card table-card">
+            <!-- SEARCH BAR -->
             <div class="table-actions-bar">
                 <input type="text" id="masterSearch" placeholder="SEARCH" class="search-input">
             </div>
             
+            <!-- TABLE CONTAINER -->
             <div class="table-wrap">
-                <table>
+                <table id="master-table-all">
                     <thead id="masterTableHead">
                         <tr>
                             <th>NO</th>
@@ -77,7 +114,10 @@ include 'modules/header.php';
                         </tr>
                     </thead>
                     <tbody id="masterTableBody">
-
+                        <!-- ==============================================
+                             SUBSECTION 3.1: TOKO DATA
+                             PROBLEM: Kolom 'KODE' seharusnya 'LOKASI' berdasarkan header
+                             ============================================== -->
                         <?php if(count($dataToko) > 0): ?>
                             <?php $no = 1; foreach($dataToko as $row): ?>   
                                 <tr class="master-row" data-type="toko">
@@ -85,6 +125,7 @@ include 'modules/header.php';
                                     <td><?= ($row['created_at']) ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
                                     <td><?= htmlspecialchars($row['username'] ?? '-') ?></td>    
                                     <td><?= htmlspecialchars($row['nama_toko']) ?></td>
+                                    <td><?= htmlspecialchars($row['lokasi']) ?></td>
                                     <td><span class="badge"><?= htmlspecialchars($row['kode']) ?></span></td>
                                     <td class="action-cell">
                                         <div class="action-buttons-container">
@@ -102,28 +143,21 @@ include 'modules/header.php';
                             <tr><td colspan="6" style="text-align:center;">Data toko tidak ditemukan.</td></tr>
                         <?php endif;?>
 
+                        <!-- ==============================================
+                             SUBSECTION 3.2: DIVISI DATA (DISABLED)
+                             NOTE: Data divisi di-load via JavaScript API
+                             ============================================== -->
                         <?php if(count($dataDivisi) > 0): ?>
                             <?php $no = 1; foreach($dataDivisi as $row): ?>
                                 <tr class="master-row" data-type="divisi">
-                                    <td><?= $no++ ?></td>
-                                    <td><?= $row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
-                                    <td><?= $row['username'] ?? '-' ?></td>
-                                    <td><?= htmlspecialchars($row['nama_divisi']) ?></td>
-                                    <td><?= htmlspecialchars($row['deskripsi']) ?></td>
-                                    <td><?= htmlspecialchars($row['nama_toko']) ?></td>
-                                    <td class="action-cell">
-                                        <div class="action-buttons-container">
-                                            <button class="action-btn edit-btn" onclick="editDivisi(<?= $row['id'] ?>)" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="action-btn delete-btn" onclick="deleteDivisi(<?= $row['id'] ?>)" title="Hapus">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
+                                    <!-- DATA DIVISI DI-LOAD DARI API VIA JS -->
                                 </tr>
-                            <?php endforeach; endif;?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
 
+                        <!-- ==============================================
+                             SUBSECTION 3.3: TOPIK DATA
+                             ============================================== -->
                         <?php if(count($dataTopik) > 0): ?>
                             <?php $no = 1; foreach($dataTopik as $row): ?>
                                 <tr class="master-row" data-type="topik">
@@ -144,30 +178,25 @@ include 'modules/header.php';
                                         </div>
                                     </td>
                                 </tr>
-                            <?php endforeach; endif;?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
 
+                        <!-- ==============================================
+                             SUBSECTION 3.4: KARYAWAN DATA (DISABLED)
+                             NOTE: Data karyawan di-load via JavaScript API
+                             ============================================== -->
                         <?php if(count($dataKaryawan) > 0): ?>
                             <?php $no = 1; foreach($dataKaryawan as $row): ?>
                                 <tr class="master-row" data-type="karyawan">
-                                    <td><?= $no++ ?></td>
-                                    <td><?= $row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
-                                    <td><?= $row['username'] ?? '-' ?></td>
-                                    <td><?= htmlspecialchars($row['name']) ?></td>
-                                    <td><?= htmlspecialchars($row['nama_toko']) ?></td>
-                                    <td><?= htmlspecialchars($row['nama_divisi']) ?></td>
-                                    <td class="action-cell">
-                                        <div class="action-buttons-container">
-                                            <button class="action-btn edit-btn" onclick="editKaryawan(<?= $row['id'] ?>)" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="action-btn delete-btn" onclick="deleteKaryawan(<?= $row['id'] ?>)" title="Hapus">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
+                                    <!-- DATA KARYAWAN DI-LOAD DARI API VIA JS -->
                                 </tr>
-                            <?php endforeach; endif;?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
 
+                        <!-- ==============================================
+                             SUBSECTION 3.5: USER ROLE DATA
+                             PROBLEM: created_by bukan username, perlu join dengan users
+                             ============================================== -->
                         <?php if(count($dataTransaksi_user_role) > 0): ?>
                             <?php $no = 1; foreach($dataTransaksi_user_role as $row): ?>
                                 <tr class="master-row" data-type="user-role">
@@ -198,6 +227,7 @@ include 'modules/header.php';
             </div>
         </div>
 
+        <!-- FOOTER SECTION -->
         <div class="table-footer-divider"></div>
         <div class="table-footer">
             <div class="project-name">
@@ -207,14 +237,22 @@ include 'modules/header.php';
     </main>
 </div>
 
+<!-- ==============================================
+     SECTION 4: MASTER MODAL (UNTUK TOKO, DIVISI, TOPIK, KARYAWAN)
+     ============================================== -->
 <div class="modal" id="masterModal">
     <div class="modal-box">
         <h3 class="modal-title" id="modal-master-title">TAMBAH MASTER</h3>
         <div class="divider"></div>
-        <form id="masterForm"></form>
+        <form id="masterForm"></form>       
     </div>
 </div>
 
+<!-- ==============================================
+     SECTION 5: USER ROLE MODAL (SPECIAL MODAL)
+     PROBLEM: Modal ini tidak digunakan karena user role 
+     menggunakan modal master umum (masterModal)
+     ============================================== -->
 <div class="modal" id="userRoleModal">
     <div class="modal-box">
         <h3 class="modal-title" id="modal-userrole-title">ADD USER ROLE</h3>
@@ -222,7 +260,7 @@ include 'modules/header.php';
         
         <form id="userRoleForm">
             <label for="roleName" class="required-label">NAMA ROLE</label>
-            <input type="text" id="roleName"value ="testt" name="roleName" placeholder="Masukkan nama role" required>
+            <input type="text" id="roleName" value="testt" name="roleName" placeholder="Masukkan nama role" required>
             
             <div class="divider" style="margin: 20px 0;"></div>
             

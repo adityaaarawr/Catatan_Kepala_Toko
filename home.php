@@ -370,13 +370,11 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <label>TOKO</label>
             <select name="toko_id" id="inputToko" required>
                 <option value="">Pilih Toko</option>
-                
             </select>
 
             <label>KARYAWAN</label>
             <select name="karyawan_id" id="inputKaryawan" onchange="updateDivisi()" required>
                 <option value="">Pilih Karyawan</option>
-                
             </select>
 
             <label>DIVISI</label>
@@ -423,7 +421,7 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="divider"></div> 
         
         <div class="modal-content-wrapper"> 
-            <div class="modal-content-view">
+            <div class="modal-content-view">    
                 <div class="view-details-left">
                     <div class="detail-field-group"><label>INPUTER</label><span id="viewInputer" class="view-data-field"></span></div>
                     <div class="detail-field-group"><label>TOKO</label><span id="viewToko" class="view-data-field"></span></div>

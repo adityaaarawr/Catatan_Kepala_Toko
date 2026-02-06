@@ -1,4 +1,3 @@
-
 <?php 
 date_default_timezone_set('Asia/Jakarta');
 $pageTitle = 'Report'; 
@@ -69,60 +68,60 @@ $namaDivisiMap   = array_column($karyawanList, 'posisi', 'divisi_id'); // Gunaka
 
 <div class="layout"> 
     <?php include 'modules/sidebar.php'; ?>
-    <main>
+    <main id="mainContent" class="sidebar-collapsed">
         <div class="topbar">
             <h1 class="title">REPORT CATATAN KARYAWAN</h1>
         </div>
         
         <div class="container">
             <div class="filter-card">
-                  <button type="button" class="mobile-filter-trigger" onclick="toggleMobileFilter()">
-        <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M440-120v-240h80v80h320v80H520v80h-80Zm-320-80v-80h240v80H120Zm160-160v-80H120v-80h160v-80h80v240h-80Zm160-80v-80h400v80H440Zm160-160v-240h80v80h160v80H680v80h-80Zm-480-80v-80h400v80H120Z"/></svg>
-        FILTER DATA
-    </button>
+                <button type="button" class="mobile-filter-trigger" onclick="toggleMobileFilter()">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M440-120v-240h80v80h320v80H520v80h-80Zm-320-80v-80h240v80H120Zm160-160v-80H120v-80h160v-80h80v240h-80Zm160-80v-80h400v80H440Zm160-160v-240h80v80h160v80H680v80h-80Zm-480-80v-80h400v80H120Z"/></svg>
+                    FILTER DATA
+                </button>
   
                 <form method="POST" action="report.php" id="formReport"> 
                     <div class="filter-grid filter-grid-system" id="filterGrid">
-<select name="karyawan" id="filterKaryawan" class="select2">
-    <option value="">ALL KARYAWAN</option>
-    <?php foreach ($karyawanList as $k): ?>
-        <option value="<?= $k['id'] ?>" 
-                data-toko="<?= $k['store'] ?>" 
-                data-divisi="<?= $k['posisi'] ?>"
-                <?= ($f_karyawan == $k['id']) ? 'selected' : '' ?>>
-            <?= strtoupper($k['nama_lengkap']) ?>
-        </option>
-    <?php endforeach; ?>
-</select>
+                        <select name="karyawan" id="filterKaryawan" class="select2">
+                            <option value="">ALL KARYAWAN</option>
+                            <?php foreach ($karyawanList as $k): ?>
+                                <option value="<?= $k['id'] ?>" 
+                                        data-toko="<?= $k['store'] ?>" 
+                                        data-divisi="<?= $k['posisi'] ?>"
+                                        <?= ($f_karyawan == $k['id']) ? 'selected' : '' ?>>
+                                    <?= strtoupper($k['nama_lengkap']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
 
-<select name="divisi" id="filterDivisi" class="select2">
-    <option value="">ALL DIVISI</option>
-    <?php foreach ($divisiList as $d): ?>
-        <option value="<?= $d ?>" <?= ($f_divisi == $d) ? 'selected' : '' ?>>
-            <?= strtoupper($d) ?>
-        </option>
-    <?php endforeach; ?>
-</select>
+                        <select name="divisi" id="filterDivisi" class="select2">
+                            <option value="">ALL DIVISI</option>
+                            <?php foreach ($divisiList as $d): ?>
+                                <option value="<?= $d ?>" <?= ($f_divisi == $d) ? 'selected' : '' ?>>
+                                    <?= strtoupper($d) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
 
-<select name="toko" id="filterToko" class="select2">
-    <option value="">ALL TOKO</option>
-    <?php foreach ($tokoList as $t): ?>
-        <option value="<?= $t ?>" <?= ($f_toko == $t) ? 'selected' : '' ?>>
-            <?= strtoupper($t) ?>
-        </option>
-    <?php endforeach; ?>
-</select>
+                        <select name="toko" id="filterToko" class="select2">
+                            <option value="">ALL TOKO</option>
+                            <?php foreach ($tokoList as $t): ?>
+                                <option value="<?= $t ?>" <?= ($f_toko == $t) ? 'selected' : '' ?>>
+                                    <?= strtoupper($t) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
 
-<div class="date-range">
-    <input type="date" name="start_date" value="<?= $f_start ?>" max="<?= date('Y-m-d') ?>">
-    <input type="date" name="end_date" value="<?= $f_end ?>" max="<?= date('Y-m-d') ?>">
-</div>
+                        <div class="date-range">
+                            <input type="date" name="start_date" value="<?= $f_start ?>" max="<?= date('Y-m-d') ?>">
+                            <input type="date" name="end_date" value="<?= $f_end ?>" max="<?= date('Y-m-d') ?>">
+                        </div>
 
-                    <button type="submit" class="btn-generate">GENERATE</button>
-                </div>
-            </form>
+                        <button type="submit" class="btn-generate">GENERATE</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
 
         <div class="table-container">
             <h3 class="table-title">TABLE RESULT</h3>
@@ -142,46 +141,59 @@ $namaDivisiMap   = array_column($karyawanList, 'posisi', 'divisi_id'); // Gunaka
                 </thead>
                 
               <tbody>
-    <?php if(!empty($notesList)): ?>
-        <?php foreach($notesList as $i => $note): ?>
+                    <?php if(!empty($notesList)): ?>
+                        <?php foreach($notesList as $i => $note): ?>
 
-            <tr>
-                <td><?= $i + 1 ?></td>
-                <td><?= date('d-m-Y H:i', strtotime($note['created_at'])) ?></td>
-                <td><?= strtoupper($note['nama_inputer'] ?? '-') ?></td>
-                <td><?= strtoupper($namaTokoMap[$note['toko_id']] ?? $note['toko_id'] ?? 'TANPA TOKO') ?></td>
-                <td><?= strtoupper($namaDivisiMap[$note['divisi_id']] ?? $note['divisi_id'] ?? 'TANPA DIVISI') ?></td>
-                 <td><?= strtoupper($note['nama_topik'] ?? '-') ?></td>
-                 <td><?= strtoupper($namaKaryawanMap[$note['karyawan_id']] ?? 'NIP: '.$note['karyawan_id']) ?></td>
-                 <td><?= nl2br(htmlspecialchars($note['catatan'])) ?></td>
-                <td>
-                    <?php if (!empty($note['file_name'])): ?>
-                        <a href="uploads/<?= $note['file_name'] ?>" target="_blank">Lihat File</a>
+                            <tr>
+                                <td><?= $i + 1 ?></td>
+                                <td><?= date('d-m-Y H:i', strtotime($note['created_at'])) ?></td>
+                                <td><?= strtoupper($note['nama_inputer'] ?? '-') ?></td>
+                                <td><?= strtoupper($namaTokoMap[$note['toko_id']] ?? $note['toko_id'] ?? 'TANPA TOKO') ?></td>
+                                <td><?= strtoupper($namaDivisiMap[$note['divisi_id']] ?? $note['divisi_id'] ?? 'TANPA DIVISI') ?></td>
+                                <td><?= strtoupper($note['nama_topik'] ?? '-') ?></td>
+                                <td><?= strtoupper($namaKaryawanMap[$note['karyawan_id']] ?? 'NIP: '.$note['karyawan_id']) ?></td>
+                                <td><?= nl2br(htmlspecialchars($note['catatan'])) ?></td>
+                                <td>
+                                    <?php 
+                                    if (!empty($note['file_name'])): 
+                                        $cleanFileName = str_replace(['[', ']', '"'], '', $note['file_name']);
+                                    ?>
+                                        <a href="uploads/<?= htmlspecialchars($cleanFileName) ?>" 
+                                        target="_blank" 
+                                        class="btn-link">
+                                            Lihat File
+                                        </a>
+                                    <?php else: ?>
+                                        <span style="color:#ccc;">No File</span>
+                                    <?php endif; ?>
+                                </td>
+
+                                <!-- TOGGLE DETAIL (MOBILE) -->
+                                <td class="mobile-toggle-cell" style="display:none;">
+                                <div class="toggle-detail" onclick="handleDetailClick(this, event)" style="position:relative; z-index:9999; cursor:pointer;">LIHAT DETAIL</div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
                     <?php else: ?>
-                        <span style="color: #ccc;">No File</span>
+                        <tr><td colspan="9" style="text-align:center; padding:20px;">Data tidak ditemukan.</td></tr>
                     <?php endif; ?>
-                </td>
-
-                 <!-- TOGGLE DETAIL (MOBILE) -->
-                <td class="mobile-toggle-cell" style="display:none;">
-                <div class="toggle-detail">LIHAT DETAIL</div>
-                 </td>
-            </tr>
-        <?php endforeach; ?>
-    <?php else: ?>
-        <tr><td colspan="9" style="text-align:center; padding:20px;">Data tidak ditemukan.</td></tr>
-    <?php endif; ?>
-</tbody>
+                </tbody>
             </table>
         </div>
     </main> 
 </div> 
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+
+<script src="dist/js/sidebar.js"></script>
+<script src="dist/js/report.js"></script>
 
 <script>
     if ( window.history.replaceState ) {
         window.history.replaceState( null, null, window.location.href );
     }
 </script>
-
 
 <?php include 'modules/footer.php'; ?>

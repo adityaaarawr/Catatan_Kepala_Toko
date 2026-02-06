@@ -1,5 +1,9 @@
 <?php 
 session_start();
+// 🔒 Pastikan role di session bukan angka
+if (isset($_SESSION['role']) && is_numeric($_SESSION['role'])) {
+    $_SESSION['role'] = 'ADMINISTRATOR';
+}
 $pageTitle = 'User Management'; 
 $cssFile = 'user.css'; 
 $jsFile = 'user.js';
@@ -135,7 +139,7 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
 
 <div class="layout"> 
     <?php include 'modules/sidebar.php'; ?>
-    <main>
+    <main  id="mainContent" class="sidebar-collapsed">
         <div class="topbar">
             <h1 class="title">USER MANAGEMENT</h1>
         </div>
@@ -155,13 +159,13 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
             </div>
 
               <div class="mobile-sort-container">
-        <select id="sortUserMobile">
-            <option value="" disabled selected>SORT</option>
-            <option value="asc">A-Z</option>
-            <option value="desc">Z-A</option>
-        </select>
-    </div>
-</div>
+                <select id="sortUserMobile">
+                    <option value="" disabled selected>SORT</option>
+                    <option value="asc">A-Z</option>
+                    <option value="desc">Z-A</option>
+                </select>
+            </div>
+        </div>
 
         <div class="table-wrap">
             <table id="userTable">
@@ -177,49 +181,49 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
                 
                 <tbody id="userTableBody">
                    <?php if (!empty($users)): $no = 1; foreach ($users as $u): ?>
-    <tr>
-        <td><?= $no++; ?></td>
-        <td class="user-cell">
-            <?= htmlspecialchars($u['name']); ?>
-            <small style="color:#6b7280;">(@<?= htmlspecialchars($u['username']); ?>)</small>
-        </td>
-        <td><span class="role-bubble"><?= strtoupper($u['role_name'] ?? '-'); ?></span></td>
-        <td>
-            <?php
-    $isEnabled   = (int)$u['enable'] === 1;
-    $expiryDate = !empty($u['expired_at']) ? strtotime($u['expired_at']) : null;
-    $now        = time();
+                        <tr>
+                            <td><?= $no++; ?></td>
+                            <td class="user-cell">
+                                <?= htmlspecialchars($u['name']); ?>
+                                <small style="color:#6b7280;">(@<?= htmlspecialchars($u['username']); ?>)</small>
+                            </td>
+                            <td><span class="role-bubble"><?= strtoupper($u['role_name'] ?? '-'); ?></span></td>
+                            <td>
+                                <?php
+                                    $isEnabled   = (int)$u['enable'] === 1;
+                                    $expiryDate = !empty($u['expired_at']) ? strtotime($u['expired_at']) : null;
+                                    $now        = time();
 
-    if (!$isEnabled) {
-        $statusLabel = "SUSPENDED";
-        $statusClass = "inactive";
-    } elseif ($expiryDate !== null && $now > $expiryDate) {
-        $statusLabel = "EXPIRED";
-        $statusClass = "inactive";
-    } else {
-        $statusLabel = "ACTIVE";
-        $statusClass = "active";
-    }
-?>
+                                    if (!$isEnabled) {
+                                        $statusLabel = "SUSPENDED";
+                                        $statusClass = "inactive";
+                                    } elseif ($expiryDate !== null && $now > $expiryDate) {
+                                        $statusLabel = "EXPIRED";
+                                        $statusClass = "inactive";
+                                    } else {
+                                        $statusLabel = "ACTIVE";
+                                        $statusClass = "active";
+                                    }
+                                ?>
 
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-        <span class="role-bubble <?= $statusClass ?>"><?= $statusLabel ?></span>
-    </div>
-</td>
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                                    <span class="role-bubble <?= $statusClass ?>"><?= $statusLabel ?></span>
+                                </div>
+                            </td>
    
-                        <td>
-                            <div class="action-icons">
-                              <svg class="icon-edit" 
-     data-id="<?= $u['id']; ?>" 
-     data-enable="<?= $u['enable'];  ?>"
-     data-expired="<?= $u['expired_at']; ?>"xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"/></svg>
-                                <svg class="icon-delete" data-id="<?= $u['id']; ?>" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm120-400v320h40v-320h-40Zm160 0v320h40v-320h-40Z"/></svg>
-                            </div>
-                            <div class="toggle-detail">LIHAT DETAIL</div>
-                        </td>
-                    </tr>
+                            <td>
+                                <div class="action-icons">
+                                <svg class="icon-edit" 
+                                    data-id="<?= $u['id']; ?>" 
+                                    data-enable="<?= $u['enable'];  ?>"
+                                    data-expired="<?= $u['expired_at']; ?>"xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"/></svg>
+                                    <svg class="icon-delete" data-id="<?= $u['id']; ?>" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm120-400v320h40v-320h-40Zm160 0v320h40v-320h-40Z"/></svg>
+                                </div>
+                                <div class="toggle-detail">LIHAT DETAIL</div>
+                            </td>
+                        </tr>
                     <?php endforeach; else: ?>
-                    <tr><td colspan="5" style="text-align:center;">DATA USER TIDAK DITEMUKAN</td></tr>
+                        <tr><td colspan="5" style="text-align:center;">DATA USER TIDAK DITEMUKAN</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -246,26 +250,26 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
                     <h3>ADD NEW USER</h3>
 
                     <div class="popup-group">
-    <label>PILIH KARYAWAN :</label>
-    <select id="selectUser" name="selected_user_id">
-        <option value="">Pilih user</option>
+                        <label>PILIH KARYAWAN :</label>
+                        <select id="selectUser" name="selected_user_id">
+                            <option value="">Pilih user</option>
 
-        <?php foreach ($karyawan_api as $k): ?>
-            <?php
-                $id   = $k['id'] ?? '';
-                $nama = $k['nama_lengkap'] ?? '';
-                $username = strtolower(
-                    str_replace(' ', '', $k['nama_panggilan'] ?? $k['nip'] ?? '')
-                );
-            ?>
-            <option value="<?= $id ?>"
-                data-name="<?= htmlspecialchars($nama) ?>"
-                data-username="<?= htmlspecialchars($username) ?>">
-                <?= strtoupper($nama ?: '-') ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
-</div>
+                            <?php foreach ($karyawan_api as $k): ?>
+                                <?php
+                                    $id   = $k['id'] ?? '';
+                                    $nama = $k['nama_lengkap'] ?? '';
+                                    $username = strtolower(
+                                        str_replace(' ', '', $k['nama_panggilan'] ?? $k['nip'] ?? '')
+                                    );
+                                ?>
+                                <option value="<?= $id ?>"
+                                    data-name="<?= htmlspecialchars($nama) ?>"
+                                    data-username="<?= htmlspecialchars($username) ?>">
+                                    <?= strtoupper($nama ?: '-') ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
                     <div class="popup-group">
                         <label>NAME :</label>
@@ -312,3 +316,13 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
 </div>
 <?php include 'modules/footer.php'; ?>  
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script src="dist/js/sidebar.js"></script>
+<script src="dist/js/user.js"></script>
