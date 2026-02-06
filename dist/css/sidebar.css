@@ -353,34 +353,3 @@ main.sidebar-collapsed {
         display: none;
     }
 }
-
-/* ================================================= */
-/* NOTES FOR MAINTENANCE */
-/* ================================================= */
-
-/*
-1. SIDEBAR STATES:
-   - Default: 230px width, full text visible
-   - Desktop collapsed: 80px width, icon-only mode
-   - Mobile: Hidden off-screen, appears as overlay
-
-2. CLASSES REQUIRED:
-   - .sidebar.hide - untuk mode collapsed
-   - main.sidebar-collapsed - untuk adjust konten utama
-   - .logo-icon - elemen ikon logo untuk mode collapsed
-   - .active - untuk menu item aktif (ditambahkan via JS/PHP)
-
-3. RESPONSIVE BEHAVIOR:
-   - Desktop: Sidebar bisa di-toggle antara expanded/collapsed
-   - Mobile (<768px): Sidebar menjadi overlay, konten utama full-width
-   - Pastikan ada script toggle untuk menambahkan/remove class .hide
-
-4. VARIABLES DEPENDENCIES:
-   - --sidebar-bg, --sidebar-border, --sidebar-item - dari :root
-   - --primary, --danger - untuk warna aktif dan logout
-
-5. PERFORMANCE NOTES:
-   - backdrop-filter pada sidebar mungkin tidak support di semua browser
-   - Animated underline (::after) dimatikan di mobile untuk performa
-   - Transition menggunakan cubic-bezier untuk animasi yang smooth
-*/

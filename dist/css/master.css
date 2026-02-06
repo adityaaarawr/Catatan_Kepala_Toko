@@ -57,11 +57,11 @@ body {
     color: var(--text-primary);
 }
 
-/* ======================================== */
-/* 2. LAYOUT UTAMA (Sidebar & Main Content) */
-/* ======================================== */
+/* ================================================= */
+/* 2. TEXT TRANSFORM UTILITIES */
+/* PROBLEM: Text transform diterapkan terlalu luas, bisa memengaruhi user experience */
+/* ================================================= */
 
-/* TEXT UPPERCASE */
 .sidebar, 
 .topbar, 
 .table-wrap table, 
@@ -82,13 +82,18 @@ body {
     text-transform: uppercase;
 }
 
+/* ================================================= */
+/* 3. LAYOUT UTAMA (Sidebar & Main Content) */
+/* PROBLEM: Class .sidebar.collapsed tidak digunakan dalam HTML */
+/* ================================================= */
+
 /* Sidebar Default (Terbuka) */
 .sidebar {
     width: 250px;
     transition: all 0.3s ease;
 }
 
-/* Saat Sidebar Tertutup */
+/* Saat Sidebar Tertutup - PROBLEM: Class ini tidak digunakan */
 .sidebar.collapsed {
     width: 70px;
 }
@@ -109,9 +114,10 @@ main.sidebar-collapsed {
     margin-left: 70px;
 }
 
-/* ======================================= */
-/* 3. KOMPONEN UI (Top Bar, Card, Button) */
-/* ======================================= */
+/* ================================================= */
+/* 4. TOPBAR & HEADER */
+/* ================================================= */
+
 .topbar {
     display: flex;
     justify-content: space-between;
@@ -124,7 +130,7 @@ main.sidebar-collapsed {
     position: relative;
 }
 
-/* Garis header di bawah title */
+/* PROBLEM: Garis header ganda (border-bottom + ::after) */
 .topbar::after {
     content: '';
     position: absolute;
@@ -132,6 +138,7 @@ main.sidebar-collapsed {
     left: 0;
     width: 100%;
     height: 2px;
+    /* PERLU: Warna background untuk garis */
 }
 
 .title {
@@ -142,9 +149,13 @@ main.sidebar-collapsed {
     padding-bottom: 5px;
 }
 
+/* ================================================= */
+/* 5. BUTTONS & CARDS */
+/* ================================================= */
+
 .btn-primary {
     padding: 10px 18px;
-    background: #1B3C53;
+    background: #1B3C53; /* PROBLEM: Warna hardcoded, sebaiknya pakai variable */
     border: none;
     color: white;
     border-radius: 8px;
@@ -166,10 +177,10 @@ main.sidebar-collapsed {
 
 .card {
     background: var(--card-bg);
-    padding: 22px;
+    padding: 10px;
     border-radius: 14px;
     box-shadow: var(--shadow-md);
-    margin-bottom: 22px;
+    margin-bottom: 20px;
     transition: all 0.25s ease;
     border: 1px solid transparent;
 }
@@ -226,10 +237,9 @@ main.sidebar-collapsed {
 }
 
 /* ================================================= */
-/* 4. TABLE FOOTER STYLING */
+/* 6. TABLE FOOTER STYLING */
 /* ================================================= */
 
-/* Footer untuk tabel */
 .table-footer {
     display: flex;
     justify-content: center;
@@ -238,10 +248,9 @@ main.sidebar-collapsed {
     border-top: 2px solid var(--border-color);
     min-height: 60px;
     font-size: 13px;
-    
 }
 
-/* Kontainer untuk informasi footer */
+/* PROBLEM: Class .footer-container tidak digunakan dalam HTML */
 .footer-container {
     width: 100%;
     display: flex;
@@ -264,7 +273,7 @@ main.sidebar-collapsed {
     color: var(--text-color);
 }
 
-/* Pagination styling */
+/* Pagination styling - PROBLEM: HTML pagination mungkin tidak ada */
 .pagination {
     display: flex;
     align-items: center;
@@ -303,7 +312,7 @@ main.sidebar-collapsed {
 }
 
 /* ================================================= */
-/* 5. TABLE STYLING (HOME & MASTER) */
+/* 7. TABLE STYLING */
 /* ================================================= */
 
 .table-wrap {
@@ -352,7 +361,7 @@ table td {
     text-align: center;
 }
 
-/* Kolom Checkbox */
+/* Kolom Checkbox - PROBLEM: Selector terlalu spesifik */
 table td input[type="checkbox"] {
     transform: scale(1.1);
 }
@@ -395,16 +404,16 @@ table td input[type="checkbox"] {
 
 /* WARNA HOVER IKON */
 .action-cell .fa-edit:hover {
-    color: #3835cc;
+    color: #3835cc; /* PROBLEM: Warna hardcoded */
 }
 
 .action-cell .fa-trash:hover, 
 .action-cell .fa-trash-alt:hover {
-    color: #b52b39;
+    color: #b52b39; /* PROBLEM: Warna hardcoded */
 }
 
 /* ================================================= */
-/* 6. MODAL (ADD/EDIT & VIEW) */
+/* 8. MODAL STYLING */
 /* ================================================= */
 
 .modal {
@@ -434,8 +443,10 @@ table td input[type="checkbox"] {
     max-height: 95vh;
     overflow: visible;
     padding-bottom: 50px;
+    position: relative;
 }
 
+/* PROBLEM: Class .modal.active tidak diterapkan di JS */
 .modal.active .modal-box {
     transform: scale(1);
 }
@@ -454,7 +465,7 @@ table td input[type="checkbox"] {
     margin-bottom: 20px;
 }
 
-/* Form Styling */
+/* Form Styling - PROBLEM: ID #noteForm dan #tokoForm mungkin tidak ada */
 #noteForm label, 
 #tokoForm label {
     display: block;
@@ -532,7 +543,8 @@ table td input[type="checkbox"] {
 }
 
 /* ================================================= */
-/* 7. DROPDOWN CHECKBOX USER ROLE 
+/* 9. DROPDOWN CHECKBOX USER ROLE */
+/* PROBLEM: Komponen ini mungkin tidak digunakan */
 /* ================================================= */
 
 /* Container Utama */
@@ -567,12 +579,11 @@ table td input[type="checkbox"] {
     background-color: #fff;
     width: 100%;
     box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
-    z-index: 1001;
-    max-height: 200px;
+    z-index: 9999;
+    max-height: 250px;
     overflow-y: auto;
     border: 1px solid #ddd;
     border-radius: 0 0 4px 4px;
-    max-height: min(200px, calc(100vh - 150px));
 }
 
 .dropdown-check-content.show {
@@ -619,6 +630,7 @@ table td input[type="checkbox"] {
 }
 
 /* Menyamakan ukuran semua input dan select */
+/* PROBLEM: Selector terlalu luas, bisa memengaruhi elemen lain */
 #tokoForm input[type="text"],
 #tokoForm input[type="date"],
 #tokoForm select,
@@ -647,6 +659,7 @@ table td input[type="checkbox"] {
 }
 
 /* Styling untuk daftar checkbox Hak Akses */
+/* PROBLEM: Class .permission-grid tidak digunakan */
 .permission-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -679,7 +692,8 @@ table td input[type="checkbox"] {
 }
 
 /* ================================================= */
-/* 8. VIEW MODAL STYLING */
+/* 10. VIEW MODAL STYLING */
+/* PROBLEM: Class .view-note-box mungkin tidak digunakan */
 /* ================================================= */
 
 .view-note-box {
@@ -773,16 +787,16 @@ table td input[type="checkbox"] {
 }
 
 /* ================================================= */
-/* 9. MASTER MANAGEMENT SPECIFIC STYLES */
+/* 11. MASTER MANAGEMENT SPECIFIC STYLES */
 /* ================================================= */
 
-/* Sembunyikan semua baris master secara default */
+/* PROBLEM: Rules ini dikomentari tapi mungkin diperlukan */
+/* 
 .master-row {
     display: none;
 }
+*/
 
-/* Tampilkan hanya baris yang sesuai dengan tipe aktif */
-/* Contoh: jika tab Toko aktif, tampilkan .toko-row */
 .master-row.active-type {
     display: table-row;
 }
@@ -824,7 +838,11 @@ table td input[type="checkbox"] {
     transform: scale(0.98);
 }
 
-/* CUSTOM STYLES FOR USER ROLE MODAL */
+/* ================================================= */
+/* 12. USER ROLE MODAL CUSTOM STYLES */
+/* PROBLEM: Modal ini mungkin tidak digunakan (ada modal terpisah) */
+/* ================================================= */
+
 .user-role-permission-container { 
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -894,7 +912,7 @@ table td input[type="checkbox"] {
     font-size: 0.95rem !important;
     color: var(--text-color) !important;
     font-weight: 400 !important;
-    text-transform: none !important;
+    text-transform: none !important;                    
     margin: 0;
     cursor: pointer;
     flex: 1;
@@ -1014,10 +1032,9 @@ table td input[type="checkbox"] {
 }
 
 /* ================================================= */
-/* 10. NOTIFICATION (TOAST - VERSI DIPERCANTIK) */
+/* 13. NOTIFICATION (TOAST) */
 /* ================================================= */
 
-/* Container untuk menampung notifikasi */
 #notification-container {
     position: fixed;
     top: 20px;
@@ -1028,7 +1045,6 @@ table td input[type="checkbox"] {
     gap: 10px;
 }
 
-/* Base notification style */
 .notification-toast {
     display: flex;
     align-items: flex-start;
@@ -1046,34 +1062,29 @@ table td input[type="checkbox"] {
     transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out, box-shadow 0.3s;
 }
 
-/* Animasi Show */
 .notification-toast.show {
     opacity: 1;
     transform: translateX(0);
 }
 
-/* Icon di dalam notifikasi */
 .notification-toast i {
     margin-right: 15px;
     font-size: 1.5em;
     line-height: 1;
 }
 
-/* Animasi untuk menghilangkan notifikasi */
 .notification-toast.hide-notification {
     opacity: 0;
     transform: translateX(100%);
 }
 
-/* Teks notifikasi */
 .notification-message {
     flex-grow: 1;
     font-size: 0.95rem;
     line-height: 1.4;
 }
 
-/* VARIAN WARNA */
-/* Tipe notifikasi: Success */
+/* VARIAN WARNA NOTIFICATION */
 .notification-toast.success {
     background-image: linear-gradient(to right, #e6ffe6, #f0fff0);
     border-left: 5px solid #4CAF50;
@@ -1083,7 +1094,6 @@ table td input[type="checkbox"] {
     color: #4CAF50;
 }
 
-/* Tipe notifikasi: Error/Danger */
 .notification-toast.error {
     background-image: linear-gradient(to right, #ffe6e6, #fff0f0);
     border-left: 5px solid #F44336;
@@ -1093,7 +1103,6 @@ table td input[type="checkbox"] {
     color: #F44336;
 }
 
-/* Tipe notifikasi: Info/Primary */
 .notification-toast.info {
     background-image: linear-gradient(to right, #e6f0ff, #f0f8ff);
     border-left: 5px solid #2196F3;
@@ -1104,21 +1113,19 @@ table td input[type="checkbox"] {
 }
 
 /* ================================================= */
-/* 11. RESPONSIVE DESIGN */
+/* 14. RESPONSIVE DESIGN */
 /* ================================================= */
 
 /* TABLET & MOBILE (Di bawah 1024px) */
 @media (max-width: 1024px) {
-    /* Perbaikan Topbar */
     .topbar {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 15px;
-        padding-left: 60px;
+        padding-left: 60px; /* PROBLEM: Padding kiri mungkin tidak perlu */
     }
 
-    /* Pengaturan Tabel untuk Tablet */
     .table-wrap {
         width: 100%;
         overflow-x: auto;
@@ -1128,7 +1135,7 @@ table td input[type="checkbox"] {
     }
 
     table {
-        min-width: 700px;
+        min-width: 700px; /* PROBLEM: Fixed width bisa menyebabkan overflow */
     }
 
     .table-actions-bar {
@@ -1144,7 +1151,6 @@ table td input[type="checkbox"] {
 
 /* KHUSUS MOBILE (Di bawah 768px) */
 @media (max-width: 768px) {
-
     .topbar .title {
         font-size: 1.1rem !important;
         justify-content: center;
@@ -1153,11 +1159,10 @@ table td input[type="checkbox"] {
     }
 
     table {
-        min-width: unset !important; /* WAJIB: Agar tabel tidak memaksa lebar 700px */
+        min-width: unset !important;
         width: 100% !important;
     }
 
-    /* Reset Tabel ke mode Stack */
     .table-wrap {
         overflow-x: hidden !important;
         width: 100%;
@@ -1184,7 +1189,6 @@ table td input[type="checkbox"] {
     }
 
     table td {
-        width: 100% !important;
         display: flex !important;
         justify-content: space-between !important;
         align-items: center;
@@ -1227,7 +1231,7 @@ table td input[type="checkbox"] {
         justify-content: center !important;
     }
 
-    /* Hilangkan atau sesuaikan pseudo-element jika menutupi tombol */
+    /* PROBLEM: Pseudo-element ::before untuk .action-cell tidak konsisten */
     .action-cell::before {
         display: none;
         content: attr(data-label);
@@ -1237,9 +1241,8 @@ table td input[type="checkbox"] {
         text-transform: uppercase;
     }
 
-    /* Pastikan tombol berada di lapisan paling atas */
     .action-btn {
-        flex: 1; /* Biar tombol lebar dan mudah ditekan */
+        flex: 1;
         display: inline-flex;
         justify-content: center;
         align-items: center;
@@ -1253,8 +1256,10 @@ table td input[type="checkbox"] {
     }
     
     .modal-box {
-        max-height: 85vh;
+        max-height: 90vh;
         overflow-y: auto;
+        width: 95%;
+        padding: 20px;
     }
     
     .dropdown-check-content {
