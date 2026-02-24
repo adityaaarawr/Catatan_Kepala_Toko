@@ -192,10 +192,11 @@ padding: 0;
 .select2-search--dropdown .select2-search__field {
 width: 100% !important;
 box-sizing: border-box;
-height: 32px;
+height: 40px;
 padding: 5px 8px;
 border: 1px solid #e2e8f0;
 border-radius: 4px;
+font-size: 17px;
 }
 
 .btn-generate {
@@ -217,7 +218,7 @@ font-size: var(--filter-font);
 
 /* Table Design */
 .table-container {
-   background: #ffffff;
+  background: #ffffff;
   padding: 18px;
   border-radius: 14px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.06);
@@ -323,8 +324,8 @@ td:last-child {
 }
 
 /* DATA PADA TABEL KAPITAL */
-#reportTable th,
-#reportTable td {
+#reportTable-all th,
+#reportTable-all td {
 text-transform: uppercase;
 }
 
@@ -444,6 +445,57 @@ font-weight: bold;
 border-radius: 6px;
 }
 
+/* ===================== */
+/*    FOOTER             */
+/* ===================== */
+
+.app-footer {
+  margin-top: 20px; /* Lebih dekat ke tabel */
+  padding: 15px 0 20px 0;
+  text-align: center;
+  width: 100%;
+}
+
+.footer-line {
+  width: 100%;
+  max-width: 900px;
+  height: 2px;
+  margin: 0 auto 15px auto;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--primary),
+    transparent
+  );
+  opacity: 0.25;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;   /* PAKSA 1 BARIS */
+  white-space: nowrap; /* PAKSA 1 BARIS */
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.footer-content span {
+  display: inline-block;
+}
+
+.footer-project {
+  font-weight: 600;
+}
+
+.footer-version {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+
 /* =====================
  MODALS JARAK KHUSUS SELECT KARYAWAN
 ===================== */
@@ -521,7 +573,6 @@ html {
 .topbar {
   padding: 10px 0 !important;
 }
-
 
  .mobile-filter-trigger {
       display: flex;
@@ -603,16 +654,16 @@ html {
 }
 
 /* 7. TABLE - MOBILE CARD VIEW */
-#reportTable {
+#reportTable-all {
   min-width: 100% !important;
   border: none !important;
 }
 
-#reportTable thead {
+#reportTable-all thead {
   display: none !important;
 }
 
-#reportTable tbody tr {
+#reportTable-all tbody tr {
   display: block !important;
   border: 1px solid #ddd !important;
   border-radius: 8px !important;
@@ -622,7 +673,7 @@ html {
   position: relative !important;
 }
 
-#reportTable tbody td {
+#reportTable-all tbody td {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
@@ -633,13 +684,13 @@ html {
   font-size: 13px !important;
 }
 
-#reportTable tbody td:last-child {
+#reportTable-all tbody td:last-child {
   border-bottom: none !important;
   padding-bottom: 0 !important;
 }
 
 /* 8. TABLE LABEL (::before) - JUDUL KOLOM */
-#reportTable tbody td::before {
+#reportTable-all tbody td::before {
   font-weight: 600 !important;
   color: #555 !important;
   min-width: 90px !important;
@@ -647,48 +698,48 @@ html {
 }
 
 /* Label untuk setiap kolom */
-#reportTable tbody td:nth-child(1)::before { content: "NO" !important; }
-#reportTable tbody td:nth-child(2)::before { content: "DATETIME" !important; }
-#reportTable tbody td:nth-child(3)::before { content: "INPUTER" !important; }
-#reportTable tbody td:nth-child(4)::before { content: "TOKO" !important; }
-#reportTable tbody td:nth-child(5)::before { content: "DIVISI" !important; }
-#reportTable tbody td:nth-child(6)::before { content: "TOPIK" !important; }
-#reportTable tbody td:nth-child(7)::before { content: "KARYAWAN" !important; }
-#reportTable tbody td:nth-child(8)::before { content: "CATATAN" !important; }
-#reportTable tbody td:nth-child(9)::before { content: "FILE" !important; }
-#reportTable tbody td:nth-child(10)::before { content: "" !important; }
+#reportTable-all tbody td:nth-child(1)::before { content: "NO" !important; }
+#reportTable-all tbody td:nth-child(2)::before { content: "DATETIME" !important; }
+#reportTable-all tbody td:nth-child(3)::before { content: "INPUTER" !important; }
+#reportTable-all tbody td:nth-child(4)::before { content: "TOKO" !important; }
+#reportTable-all tbody td:nth-child(5)::before { content: "DIVISI" !important; }
+#reportTable-all tbody td:nth-child(6)::before { content: "TOPIK" !important; }
+#reportTable-all tbody td:nth-child(7)::before { content: "KARYAWAN" !important; }
+#reportTable-all tbody td:nth-child(8)::before { content: "CATATAN" !important; }
+#reportTable-all tbody td:nth-child(9)::before { content: "FILE" !important; }
+#reportTable-all tbody td:nth-child(10)::before { content: "" !important; }
 
-#reportTable tbody td.mobile-toggle-cell {
+#reportTable-all tbody td.mobile-toggle-cell {
   display: flex !important;
   justify-content: center;
   border-bottom: none !important;
 }
 
 /* ACTION ICON TETAP HILANG */
-#reportTable tbody td.action-icons {
+#reportTable-all tbody td.action-icons {
   display: none !important;
 }
 
 /* 10. DEFAULT: HIDE SOME COLUMNS (RINGKASAN) */
-#reportTable tbody tr:not(.show-detail) td:nth-child(3),
-#reportTable tbody tr:not(.show-detail) td:nth-child(4),
-#reportTable tbody tr:not(.show-detail) td:nth-child(5),
-#reportTable tbody tr:not(.show-detail) td:nth-child(6),
-#reportTable tbody tr:not(.show-detail) td:nth-child(8),
-#reportTable tbody tr:not(.show-detail) td:nth-child(9) {
+#reportTable-all tbody tr:not(.show-detail) td:nth-child(3),
+#reportTable-all tbody tr:not(.show-detail) td:nth-child(4),
+#reportTable-all tbody tr:not(.show-detail) td:nth-child(5),
+#reportTable-all tbody tr:not(.show-detail) td:nth-child(6),
+#reportTable-all tbody tr:not(.show-detail) td:nth-child(8),
+#reportTable-all tbody tr:not(.show-detail) td:nth-child(9) {
   display: none !important;
 }
 
 /* 11. DETAIL MODE - SHOW ALL COLUMNS (kecuali action) */
-#reportTable tbody tr.show-detail td {
+#reportTable-all tbody tr.show-detail td {
   display: flex !important;
 }
 
-#reportTable tbody tr.show-detail td.action-icons {
+#reportTable-all tbody tr.show-detail td.action-icons {
   display: none !important;  /* tetap sembunyikan action di mobile */
 }
 
-#reportTable tbody tr.show-detail td:last-child {
+#reportTable-all tbody tr.show-detail td:last-child {
   display: flex !important; 
 }
 
@@ -725,12 +776,27 @@ html {
   width: 100% !important;
 }
 
+/* Table Footer */
+.table-footer {
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  padding: 15px 0;
+  text-align: center;
+}
+
 /* HIDE ACTION ICONS SAJA, TAPI TOMBOL TOGGLE TAMPIL */
-#reportTable tbody td.action-icons {
+#reportTable-all tbody td.action-icons {
   display: none !important;  /* icon edit/delete tetap hilang */
 }
 
-#reportTable tbody .toggle-detail {
+#reportTable-all tbody .toggle-detail {
   display: block !important; /* tombol toggle selalu muncul */
+}
+
+.footer-content {
+  flex-wrap: wrap !important;   /* Boleh turun baris */
+  white-space: normal !important;
+  text-align: center;
 }
 }

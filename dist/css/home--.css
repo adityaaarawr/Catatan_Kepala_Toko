@@ -301,7 +301,7 @@ body {
 
 /* --- Base Table Styling --- */
 table {
-    table-layout: auto;
+    table-layout: fixed;
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
@@ -326,73 +326,13 @@ tbody tr:hover {
     cursor: pointer;
 }
 
-/* --- Column Width Distribution (Desktop) --- */
-/* table-layout: auto → browser tentukan lebar, kita set min-width & max-width */
-
-/* NO */
-table th:nth-child(1), table td:nth-child(1) {
-    width: 40px;
-    min-width: 40px;
-}
-/* TANGGAL */
-table th:nth-child(2), table td:nth-child(2) {
-    min-width: 90px;
-    white-space: nowrap;
-}
-/* INPUTER */
-table th:nth-child(3), table td:nth-child(3) {
-    min-width: 70px;
-    white-space: nowrap;
-}
-/* TOKO */
-table th:nth-child(4), table td:nth-child(4) {
-    min-width: 70px;
-    white-space: nowrap;
-}
-/* KARYAWAN */
-table th:nth-child(5), table td:nth-child(5) {
-    min-width: 80px;
-    white-space: nowrap;
-}
-/* DIVISI */
-table th:nth-child(6), table td:nth-child(6) {
-    min-width: 70px;
-    white-space: nowrap;
-}
-/* TOPIK - teks panjang WAJIB turun ke bawah, tidak melebar */
-table th:nth-child(7), table td:nth-child(7) {
-    min-width: 120px;
-    max-width: 180px;
-    white-space: normal !important;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    vertical-align: middle;
-    line-height: 1.5;
-}
-/* CATATAN */
-table th:nth-child(8), table td:nth-child(8) {
-    min-width: 100px;
-    max-width: 160px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-/* FILE */
-table th:nth-child(9), table td:nth-child(9) {
-    min-width: 80px;
-    white-space: nowrap;
-}
-/* ACTION */
-table th:nth-child(10), table td:nth-child(10) {
-    min-width: 70px;
-    white-space: nowrap;
-}
-
 /* --- Catatan Column Specific --- */
 td[data-label="CATATAN"] {
+    width: 300px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    word-break: break-all;
 }
 
 /* PERINGATAN: Class .catatan-cell mungkin tidak digunakan dalam HTML */
@@ -1028,404 +968,240 @@ td[data-label="CATATAN"] {
 
 /* ======================================= */
 /* 11. RESPONSIVE DESIGN                   */
+/* PROBLEM: Media query overlapping dan !important berlebihan */
 /* ======================================= */
 
-/* --- Tablet & Mobile (≤ 1024px) --- */
+/* --- Tablet Landscape & Desktop (≤ 1024px) --- */
 @media (max-width: 1024px) {
     main {
-        margin-left: 0;
-        width: 100%;
-        padding: 20px;
-    }
-    
-    .table-wrap {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-    }
-
-    table {
-        min-width: 700px;
+        margin-left: 220px;
+        width: calc(100% - 220px);
+        padding: 25px;
     }
 }
 
-/* --- Mobile (≤ 768px) --- */
+/* --- Tablet Portrait (≤ 768px) --- */
 @media (max-width: 768px) {
     /* Title Adjustments */
     .title {
-        font-size: 1.1rem !important;
-        text-align: center !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        font-size: 20px;
     }
     
-    main {
-        padding: 15px;
-    }
-    
-    /* Table Container */
+    /* Table Responsive */
     .table-wrap {
-        overflow-x: hidden !important;
-        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
         padding: 0;
-        border: none;
-        border-radius: 0;
+        margin: 0 -15px;
+        width: calc(100% + 30px);
     }
 
-    table {
-        min-width: unset !important;
-        width: 100% !important;
-        border-collapse: collapse;
-    }
-
-    /* Sembunyikan tabel standar di mobile */
-    .table-wrap table,
-    .table-wrap thead,
-    .table-wrap tbody,
-    .table-wrap tr:not(.accordion-row),
-    .table-wrap td:not([data-label]) {
-        display: none !important;
-    }
-
-    /* Container untuk accordion mobile */
-    .mobile-accordion-container {
-        display: block !important;
+    .table-wrap table {
+        min-width: 100% !important;
         width: 100%;
+        margin: 0;
     }
 
-    /* Buat container accordion jika belum ada */
-    .table-wrap:not(:has(.mobile-accordion-container))::after {
-        content: '';
-        display: block;
+    /* Table Header Hidden for Mobile */
+    table thead {
+        display: none;
+    }
+
+    /* Accordion Row Style for Mobile */
+    .accordion-row {
+        display: flex;
+        flex-wrap: wrap;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        position: relative;
         width: 100%;
+        box-sizing: border-box;
     }
 
-    /* Accordion Item */
-    .accordion-item {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        margin-bottom: 12px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
-    }
-
-    .accordion-item.active {
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border-color: var(--primary);
-        background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
-    }
-
-    /* Accordion Header */
-    .accordion-header {
+    /* Table Cell Adjustments */
+    .accordion-row td[data-label="NO"],
+    .accordion-row td[data-label="TANGGAL"],
+    .accordion-row td[data-label="INPUTER"],
+    .accordion-row td[data-label="TOKO"],
+    .accordion-row td[data-label="KARYAWAN"] {
         display: flex !important;
-        justify-content: space-between;
-        align-items: center;
-        padding: 16px;
-        cursor: pointer;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border-bottom: 1px solid var(--border-color);
-        transition: background 0.2s ease;
-    }
-
-    .accordion-header:hover {
-        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-    }
-
-    .accordion-header.active {
-        background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
-        color: white;
-    }
-
-    .accordion-header.active .row-title,
-    .accordion-header.active .row-subtitle,
-    .accordion-header.active .row-badge {
-        color: white !important;
-    }
-
-    /* Header Content */
-    .header-content {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex: 1;
-    }
-
-    .row-number {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        color: white;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
-        font-weight: 600;
-        flex-shrink: 0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .row-main-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .row-title {
-        font-weight: 600;
-        font-size: 0.95rem;
-        color: var(--text-dark);
-        margin-bottom: 4px;
+        flex-direction: column;
+        width: 18% !important;
+        font-size: 11px;
+        border: none !important;
+        padding: 2px !important;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .row-subtitle {
-        font-size: 0.75rem;
-        color: var(--text-light);
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
+    .accordion-row td::before {
+        content: attr(data-label);
+        font-size: 9px;
+        font-weight: 800;
+        color: #94a3b8;
+        margin-bottom: 1px;
     }
 
-    .row-subtitle span {
-        display: inline-flex;
+    /* Expand Trigger for Mobile */
+    .expand-trigger {
+        display: flex !important;
+        width: 10% !important;
+        justify-content: flex-end;
         align-items: center;
-        gap: 4px;
+        border: none !important;
     }
 
-    .row-badge {
-        background: rgba(34, 197, 94, 0.1);
-        color: #16a34a;
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 0.7rem;
-        font-weight: 500;
-        display: inline-block;
-    }
-
-    /* Accordion Toggle Icon */
-    .accordion-toggle {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        background: white;
-        border: 1px solid var(--border-color);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        flex-shrink: 0;
-        margin-left: 8px;
-    }
-
-    .accordion-toggle i {
-        transition: transform 0.3s ease;
-        font-size: 14px;
-        color: var(--text-dark);
-    }
-
-    .accordion-item.active .accordion-toggle {
-        background: white;
-        border-color: white;
-    }
-
-    .accordion-item.active .accordion-toggle i {
-        transform: rotate(180deg);
+    .btn-detail-toggle {
+        background: none;
+        border: none;
         color: var(--primary);
+        font-size: 16px;
+        cursor: pointer;
+        padding: 5px;
     }
 
-    /* Accordion Body */
-    .accordion-body {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.4s ease-out;
-        background: white;
+    /* Hidden Columns Initially */
+    .accordion-row td:not([data-label="NO"]):not([data-label="TANGGAL"]):not([data-label="INPUTER"]):not([data-label="TOKO"]):not([data-label="KARYAWAN"]):not(.expand-trigger) {
+        display: none !important;
     }
 
-    .accordion-item.active .accordion-body {
-        max-height: 2000px;
+    /* Open Accordion State */
+    .accordion-row.is-open {
+        border-left: 4px solid var(--primary);
     }
 
-    /* Data Grid dalam Accordion - Layout kiri kanan */
-    .accordion-data-grid {
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        border-top: 1px solid #f1f5f9;
-        animation: accordionSlideDown 0.3s ease-out;
+    .accordion-row.is-open td {
+        display: flex !important;
+        width: 100% !important;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 8px 0 !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        font-size: 13px;
+        white-space: normal;
     }
 
-    .data-row {
+    .accordion-row.is-open td::before {
+        width: 35%;
+        text-align: left;
+        color: var(--primary);
+        font-size: 11px;
+    }
+
+    .accordion-row.is-open .btn-detail-toggle {
+        color: var(--danger);
+        transform: rotate(90deg);
+        transition: 0.3s;
+    }
+
+    /* Mobile Table Structure */
+    table,
+    tbody,
+    tr,
+    td {
+        display: block;
+        width: 100%;
+    }
+
+    table tbody tr {
+        margin-bottom: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 10px;
+        background: #fff;
+        box-shadow: var(--shadow-sm);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    table td{
+        text-align: right !important;
+        padding: 12px 15px !important;
+        border-bottom: 1px dashed #eee;
+        position: relative;
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        padding: 10px 16px;
-        border-bottom: 1px solid #f1f5f9;
-        gap: 12px;
-        min-height: 40px;
+        align-items: flex-start;
+        min-height: 45px;
+        box-sizing: border-box;
     }
 
-    .data-row:last-child {
+    table td a{
+        text-align: right !important;
+        margin-right: -50px;
+    }
+
+    table td:last-child {
         border-bottom: none;
     }
 
-    /* Baris ganjil sedikit lebih terang */
-    .data-row:nth-child(odd) {
-        background: #fafbfc;
-    }
-
-    .data-label {
-        font-size: 0.72rem !important;
-        font-weight: 700 !important;
-        color: var(--muted) !important;
+    table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        text-align: left;
+        color: var(--primary);
+        font-size: 0.75rem;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        flex: 0 0 90px;
-        min-width: 90px;
-        display: flex;
-        align-items: center;
-    }
-
-    .data-value {
-        font-size: 0.88rem !important;
-        font-weight: 500 !important;
-        color: var(--text-primary) !important;
-        word-break: break-word;
-        line-height: 1.4;
-        flex: 1;
-        text-align: right;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        text-transform: uppercase;
-    }
-
-    .data-value.highlight {
-        color: var(--primary) !important;
-        font-weight: 600;
-    }
-
-    /* ========== ACTION BUTTONS ========== */
-    .accordion-actions {
-        padding: 20px;
-        border-top: 1px solid #f1f5f9;
-        display: flex !important; /* Pastikan display flex */
-        gap: 10px;
-        justify-content: center;
-        background: #f8fafc;
-        flex-wrap: wrap;
-    }
-
-    .accordion-btn {
-        flex: 1;
         min-width: 100px;
-        max-width: 150px;
-        padding: 12px 16px !important;
-        border-radius: 8px !important;
-        border: none !important;
-        font-weight: 600 !important;
-        font-size: 0.85rem !important;
-        cursor: pointer !important;
-        transition: all 0.3s ease !important;
-        display: flex !important; /* Pastikan display flex */
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        text-decoration: none !important;
-        position: relative;
-        text-align: center;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-right: 10px;
+        flex-shrink: 0;
     }
 
-    /* Button variations dengan gradient seperti di master */
-    .btn-view {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
-        color: white !important;
-        border: 1px solid #1d4ed8 !important;
+    /* Catatan Column Specific */
+    table td[data-label="CATATAN"] {
+        align-items: flex-start;
+        text-align: right;
     }
 
-    .btn-edit {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-        color: white !important;
-        border: 1px solid #059669 !important;
+    table td[data-label="CATATAN"]::before {
+        margin-bottom: 5px;
     }
 
-    .btn-delete {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-        color: white !important;
-        border: 1px solid #dc2626 !important;
+    /* Action Column */
+    table td.action-cell {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 12px 15px !important;
+        min-width: unset !important;
     }
 
-    .btn-download {
-        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
-        color: white !important;
-        border: 1px solid #7c3aed !important;
+    .action-icons-wrapper {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .action-icons-wrapper span {
+        cursor: pointer;
+    }
+    
+    .action-icons-wrapper span:hover {
+        transform: scale(1.15);
     }
 
-    .accordion-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    .edit-btn,
+    .delete-btn {
+        margin: 0 !important;
+        padding: 5px;
     }
 
-    .accordion-btn:active {
-        transform: translateY(0);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Ensure Specific Columns Display */
+    th:nth-child(4),
+    td:nth-child(4),
+    th:nth-child(5),
+    td:nth-child(5) {
+        display: flex !important;
     }
 
-    /* Icon handling */
-    .accordion-btn i,
-    .accordion-btn .fas,
-    .accordion-btn .fa,
-    .accordion-btn .material-icons {
-        display: inline-block !important;
-        font-size: 14px !important;
-        width: 16px !important;
-        height: 16px !important;
-        line-height: 1 !important;
+    table {
+        font-size: 13px;
+        min-width: 650px; /* MASALAH: Fixed width di mobile */
     }
-
-    /* Fallback untuk button tanpa ikon */
-    .accordion-btn:not(:has(i)):not(:has(.fas)):not(:has(.fa)):not(:has(.material-icons)) {
-        position: relative;
-        padding-left: 40px !important;
-    }
-
-    .btn-view:not(:has(i)):not(:has(.fas)):not(:has(.fa)):not(:has(.material-icons))::before {
-        content: "👁️";
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 14px;
-    }
-
-    .btn-edit:not(:has(i)):not(:has(.fas)):not(:has(.fa)):not(:has(.material-icons))::before {
-        content: "✏️";
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 14px;
-    }
-
-    .btn-delete:not(:has(i)):not(:has(.fas)):not(:has(.fa)):not(:has(.material-icons))::before {
-        content: "🗑️";
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 14px;
-    }
-
+    
     /* Filter Adjustments */
     .filter-card .filter-bar {
         display: flex !important;
@@ -1451,292 +1227,319 @@ td[data-label="CATATAN"] {
         box-sizing: border-box;
     }
 
-    /* Mobile Search & Filter */
-    .mobile-search-filter {
+    .btn-filter-trigger {
+        width: 100% !important;
         display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-        padding: 15px;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .mobile-search {
-        flex: 1;
+        justify-content: center;
         padding: 12px;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        font-size: 0.9rem;
     }
 
-    .mobile-filter-btn {
-        padding: 12px 16px;
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* View Modal Adjustments */
+    .modal-box.view-note-box {
+        max-width: 95%;
     }
 
-    /* Modal Adjustments */
-    .modal-box {
-        max-height: 90vh;
-        overflow-y: auto;
-        width: 95%;
-        padding: 20px;
-        margin: 20px auto;
+    .modal-title {
+        padding: 15px 20px 0 20px;
+        font-size: 18px;
+        margin-top: 0 !important;
+    }
+    
+    .modal-title + .divider {
+        margin: 0 20px 15px 20px;
+        width: calc(100% - 40px);
+    }
+
+    .modal-content-wrapper {
+        padding: 0 20px;
     }
 
     .modal-content-view {
-        flex-direction: column;
-        gap: 20px;
+        grid-template-columns: 1fr;
+        grid-gap: 20px;
+        padding-bottom: 20px;
     }
 
+    .view-actions {
+        padding: 12px 20px;
+        justify-content: center;
+    }
+    
+    .view-actions .close-btn {
+        width: 100%;
+        max-width: 300px;
+        padding: 12px 25px;
+    }
+    
     /* Table Footer */
     .table-footer {
+        padding: 10px 0;
+        font-size: 13px;
+    }
+    
+    .data-info {
+        font-size: 12px;
+    }
+    
+    .project-name {
+        font-size: 13px;
+    }
+
+    /* Modal Fixes */
+    .modal {
+        padding: 20px;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding-top: 70px;
+    }
+    
+    .modal-box {
+        padding: 25px;
+        max-height: 90vh;
+        animation: modalInMobile 0.3s ease;
+        overflow-y: auto;
+        overflow-x: hidden;
+        width: 90%;
+        max-width: 450px;
+        margin: 0 auto;
+    }
+    
+    @keyframes modalInMobile {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Modal Actions */
+    .modal-actions {
+        flex-direction: row;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+    
+    .modal-actions .cancel-btn,
+    .modal-actions .save-btn {
+        width: auto;
+        text-align: center;
+        padding: 10px 20px;
+    }
+
+    /* Form Adjustments */
+    .modal-box form .form-group {
+        margin-bottom: 10px;
+    }
+
+    .modal-box input, 
+    .modal-box select, 
+.modal-box textarea {
+        padding: 8px 12px !important;
+        font-size: 14px !important;
+    }
+
+    .modal-title {
+        font-size: 1.1rem !important;
+        margin-bottom: 10px !important;
+    }
+    
+    /* Notification Adjustments */
+    #notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        left: auto !important;
+        width: 280px;
+        z-index: 99999;
+        display: flex;
         flex-direction: column;
         gap: 10px;
-        align-items: center;
-        padding: 15px 0;
-        text-align: center;
+        pointer-events: none;
     }
 
-    /* Pagination untuk Mobile */
-    .mobile-pagination {
+    /* MASALAH: Selector error-msg tidak ada */
+    .notification-toast, .error-msg, [id^="error"] {
+        pointer-events: auto;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 12px 16px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        border: 1px solid rgba(0,0,0,0.05);
+        border-right: 5px solid #ff4d4d;
         display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-        margin-top: 20px;
+        align-items: flex-start;
+        gap: 10px;
+        animation: slideInCustom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .notification-toast strong, .notification-title {
+        font-size: 13px;
+        display: block;
+        color: #1e293b;
+        margin-bottom: 2px;
+    }
+
+    .notification-toast span, .notification-message {
+        font-size: 11px;
+        color: #64748b;
+        line-height: 1.4;
+    }
+
+    @keyframes slideInCustom {
+        from {
+            opacity: 0;
+            transform: translateX(50px) scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+    }
+        
+    /* Prevent Horizontal Scroll */
+    body {
+        overflow-x: hidden;
+        width: 100%;
+        position: relative;
+    }
+    
+    main {
+        overflow-x: hidden;
+        width: 100%;
         padding: 15px;
     }
+}
 
-    .page-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        background: white;
-        border: 1px solid var(--border-color);
-        color: var(--text-dark);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 0.85rem;
+/* --- Mobile Large (≤ 480px) --- */
+@media (max-width: 480px) {
+    .title {
+        font-size: 18px;
+        line-height: 1.3;
+        margin-left: 50px; /* PERLU: Margin khusus? */
+    }
+    
+    main {
+        padding: 15px;
+        padding-top: 65px;
+        overflow-x: hidden;
+    }
+    
+    .filter-card .filter-bar {
+        flex-direction: column !important;
+    }
+    
+    .filter-card .filter-input {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    table {
+        min-width: 500px; /* MASALAH: Fixed width di mobile */
+    }
+    
+    .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 0px;
+        width: 100% !important;
+        padding: 0 25px;
+        box-sizing: border-box;
     }
 
-    .page-btn.active {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        border-color: var(--primary);
-        color: white;
+    .view-actions .close-btn {
+        max-width: 100%;
     }
-
-    .page-btn:hover:not(.active) {
-        background: #f1f5f9;
-        border-color: var(--primary-light);
+    
+    .table-footer {
+        padding: 8px 0;
+        font-size: 12px;
+    }
+    
+    .data-info {
+        font-size: 11px;
+    }
+    
+    .project-name {
+        font-size: 13px;
     }
 
     /* Notification */
     #notification-container {
-        width: 280px;
-        right: 20px;
+        top: 15px;
+        right: 15px;
         left: auto !important;
+        width: 240px;
     }
 
-    /* Sembunyikan action cell di tabel */
-    table td.action-cell {
-        display: none !important;
-    }
-
-    /* Sembunyikan info & paginate DataTables bawaan di mobile */
-    .dataTables_info,
-    .dataTables_paginate {
-        display: none !important;
-    }
-
-    /* Custom footer mobile - Showing & Pagination di bawah accordion */
-    .mobile-dt-footer {
-        background: white;
-        border-radius: 12px;
-        padding: 12px 16px;
-        margin-top: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        border: 1px solid var(--border-color);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .mobile-dt-info {
-        font-size: 0.8rem;
-        color: var(--muted);
-        font-weight: 500;
-    }
-
-    .mobile-dt-paginate {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .mobile-dt-btn {
-        padding: 7px 14px;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        background: white;
-        color: var(--primary);
-        font-size: 0.82rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .mobile-dt-btn:hover:not(.disabled) {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
-    }
-
-    .mobile-dt-btn.disabled,
-    .mobile-dt-btn:disabled {
-        color: var(--muted);
-        border-color: var(--border-color);
-        cursor: not-allowed;
-        opacity: 0.5;
-    }
-
-    .mobile-dt-pagenum {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        min-width: 40px;
-        text-align: center;
-    }
-}
-
-/* --- Mobile (≤ 480px) --- */
-@media (max-width: 480px) {
-    .accordion-header {
-        padding: 12px;
-    }
-
-    .accordion-data-grid {
-        padding: 0;
-    }
-
-    .data-row {
-        padding: 9px 12px;
-    }
-
-    .data-label {
-        font-size: 0.68rem !important;
-        flex: 0 0 80px;
-        min-width: 80px;
-    }
-
-    .data-value {
-        font-size: 0.82rem !important;
-    }
-
-    .accordion-actions {
-        flex-direction: column;
-        padding: 12px;
-        gap: 8px;
-    }
-
-    .accordion-btn {
-        width: 100%;
-        min-width: unset;
-        max-width: 100%;
-    }
-
-    .row-subtitle {
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .mobile-search-filter {
-        flex-direction: column;
-    }
-
-    .mobile-filter-btn {
-        justify-content: center;
-    }
-
-    .title {
-        font-size: 1rem !important;
+    .notification-toast {
+        padding: 10px 14px;
     }
     
-    main {
-        padding: 12px;
+    .notification-title {
+        font-size: 13px;
+    }
+    
+    .notification-message {
+        font-size: 12px;
+    }
+    
+    /* Modal */
+    .modal-box {
+        padding: 25px;
+        width: 95%;
+        max-width: 450px;
+        border-radius: 16px;
+    }
+    
+    .modal-title {
+        font-size: 18px;
+    }
+    
+    .modal-actions {
+        flex-direction: row;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+    
+    .modal-actions .cancel-btn,
+    .modal-actions .save-btn {
+        padding: 10px 16px;
+        font-size: 12px;
+        min-width: 80px;
     }
 }
 
-/* --- Extra Small (≤ 360px) --- */
+/* --- Extra Small Devices (≤ 360px) --- */
 @media (max-width: 360px) {
-    .header-content {
+    .modal-actions {
         flex-direction: column;
-        align-items: flex-start;
         gap: 8px;
     }
-
-    .row-number {
-        align-self: flex-start;
+    
+    .modal-actions .cancel-btn,
+    .modal-actions .save-btn {  
+        width: 100%;
+        padding: 12px;
     }
-
-    .accordion-toggle {
-        position: absolute;
-        top: 12px;
-        right: 12px;
+    
+    .modal-box {
+        padding: 25px;
+        width: 90%;
     }
-
-    .accordion-btn {
-        padding: 10px 12px !important;
-        font-size: 0.8rem !important;
+    
+    .table-wrap {
+        margin: 0 -10px;
+        width: calc(100% + 20px);
+        padding: 0 10px;
     }
-
-    .data-value {
-        font-size: 0.8rem !important;
-    }
-}
-
-/* Animations */
-@keyframes accordionSlideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Utility classes untuk JavaScript */
-.hidden-mobile {
-    display: none !important;
-}
-
-.visible-mobile {
-    display: block !important;
-}
-
-/* Styling khusus untuk action label */
-.data-label.action-label {
-    color: var(--primary) !important;
-    font-weight: 700 !important;
-}
-
-.data-value.action-value {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: flex-end;
 }

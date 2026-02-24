@@ -76,7 +76,7 @@ body {
 }
 
 .table-container {
-   width: 100%;
+    width: 100%;
     margin-top: 20px;
     padding: 0 12px;
 }
@@ -122,11 +122,13 @@ h2 {
 .search-box {
     display: flex;
     align-items: center;
-    border: 1px solid #aaa;
+    border: 1px solid #e2e8f0;
     padding: 12px 14px;
     border-radius: 6px;
     width: 280px;
     gap: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background-color: #fff;
 }
 
 .search-box input {
@@ -134,6 +136,7 @@ h2 {
     outline: none;
     font-size: 18px;
     width: 100%;
+    background-color: #fff;
 }
 
 .search-filter {
@@ -152,8 +155,8 @@ table {
 }
 
 /* HEADER */
-#userTable thead th {
-   padding: 16px 12px;
+#userTable-all thead th {
+    padding: 16px 12px;
     font-size: 13px;
     font-weight: bold;
     text-align: center; /* JUDUL JADI TENGAH */
@@ -163,7 +166,7 @@ table {
 }
 
 /* BODY */
-#userTable tbody td {
+#userTable-all tbody td {
     padding: 16px 12px;
     font-size: 14px;
     vertical-align: middle;
@@ -172,7 +175,7 @@ table {
 }
 
 /* FIX KHUSUS KOLOM USER */
-#userTable tbody td:nth-child(2) {
+#userTable-all tbody td:nth-child(2) {
     text-align: center !important; 
 }
 
@@ -202,7 +205,7 @@ table {
 
 /* CONTAINER ICON */
 .action-icons {
-     display: flex;
+    display: flex;
     justify-content: center; /* Icon jadi tengah */
     align-items: center;
     gap: 15px;
@@ -373,6 +376,7 @@ tbody tr:hover {
     font-size: 14px;
     color: var(--text-primary);
 }
+
 /* INPUT BIASA */
 .popup-group input {
     background: #fff;
@@ -407,7 +411,7 @@ tbody tr:hover {
 }
 
 .popup-group .select2-selection__arrow {
-   position: absolute;
+    position: absolute;
     right: 10px;
     height: auto;          
     display: flex;
@@ -542,9 +546,8 @@ tbody tr:hover {
         outline: none;
     }
     
-     
  .top-bar {
-       display: flex;
+        display: flex;
         flex-direction: row;      /* tetap satu baris */
         justify-content: space-between; /* beri ruang antar elemen */
         align-items: center;
@@ -561,10 +564,11 @@ tbody tr:hover {
     }
 
     .btn-add {
-        flex: 0 0 auto;   
-        width: 100%;      
-        max-width: 180px;
-        box-sizing: border-box;      /* hilangkan batas */
+    flex: 0 0 auto !important;   /* 🔥 hentikan flex:1 */
+    width: fit-content !important;
+    align-self: flex-start;      /* supaya tidak stretch */
+    padding: 6px 10px;
+    font-size: 9px;
     }
 
 .popup-box {
@@ -577,12 +581,12 @@ tbody tr:hover {
   }
 
   /* HIDE HEADER */
-  #userTable thead {
+  #userTable-all thead {
     display: none;
   }
 
   /* ROW JADI CARD */
-  #userTable tbody tr {
+  #userTable-all tbody tr {
     display: flex;
     flex-direction: column;
     margin-bottom: 15px;
@@ -594,7 +598,7 @@ tbody tr:hover {
   }
 
   /* ===== CELL ===== */
-  #userTable tbody td {
+  #userTable-all tbody td {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -604,7 +608,7 @@ tbody tr:hover {
   }
 
   /* LABEL */
-  #userTable tbody td::before {
+  #userTable-all tbody td::before {
   flex: 1;
   text-align: left;
   font-weight: 700;
@@ -614,35 +618,35 @@ tbody tr:hover {
   }
 
 /* #userTable tbody td:nth-child(1)::before { content: "No"; } */
-#userTable tbody td:nth-child(2)::before { content: "User"; }
-#userTable tbody td:nth-child(3)::before { content: "Role"; }
-#userTable tbody td:nth-child(4)::before { content: "Status"; }
-#userTable tbody td:nth-child(5)::before { content: "Action"; }
+#userTable-all tbody td:nth-child(2)::before { content: "User"; }
+#userTable-all tbody td:nth-child(3)::before { content: "Role"; }
+#userTable-all tbody td:nth-child(4)::before { content: "Status"; }
+#userTable-all tbody td:nth-child(5)::before { content: "Action"; }
 
 /* 1. SEMBUNYIKAN KOLOM NOMOR (No) SEPENUHNYA */
-  #userTable tbody td:nth-child(1) {
+  #userTable-all tbody td:nth-child(1) {
     display: none !important;
   }
 
   /* 3. PASTIKAN KOLOM USER DAN ACTION SELALU MUNCUL */
-  #userTable tbody td:nth-child(2),
-  #userTable tbody td:nth-child(5) {
+  #userTable-all tbody td:nth-child(2),
+  #userTable-all tbody td:nth-child(5) {
     display: flex !important;
   }
 
   /* 4. LOGIKA SHOW/HIDE DETAIL (Role & Status) */
-  #userTable tbody td:nth-child(3),
-  #userTable tbody td:nth-child(4) {
+  #userTable-all tbody td:nth-child(3),
+  #userTable-all tbody td:nth-child(4) {
     display: none; /* Sembunyi saat awal */
   }
 
-  #userTable tbody tr.show-detail td:nth-child(3),
-  #userTable tbody tr.show-detail td:nth-child(4) {
+  #userTable-all tbody tr.show-detail td:nth-child(3),
+  #userTable-all tbody tr.show-detail td:nth-child(4) {
     display: flex !important; /* Muncul saat tombol diklik */
   }
 
   /* ACTION TETAP ADA */
-  #userTable tbody td:nth-child(5) {
+  #userTable-all tbody td:nth-child(5) {
   display: flex;
   flex-direction: row;          /* ✅ BARIS */
   justify-content: space-between;
@@ -656,8 +660,8 @@ tbody tr:hover {
   }
 
    /* ROLE & STATUS MUNCUL */
-  #userTable tbody tr.show-detail td:nth-child(3),
-  #userTable tbody tr.show-detail td:nth-child(4) {
+  #userTable-all tbody tr.show-detail td:nth-child(3),
+  #userTable-all tbody tr.show-detail td:nth-child(4) {
     display: flex;
   }
 
