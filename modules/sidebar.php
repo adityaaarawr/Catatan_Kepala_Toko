@@ -8,8 +8,52 @@
     <div class="logo">
         <span class="logo-text">
             <?php 
-                // Cek role user, jika tidak ada default ke ADMINISTRATOR
-                echo isset($_SESSION['role']) ? htmlspecialchars($_SESSION['role']) : "ADMINISTRATOR";
+                // Ambil nama role dari database berdasarkan session user
+                $displayRoleName = '-';
+                try {
+                    // Cek berbagai kemungkinan key session yang menyimpan role
+                    if (!empty($_SESSION['role_name'])) {
+                        // Jika session sudah menyimpan nama role langsung
+                        $displayRoleName = strtoupper($_SESSION['role_name']);
+                    } elseif (!empty($_SESSION['role_id'])) {
+                        // Jika session menyimpan role_id → query nama role
+                        if (isset($conn)) {
+                            $roleStmt = $conn->prepare("SELECT role_name FROM roles WHERE id = ?");
+                            $roleStmt->execute([$_SESSION['role_id']]);
+                            $roleRow = $roleStmt->fetch(PDO::FETCH_ASSOC);
+                            if ($roleRow) $displayRoleName = strtoupper($roleRow['role_name']);
+                        }
+                    } elseif (!empty($_SESSION['roles'])) {
+                        // Jika session 'roles' berisi angka (ID) atau string nama
+                        if (is_numeric($_SESSION['roles'])) {
+                            if (isset($conn)) {
+                                $roleStmt = $conn->prepare("SELECT role_name FROM roles WHERE id = ?");
+                                $roleStmt->execute([$_SESSION['roles']]);
+                                $roleRow = $roleStmt->fetch(PDO::FETCH_ASSOC);
+                                if ($roleRow) $displayRoleName = strtoupper($roleRow['role_name']);
+                            }
+                        } else {
+                            $displayRoleName = strtoupper($_SESSION['roles']);
+                        }
+                    } elseif (!empty($_SESSION['user_id']) && isset($conn)) {
+                        // Fallback: query berdasarkan user_id → cari role via users table
+                        $userStmt = $conn->prepare("
+                            SELECT r.role_name 
+                            FROM users u 
+                            LEFT JOIN roles r ON u.role_id = r.id 
+                            WHERE u.id = ?
+                        ");
+                        $userStmt->execute([$_SESSION['user_id']]);
+                        $userRow = $userStmt->fetch(PDO::FETCH_ASSOC);
+                        if ($userRow && !empty($userRow['role_name'])) {
+                            $displayRoleName = strtoupper($userRow['role_name']);
+                        }
+                    }
+                } catch (Exception $e) {
+                    // Jika query gagal, tetap tampilkan '-'
+                    $displayRoleName = '-';
+                }
+                echo htmlspecialchars($displayRoleName);
             ?>
         </span>
     </div>
