@@ -85,16 +85,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    /* =========================
-       LOGOUT
+   /* =========================
+        LOGOUT
     ========================== */
     const logoutBtn = document.getElementById('btnLogout');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            if (confirm('Apakah Anda yakin ingin logout?')) {
-                window.location.href = 'login.php';
-            }
-        });
-    }
+
+    logoutBtn.replaceWith(logoutBtn.cloneNode(true));
+
+    document.getElementById('btnLogout').addEventListener('click', function (e) {
+        e.preventDefault();
+        if (confirm('Apakah Anda yakin ingin logout?')) {
+            window.location.href = 'login.php';
+        }
+    });
+    
 });

@@ -1,35 +1,70 @@
 /* ==============================================
-   Script untuk Toggle Detail di Mobile
+   DATA TABLE INIT
 =================================================== */
-$(document).ready(function() {
-    // Gunakan $(document).on agar elemen yang baru muncul/di-render DataTable tetap bisa diklik
-    $(document).on('click', '.toggle-detail', function(e) {
-        e.preventDefault();
-        e.stopPropagation(); // Mencegah bentrokan klik
+function initDataTable() {
+    if (typeof $ !== 'undefined' && $.fn.DataTable) {
 
-        const $tr = $(this).closest('tr');
-        $tr.toggleClass('show-detail');
+    // Pastikan ID tabel sesuai dengan yang ada di report.php
+    if ($.fn.DataTable.isDataTable('#reportTable-all')) {
+        $('#reportTable-all').DataTable().destroy();
+    }
 
-        if ($tr.hasClass('show-detail')) {
-            $(this).text('TUTUP DETAIL').css('background-color', '#ff4d4d');
-        } else {
-            $(this).text('LIHAT DETAIL').css('background-color', '#007bff');
-        }
-        
-        console.log("Toggle diklik pada baris:", $tr.index()); // Untuk debug di inspect element
+    $('#reportTable-all').DataTable({
+        responsive: false,
+        lengthChange: false,
+        autoWidth: false,
+        paging: true,
+        pageLength: 10,
+        searching: false,
+        ordering: false,
+        info: true,
+        columnDefs: [
+            { className: "dt-center", targets: "_all" }
+        ],
     });
-});
+    
+    } else {
+        // Jika library belum siap, tunggu 100ms lalu coba lagi
+        setTimeout(initDataTable, 100);
+    }
+}
+
+/* ==============================================
+   INIT APPLICATION
+=================================================== */
+function initApplication() {
+}
 
 /* ==============================================
        LOGIKA SELECT KARYAWAN, DIVISI, TOKO
     ===================================================== */
-
 $(document).ready(function () {
+    initDataTable();
+
     const $karyawan = $('#filterKaryawan');
     const $divisi   = $('#filterDivisi');
     const $toko     = $('#filterToko');
 
-    $('.select2').select2({ width: '100%', dropdownAutoWidth: false });
+   $('#filterKaryawan').select2({
+    width: '100%',
+    dropdownAutoWidth: false
+}).on('select2:open', function () {
+    $('.select2-search__field').attr('placeholder', 'Cari Karyawan...');
+});
+
+$('#filterDivisi').select2({
+    width: '100%',
+    dropdownAutoWidth: false
+}).on('select2:open', function () {
+    $('.select2-search__field').attr('placeholder', 'Cari Divisi...');
+});
+
+$('#filterToko').select2({
+    width: '100%',
+    dropdownAutoWidth: false
+}).on('select2:open', function () {
+    $('.select2-search__field').attr('placeholder', 'Cari Toko...');
+});
 
     // Simpan semua opsi asli untuk dikembalikan saat reset
     const original = {
@@ -59,7 +94,6 @@ $(document).ready(function () {
         const t = $toko.val();
 
         $karyawan.html(original.karyawan); // Reset dulu
-
         $karyawan.find('option').each(function () {
             if (!$(this).val()) return;
             const kd = $(this).data('divisi');
@@ -81,6 +115,7 @@ $(document).ready(function () {
     filterToko();
     filterKaryawan();
 });
+
 function filterDivisi() {
     const t = $toko.val();
     const selectedDivisi = $divisi.val(); // SIMPAN PILIHAN
@@ -121,7 +156,6 @@ function filterDivisi() {
     $divisi.trigger('change.select2', [true]);
 }
 
-
 /* ============================================================
       3. JIKA PILIH TOKO -> DIVISI & KARYAWAN MENGERUCUT
     ============================================================ */
@@ -130,6 +164,7 @@ $toko.on('change', function (e, isAuto) {
     filterDivisi();
     filterKaryawan();
 });
+
 function filterToko() {
     const d = $divisi.val();
     const selectedToko = $toko.val(); // SIMPAN PILIHAN
@@ -169,7 +204,6 @@ function filterToko() {
 
     $toko.trigger('change.select2', [true]);
 }
-
 
 /* ==============================================
       Script untuk Toggle Detail di Mobile

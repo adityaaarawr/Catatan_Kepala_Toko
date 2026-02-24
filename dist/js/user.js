@@ -26,7 +26,6 @@ $(document).ready(function () {
     });
 
     closeBtn.addEventListener("click", () => popup.style.display = "none");
-    
     popup.addEventListener("click", e => {
         if (e.target === popup) popup.style.display = "none";
     });
@@ -35,7 +34,6 @@ $(document).ready(function () {
        3️⃣ EXPIRATION / FOREVER
     ============================== */
     expDate.disabled = true;
-
     enableCheckbox.addEventListener("change", () => {
         if (enableCheckbox.checked) {
             expDate.disabled = isForever;
@@ -75,10 +73,10 @@ $(document).ready(function () {
         $("#password").val("");
         
         enableCheckbox.checked = false; // <--- TAMBAH BARU WAJIB KOSONG DULU
-    expDate.disabled = true;        // <--- TANGGAL TERKUNCI (Wajib centang dulu)
+        expDate.disabled = true;        // <--- TANGGAL TERKUNCI (Wajib centang dulu)
     
-    isForever = false;              // Reset status forever
-    $(".forever-text").removeClass("active");
+        isForever = false;              // Reset status forever
+        $(".forever-text").removeClass("active");
 
         // Reset Select2
         $('#selectUser').val(null).trigger('change');
@@ -101,7 +99,7 @@ $(document).ready(function () {
 
         // --- DELETE ---
      if (deleteBtn) {
-    const id = deleteBtn.dataset.id;
+        const id = deleteBtn.dataset.id;
     if (confirm("Apakah Anda yakin ingin menghapus user ini?")) {
         const formData = new FormData();
         formData.append('action', 'delete_user');
@@ -127,6 +125,7 @@ $(document).ready(function () {
         });
     }
 }
+
 // --- EDIT ---
 if (editBtn) {
     const id = editBtn.dataset.id;
@@ -160,11 +159,11 @@ if (editBtn) {
     // 6. Atur input tanggal
     if (enableCheckbox.checked) {
         // Cek apakah ada tanggal kadaluwarsa
-        if (expiredAt && expiredAt !== "0000-00-00 00:00:00" && expiredAt !== "null") {
+    if (expiredAt && expiredAt !== "0000-00-00 00:00:00" && expiredAt !== "null") {
             // Ambil format YYYY-MM-DD saja untuk input date
             expDate.value = expiredAt.split(' ')[0];
-        expDate.disabled = false; 
-        isForever = false;
+            expDate.disabled = false; 
+            isForever = false;
             foreverBtn.classList.remove("active");
             } else {
             // Jika kosong, berarti statusnya FOREVER
@@ -172,7 +171,7 @@ if (editBtn) {
             expDate.disabled = true;
             isForever = true;
             foreverBtn.classList.add("active");
-        }
+            }
     } else {
         expDate.disabled = true;
         expDate.value = "";
@@ -184,10 +183,10 @@ if (editBtn) {
     $('#role option').filter(function() {
         return $(this).text().trim().toUpperCase() === roleName.toUpperCase();
     }).prop('selected', true).trigger('change');
-    
     popup.style.display = "flex";
 }
 });
+
     /* =============================
        6️⃣ SAVE USER (SINKRON KE DB)
     ============================== */
@@ -229,6 +228,7 @@ if (editBtn) {
             alert("Terjadi kesalahan format data dari server.");
         }
     })
+
     .catch(error => {
         console.error("Fetch Error:", error);
         alert("Koneksi ke server terputus.");
@@ -238,34 +238,66 @@ if (editBtn) {
     /* =============================
        7️⃣ DATATABLE & SELECT2 INIT
     ============================== */
-    let table;
-if ($.fn.dataTable.isDataTable('#userTable')) {
-    table = $('#userTable').DataTable();
-} else {
-    table = $('#userTable').DataTable({
-        destroy: true,
-        dom: 't',
-        ordering: true,
+    function initDataTable() {
+     if ($.fn.DataTable.isDataTable('#userTable-all')) {
+        $('#userTable-all').DataTable().destroy();
+    }
+
+    $('#userTable-all').DataTable({
+        responsive: true,
+        lengthChange: false,
+        autoWidth: false,
         paging: true,
         pageLength: 10,
-        autoWidth: false, // Tambahkan ini untuk mencegah error perhitungan kolom
-    columnDefs: [
-       { targets: [0, 4], // Kolom 0 (No) dan Kolom 4 (Action) tidak bisa disortir
-            orderable: false }
-    ],
-
-    // Default sorting ke kolom User (indeks 1) secara ascending saat pertama dimuat
-    order: [[1, 'asc']]
+        searching: false,
+        ordering: true,
+        info: true,
+        columnDefs: [
+            { className: "dt-center", targets: "_all" }
+        ]
     });
 }
 
-    // Update nomor halaman setiap kali user melakukan sorting
-table.on('order.dt', function () {
-    renderPages();
+   /* =========================================
+      PLACEHOLDER SEARCH KARYAWAN DAN ROLE
+    =============================================== */
+// 1. Inisialisasi Select2 User
+$('#selectUser').select2({ 
+    dropdownParent: $('#popupAddUser'), 
+    width: '100%',
+    placeholder: "Pilih karyawan",
+    language: {
+        noResults: () => "Data tidak ditemukan",
+        searching: () => "Sedang mencari..."
+    }
 });
 
-    $('#selectUser').select2({ dropdownParent: $('#popupAddUser'), width: '100%' });
-    $('#role').select2({ dropdownParent: $('#popupAddUser'), width: '100%', dropdownPosition: 'below' });
+// 2. Inisialisasi Select2 Role
+$('#role').select2({ 
+    dropdownParent: $('#popupAddUser'), 
+    width: '100%', 
+    dropdownPosition: 'below',
+    placeholder: "Pilih role"
+});
+
+// 3. Fungsi Universal untuk Placeholder Kotak Pencarian (Search Box)
+// Ini akan mendeteksi otomatis mana yang dibuka dan memberi placeholder yang sesuai
+$('#selectUser, #role').on('select2:open', function () {
+
+    setTimeout(() => {
+        const searchField = document.querySelector('.select2-search__field');
+
+        if (!searchField) return;
+
+        if (this.id === 'selectUser') {
+            searchField.placeholder = "Ketik nama karyawan di sini...";
+        } 
+        else if (this.id === 'role') {
+            searchField.placeholder = "Cari role di sini...";
+        }
+
+    }, 0);
+});
 
     // Auto fill name & username
     $('#selectUser').on('change', function () {
@@ -276,50 +308,24 @@ table.on('order.dt', function () {
      $('#name').val(nameVal);
      $('#username').val(usernameVal);
     });
+    
+    // Auto fill name & username
+    $('#selectUser').on('change', function () {
+        const selected = $(this).find(':selected');
+        const nameVal = (selected.data('name') || '').toUpperCase();
+        const usernameVal = (selected.data('username') || '').toUpperCase();
 
-    /* =============================
-       NOMER URUT & TETAP
-    ============================== */
-    table.on('order.dt search.dt draw.dt', function () {
-    table.column(0, { search: 'applied', order: 'applied' })
-        .nodes()
-        .each(function (cell, i) {
-            cell.innerHTML = i + 1;
-        });
-});
-
-    /* =============================
-       8️⃣ SEARCH & PAGINATION
-    ============================== */
-    searchInput.addEventListener("keyup", function () {
-        table.search(this.value).draw();
-        renderPages();
+     $('#name').val(nameVal);
+     $('#username').val(usernameVal);
     });
 
-    function renderPages() {
-        const info = table.page.info();
-        const pagesContainer = document.querySelector(".pages");
-        if(!pagesContainer) return;
-        pagesContainer.innerHTML = "";
-        for (let i = 0; i < info.pages; i++) {
-            const btn = document.createElement("div");
-            btn.textContent = i + 1;
-            if (i === info.page) btn.classList.add("active");
-            btn.onclick = () => { table.page(i).draw("page"); renderPages(); };
-            pagesContainer.appendChild(btn);
-        }
-    }
-
-    $(".page-btn.prev").on("click", () => { table.page("previous").draw("page"); renderPages(); });
-    $(".page-btn.next").on("click", () => { table.page("next").draw("page"); renderPages(); });
-
-    renderPages();
+    function initApplication() {
+    initDataTable();
+}
 
     /* ============================================================
        9️⃣ TOGGLE DETAIL MOBILE (Tambahkan di bawah sini)
-    ============================================================ *//* ============================================================
-   9️⃣ TOGGLE DETAIL MOBILE (SOLUSI FIX)
-============================================================ */
+    ============================================================ */
 // Gunakan $(document).off().on() untuk memastikan tidak ada double click event
 $(document).off('click', '.toggle-detail').on('click', '.toggle-detail', function (e) {
     // 1. Mencegah link default & menghentikan klik agar tidak tembus ke fungsi Edit/Delete
@@ -342,6 +348,7 @@ $(document).off('click', '.toggle-detail').on('click', '.toggle-detail', functio
 
     console.log("Toggle Detail diklik, class 'show-detail' berhasil dipasang.");
 });
+
     /* =======================
            SORT MOBILE
     ================================ */
@@ -361,8 +368,27 @@ $(document).off('click', '.toggle-detail').on('click', '.toggle-detail', functio
     rows.forEach(row => tbody.appendChild(row));
 });
 
+initApplication();
 
+searchInput.addEventListener("keyup", function () {
+    const keyword = this.value.toLowerCase();
+    const rows = tableBody.querySelectorAll("tr");
 
+    rows.forEach(row => {
+        const name = row.querySelector(".user-cell")?.innerText.toLowerCase() || "";
+        const username = row.querySelector("small")?.innerText.toLowerCase() || "";
+        const role = row.querySelector(".role-bubble")?.innerText.toLowerCase() || "";
 
+        if (
+            name.includes(keyword) ||
+            username.includes(keyword) ||
+            role.includes(keyword)
+        ) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+});
 
 }); // <--- Ini adalah tanda penutup asli file user.js Anda
