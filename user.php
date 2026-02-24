@@ -1,9 +1,11 @@
 <?php 
 session_start();
+
 // 🔒 Pastikan role di session bukan angka
 if (isset($_SESSION['role']) && is_numeric($_SESSION['role'])) {
     $_SESSION['role'] = 'ADMINISTRATOR';
 }
+
 $pageTitle = 'User Management'; 
 $cssFile = 'user.css'; 
 $jsFile = 'user.js';
@@ -12,7 +14,6 @@ include './direct/config.php';
 // ===============================
 // PROTEKSI USER MANAGEMENT PAGE
 // ===============================
-
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
@@ -26,6 +27,39 @@ $authUser = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 if (!$authUser || (int)$authUser['enable'] === 0) {
     session_destroy();
     header("Location: login.php?error=disabled");
+    exit;
+}
+
+// ===============================
+// FLEX ROLE - CEK PERMISSION manage_user
+// ===============================
+require_once "api/get_flex_role.php";
+
+$_fStmt = $conn->prepare("SELECT role_id FROM users WHERE id = ?");
+$_fStmt->execute([$_SESSION['user_id']]);
+$_fRow  = $_fStmt->fetch(PDO::FETCH_ASSOC);
+$flexRole = new FlexRole($conn, $_fRow['role_id'] ?? 0);
+
+if (!$flexRole->can('manage_user')) {
+    include 'modules/header.php';
+    ?>
+    <div class="layout">
+        <?php include 'modules/sidebar.php'; ?>
+        <main id="mainContent" class="sidebar-collapsed">
+            <div class="topbar">
+                <h1 class="title">USER MANAGEMENT</h1>
+            </div>
+            <div style="display:flex;justify-content:center;align-items:center;margin-top:80px;">
+                <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:40px 60px;text-align:center;max-width:420px;">
+                    <div style="font-size:2.5rem;margin-bottom:12px;">🔒</div>
+                    <div style="font-weight:bold;font-size:1rem;color:#333;margin-bottom:8px;">Akses Ditolak</div>
+                    <div style="color:#555;font-size:0.88rem;">Anda tidak memiliki akses untuk melihat halaman ini.</div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <?php
+    include 'modules/footer.php';
     exit;
 }
 
@@ -79,24 +113,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($action === 'edit_user') {
             $password = $_POST['password'] ?? '';
     
-    if (!empty($password)) {
+        if (!empty($password)) {
         // Jika password diisi, update password (disarankan pakai password_hash)
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         $stmt = $conn->prepare("UPDATE users SET name = ?, username = ?, role_id = ?, enable = ?, expired_at = ?, password = ?, last_modified = NOW() WHERE id = ?");
         $success = $stmt->execute([$name, $username, $role_id, $enable, $expired, $hashedPassword, $user_id]);
-    } else {
+        } else {
 
-            // 3. Query Update (Sertakan juga enable dan expired_at agar bisa diubah)
-            $stmt = $conn->prepare("UPDATE users SET name = ?, username = ?, role_id = ?, enable = ?, expired_at = ?, last_modified = NOW() WHERE id = ?");
-            $success = $stmt->execute([$name, $username, $role_id, $enable, $expired, $user_id]);
+        // 3. Query Update (Sertakan juga enable dan expired_at agar bisa diubah)
+        $stmt = $conn->prepare("UPDATE users SET name = ?, username = ?, role_id = ?, enable = ?, expired_at = ?, last_modified = NOW() WHERE id = ?");
+        $success = $stmt->execute([$name, $username, $role_id, $enable, $expired, $user_id]);
 
-            if ($success) {
-                echo json_encode(['status' => 'success']);
-            } else {
-                throw new Exception("Gagal memperbarui data.");
-            }
-            exit;
-    }
+        if ($success) {
+            echo json_encode(['status' => 'success']);
+        } else {
+            throw new Exception("Gagal memperbarui data.");
+        }
+        exit;
+        }
         
         } elseif ($action === 'delete_user') {
             // 4. Query Delete
@@ -110,16 +144,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-    } catch (Exception $e) {
-        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-        exit;
-    }
+        } catch (Exception $e) {
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            exit;
+        }
 }
 
 /* ==========================
    AMBIL DATA DARI API (LIVE)
-========================== */
-$apiUrl = "https://toyomatsu.ddns.net/master/api/?data=true";
+========================== */   
+$apiUrl = "https://toyomatsu.ddns.net/master/api/?data=portal";
 $context = stream_context_create(["ssl" => ["verify_peer"=>false, "verify_peer_name"=>false]]);
 $jsonData = @file_get_contents($apiUrl, false, $context);
 $karyawan_api = json_decode($jsonData, true) ?? [];
@@ -158,7 +192,7 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
                 <input type="text" id="searchUser" placeholder="Cari user...">
             </div>
 
-              <div class="mobile-sort-container">
+            <div class="mobile-sort-container">
                 <select id="sortUserMobile">
                     <option value="" disabled selected>SORT</option>
                     <option value="asc">A-Z</option>
@@ -168,7 +202,7 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <div class="table-wrap">
-            <table id="userTable">
+            <table id="userTable-all">
                 <thead>
                     <tr>
                         <th>NO</th>
@@ -181,65 +215,55 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
                 
                 <tbody id="userTableBody">
                    <?php if (!empty($users)): $no = 1; foreach ($users as $u): ?>
-                        <tr>
-                            <td><?= $no++; ?></td>
-                            <td class="user-cell">
-                                <?= htmlspecialchars($u['name']); ?>
-                                <small style="color:#6b7280;">(@<?= htmlspecialchars($u['username']); ?>)</small>
-                            </td>
-                            <td><span class="role-bubble"><?= strtoupper($u['role_name'] ?? '-'); ?></span></td>
-                            <td>
-                                <?php
-                                    $isEnabled   = (int)$u['enable'] === 1;
-                                    $expiryDate = !empty($u['expired_at']) ? strtotime($u['expired_at']) : null;
-                                    $now        = time();
+                    <tr>
+                 <td><?= $no++; ?></td>
+                <td class="user-cell">
+                    <?= htmlspecialchars($u['name']); ?>
+                    <small style="color:#6b7280;">(@<?= htmlspecialchars($u['username']); ?>)</small>
+                </td>
+                <td><span class="role-bubble"><?= strtoupper($u['role_name'] ?? '-'); ?></span></td>
+                <td>
+            <?php
 
-                                    if (!$isEnabled) {
-                                        $statusLabel = "SUSPENDED";
-                                        $statusClass = "inactive";
-                                    } elseif ($expiryDate !== null && $now > $expiryDate) {
-                                        $statusLabel = "EXPIRED";
-                                        $statusClass = "inactive";
-                                    } else {
-                                        $statusLabel = "ACTIVE";
-                                        $statusClass = "active";
-                                    }
-                                ?>
+    $isEnabled   = (int)$u['enable'] === 1;
+    $expiryDate = !empty($u['expired_at']) ? strtotime($u['expired_at']) : null;
+    $now        = time();
 
-                                <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                                    <span class="role-bubble <?= $statusClass ?>"><?= $statusLabel ?></span>
-                                </div>
-                            </td>
+    if (!$isEnabled) {
+        $statusLabel = "SUSPENDED";
+        $statusClass = "inactive";
+    } elseif ($expiryDate !== null && $now > $expiryDate) {
+        $statusLabel = "EXPIRED";
+        $statusClass = "inactive";
+    } else {
+        $statusLabel = "ACTIVE";
+        $statusClass = "active";
+    }
+?>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+        <span class="role-bubble <?= $statusClass ?>"><?= $statusLabel ?></span>
+    </div>
+</td>
    
-                            <td>
-                                <div class="action-icons">
-                                <svg class="icon-edit" 
-                                    data-id="<?= $u['id']; ?>" 
-                                    data-enable="<?= $u['enable'];  ?>"
-                                    data-expired="<?= $u['expired_at']; ?>"xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"/></svg>
-                                    <svg class="icon-delete" data-id="<?= $u['id']; ?>" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm120-400v320h40v-320h-40Zm160 0v320h40v-320h-40Z"/></svg>
-                                </div>
-                                <div class="toggle-detail">LIHAT DETAIL</div>
-                            </td>
-                        </tr>
-                    <?php endforeach; else: ?>
-                        <tr><td colspan="5" style="text-align:center;">DATA USER TIDAK DITEMUKAN</td></tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
+<td>
+    <div class="action-icons">
+        <svg class="icon-edit" 
+        data-id="<?= $u['id']; ?>" 
+        data-enable="<?= $u['enable'];  ?>"
+        data-expired="<?= $u['expired_at']; ?>"xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"/></svg>
+        <svg class="icon-delete" data-id="<?= $u['id']; ?>" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm120-400v320h40v-320h-40Zm160 0v320h40v-320h-40Z"/></svg>
+    </div>
+    <div class="toggle-detail">LIHAT DETAIL</div>
+</td>
+</tr>
 
-        <div class="pagination">
-            <button class="page-btn prev">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M400-240 160-480l240-240 56 58-142 142h486v80H314l142 142-56 58Z"/></svg>
-                PREVIOUS
-            </button>
-            <div class="pages"><div>1</div><div>2</div><div>3</div></div>
-            <button class="page-btn next">
-                NEXT
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m560-240-56-58 142-142H160v-80h486L504-662l56-58 240 240-240 240Z"/></svg>
-            </button>
-        </div>
+            <?php endforeach; else: ?>
+                <tr><td colspan="5" style="text-align:center;">DATA USER TIDAK DITEMUKAN</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
 
         <div class="popup-overlay" id="popupAddUser">
             <div class="popup-box">
@@ -250,69 +274,70 @@ $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
                     <h3>ADD NEW USER</h3>
 
                     <div class="popup-group">
-                        <label>PILIH KARYAWAN :</label>
+                        <label>KARYAWAN :</label>
                         <select id="selectUser" name="selected_user_id">
-                            <option value="">Pilih user</option>
+                        <option></option>
 
-                            <?php foreach ($karyawan_api as $k): ?>
-                                <?php
-                                    $id   = $k['id'] ?? '';
-                                    $nama = $k['nama_lengkap'] ?? '';
-                                    $username = strtolower(
-                                        str_replace(' ', '', $k['nama_panggilan'] ?? $k['nip'] ?? '')
-                                    );
-                                ?>
-                                <option value="<?= $id ?>"
-                                    data-name="<?= htmlspecialchars($nama) ?>"
-                                    data-username="<?= htmlspecialchars($username) ?>">
-                                    <?= strtoupper($nama ?: '-') ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                <?php foreach ($karyawan_api as $k): ?>
+                <?php
+                $id   = $k['id'] ?? '';
+                $nama = $k['nama'] ?? '';
+                $username = strtolower(
+                    str_replace(' ', '', $k['username'] ?? $k['nip'] ?? '')
+                );
+                ?>
 
-                    <div class="popup-group">
-                        <label>NAME :</label>
-                        <input type="text" id="name" name="name" readonly>
-                    </div>
+            <option value="<?= $id ?>"
+                data-name="<?= htmlspecialchars($nama) ?>"
+                data-username="<?= htmlspecialchars($username) ?>">
+                <?= strtoupper($nama ?: '-') ?>
+            </option>
+            <?php endforeach; ?>
+            </select>
+        </div>
 
-                    <div class="popup-group">
-                        <label>USERNAME :</label>
-                        <input type="text" id="username" name="username" readonly>
-                    </div>
+        <div class="popup-group">
+            <label>NAME :</label>
+            <input type="text" id="name" name="name" readonly>
+        </div>
 
-                     <div class="popup-group">
-                        <label>PASSWORD :</label>
-                        <input type="password" id="password" name="password" placeholder="Kosongkan jika tidak ingin mengubah">
-                    </div>
+        <div class="popup-group">
+            <label>USERNAME :</label>
+            <input type="text" id="username" name="username" readonly>
+        </div>
 
-                    <div class="popup-group">
-                        <label>ROLE :</label>
-                        <select id="role" name="role_id">
-                            <option value="">Select role</option>
-                            <?php foreach ($roles as $r): ?>
-                                <option value="<?= $r['id']; ?>"><?= strtoupper($r['role_name']); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+            <div class="popup-group">
+            <label>PASSWORD :</label>
+            <input type="password" id="password" name="password" placeholder="Kosongkan jika tidak ingin mengubah">
+        </div>
 
-                    <div class="enable-box">
-                        <label><input type="checkbox" id="enable" name="enable" value="1"> ENABLE</label>
-                    </div>
+        <div class="popup-group">
+            <label>ROLE :</label>
+            <select id="role" name="role_id">
+                    <option value=""></option>
+                <?php foreach ($roles as $r): ?>
+                    <option value="<?= $r['id']; ?>"><?= strtoupper($r['role_name']); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
 
-                    <div class="popup-group">
-                        <label>EXPIRATION DATE :</label>
-                        <div class="exp-row">
-                            <input type="date" id="expDate" name="expired_at">
-                            <span class="forever-text">FOREVER</span>
-                        </div>
-                    </div>
+        <div class="enable-box">
+            <label><input type="checkbox" id="enable" name="enable" value="1"> ENABLE</label>
+        </div>
 
-                    <button type="button" class="btn-save-popup" id="saveUser">SAVE</button>
-                </form>
+        <div class="popup-group">
+            <label>EXPIRATION DATE :</label>
+            <div class="exp-row">
+                <input type="date" id="expDate" name="expired_at">
+                <span class="forever-text">FOREVER</span>
             </div>
         </div>
-    </main>
+
+        <button type="button" class="btn-save-popup" id="saveUser">SAVE</button>
+    </form>
+    </div>
+</div>
+</main>
 </div>
 <?php include 'modules/footer.php'; ?>  
 

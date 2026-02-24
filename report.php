@@ -1,4 +1,10 @@
 <?php 
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
 date_default_timezone_set('Asia/Jakarta');
 $pageTitle = 'Report'; 
 $cssFile = 'report.css'; 
@@ -24,7 +30,7 @@ $divisiList = [];
 $tokoList   = [];
 
 foreach ($karyawanList as $k) {
-    $divisiList[$k['posisi']] = $k['posisi'];
+    $divisiList[$k['divisi']] = $k['divisi'];
     $tokoList[$k['store']]   = $k['store'];
 }
 
@@ -63,7 +69,7 @@ $notesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // Helper Map untuk menampilkan Nama dari NIP/ID API di Tabel
 $namaKaryawanMap = array_column($karyawanList, 'nama_lengkap', 'id');
 $namaTokoMap     = array_column($karyawanList, 'store', 'toko_id');   // Gunakan toko_id
-$namaDivisiMap   = array_column($karyawanList, 'posisi', 'divisi_id'); // Gunakan divisi_id
+$namaDivisiMap   = array_column($karyawanList, 'divisi', 'divisi_id'); // Gunakan divisi_id
 ?>
 
 <div class="layout"> 
@@ -87,7 +93,7 @@ $namaDivisiMap   = array_column($karyawanList, 'posisi', 'divisi_id'); // Gunaka
                             <?php foreach ($karyawanList as $k): ?>
                                 <option value="<?= $k['id'] ?>" 
                                         data-toko="<?= $k['store'] ?>" 
-                                        data-divisi="<?= $k['posisi'] ?>"
+                                        data-divisi="<?= $k['divisi'] ?>"
                                         <?= ($f_karyawan == $k['id']) ? 'selected' : '' ?>>
                                     <?= strtoupper($k['nama_lengkap']) ?>
                                 </option>
@@ -125,7 +131,7 @@ $namaDivisiMap   = array_column($karyawanList, 'posisi', 'divisi_id'); // Gunaka
 
         <div class="table-container">
             <h3 class="table-title">TABLE RESULT</h3>
-            <table id="reportTable">
+            <table id="reportTabl   e-all">
                 <thead>
                     <tr>
                         <th>NO</th>
@@ -137,6 +143,7 @@ $namaDivisiMap   = array_column($karyawanList, 'posisi', 'divisi_id'); // Gunaka
                         <th>KARYAWAN</th>
                         <th>CATATAN</th>
                         <th>FILE</th>
+                        <th class="mobile-toggle-column"></th>
                     </tr>
                 </thead>
                 
@@ -167,26 +174,37 @@ $namaDivisiMap   = array_column($karyawanList, 'posisi', 'divisi_id'); // Gunaka
                                         <span style="color:#ccc;">No File</span>
                                     <?php endif; ?>
                                 </td>
-
-                                <!-- TOGGLE DETAIL (MOBILE) -->
-                                <td class="mobile-toggle-cell" style="display:none;">
+                                 <!-- TOGGLE DETAIL (MOBILE) -->
+                                <td class="mobile-toggle-cell">
                                 <div class="toggle-detail" onclick="handleDetailClick(this, event)" style="position:relative; z-index:9999; cursor:pointer;">LIHAT DETAIL</div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr><td colspan="9" style="text-align:center; padding:20px;">Data tidak ditemukan.</td></tr>
                     <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
-    </main> 
-</div> 
+                        </tbody>
+                        </table>
+                            </div>
+                            
+                        </main> 
+                    </div> 
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<?php include 'modules/footer.php'; ?>
+
+<!-- 1️⃣ WAJIB PERTAMA: jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- 2️⃣ DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
 
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 
+<!-- 3️⃣ Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- SCRIPT CUSTOM -->
 <script src="dist/js/sidebar.js"></script>
 <script src="dist/js/report.js"></script>
 
@@ -195,5 +213,3 @@ $namaDivisiMap   = array_column($karyawanList, 'posisi', 'divisi_id'); // Gunaka
         window.history.replaceState( null, null, window.location.href );
     }
 </script>
-
-<?php include 'modules/footer.php'; ?>

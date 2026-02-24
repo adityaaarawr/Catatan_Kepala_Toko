@@ -1,16 +1,42 @@
 <?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
 //================================//
 // CONFIG HALAMAN & HEADER       //
 //==============================//
-$pageTitle = 'Home'; 
+
+$pageTitle = 'Home';    
 $cssFile = 'home.css'; 
 $jsFile = 'home.js';
-include 'modules/header.php'; 
 
 //================================//
 // KONEKSI DATABASE              //
 //==============================//
-require_once "direct/config.php"; 
+require_once "direct/config.php";
+require_once "direct/app_config.php"; 
+
+//================================//
+// FLEX ROLE - PERMISSION CHECK   //
+//================================//
+require_once "api/get_flex_role.php";
+
+// Ambil role_id user yang login
+$_flexUserStmt = $conn->prepare("SELECT role_id FROM users WHERE id = ?");
+$_flexUserStmt->execute([$_SESSION['user_id']]);
+$_flexUser = $_flexUserStmt->fetch(PDO::FETCH_ASSOC);
+$_flexRoleId = $_flexUser['role_id'] ?? 0;
+
+$flexRole = new FlexRole($conn, $_flexRoleId);
+
+// Permissions note untuk user ini
+$canViewNote   = $flexRole->can('view_note');
+$canInputNote  = $flexRole->can('input_note');
+$canUpdateNote = $flexRole->can('update_note');
+$canDeleteNote = $flexRole->can('delete_note');
 
 //================================//
 // AMBIL MASTER DATA (DROPDOWN)  //
@@ -40,10 +66,7 @@ foreach ($karyawanAPI as $k) {
     $mapDivisi[$k['posisi']]   = $k['posisi'];
 }
 
-// --- Data Topik ---
-$stmt = $conn->prepare("SELECT id, nama_topik FROM topik ORDER BY nama_topik");
-$stmt->execute();
-$topikList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Topik akan di-load dinamis via AJAX berdasarkan toko yang dipilih
 
 //================================//
 // AJAX HANDLER (POST REQUEST)   //
@@ -52,7 +75,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // --- Proses Delete ---
     if (isset($_POST['ajax_delete'])) {
-
+        if (!$canDeleteNote) {
+            echo json_encode(["status" => "forbidden", "message" => "Anda tidak memiliki akses untuk menghapus catatan."]);
+            exit;
+        }
         $id = (int)$_POST['id'];
     
         // ambil file lama
@@ -74,13 +100,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
         // hapus data
         $stmt = $conn->prepare("DELETE FROM notes WHERE id=?");
-        echo $stmt->execute([$id]) ? "success" : "gagal";
+        echo $stmt->execute([$id]) 
+            ? json_encode(["status" => "success"]) 
+            : json_encode(["status" => "gagal"]);
         exit;
     }
 
     // --- Proses Update ---
     if (isset($_POST['ajax_update'])) {
-
+        if (!$canUpdateNote) {
+            echo json_encode(["status" => "forbidden", "message" => "Anda tidak memiliki akses untuk mengubah catatan."]);
+            exit;
+        }
         $id = (int)$_POST['id'];
     
         // ===== ambil file lama =====
@@ -134,13 +165,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_POST['catatan'],
             $file_name,
             $id
-        ]) ? "success" : "gagal";
+            ]) ? json_encode(["status" => "success"]) : json_encode(["status" => "gagal"]);
     
         exit;
     }
 
     // --- Proses Insert (Simpan Baru) ---
     if (isset($_POST['ajax_save'])) {
+        if (!$canInputNote) {
+            echo json_encode(["status" => "forbidden", "message" => "Anda tidak memiliki akses untuk menambah catatan."]);
+            exit;
+        }
         try {
     
             $toko_id     = $_POST['toko_id'] ?? null;
@@ -149,7 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $topik_id    = $_POST['topik_id'] ?? null;
             $tanggal     = $_POST['tanggal'] ?? null;
             $catatan     = $_POST['catatan'] ?? null;
-            $user_id     = 1;
+            $user_id     = $_SESSION['user_id'] ?? null;
     
             if (!$toko_id || !$karyawan_id || !$topik_id || !$tanggal) {
                 exit("Data wajib belum lengkap!");
@@ -200,7 +235,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo $stmt->execute([
                 $user_id, $toko_id, $karyawan_id, $divisi_id,
                 $topik_id, $tanggal, $catatan, $file_name
-            ]) ? "success" : "gagal";
+            ]) ? json_encode(["status" => "success"]) : json_encode(["status" => "gagal"]);
     
         } catch (Exception $e) {
             echo "Error: " . $e->getMessage();
@@ -226,6 +261,10 @@ $sqlFetch = "
 $stmt = $conn->prepare($sqlFetch);
 $stmt->execute();
 $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+include 'modules/header.php'; 
+
 ?>
 
 <div class="layout">
@@ -239,7 +278,7 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="header-divider"></div>
 
         <div class="btn-add-container">
-            <button class="btn-primary" onclick="openModal()">
+            <button class="btn-primary" onclick="openModal()" <?= !$canInputNote ? 'style="display:none;"' : '' ?>>
                 <i class="fas fa-plus"></i> CATATAN
             </button>
         </div>
@@ -264,8 +303,15 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
 
+        <?php if (!$canViewNote): ?>
+        <div style="margin:30px auto;max-width:500px;text-align:center;padding:30px;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;">
+            <i class="fas fa-lock" style="font-size:2rem;color:#e67e22;margin-bottom:10px;display:block;"></i>
+            <strong>Akses Ditolak</strong>
+            <p style="margin-top:8px;color:#666;">Anda tidak memiliki akses untuk melihat data catatan.</p>
+        </div>
+        <?php else: ?>
         <div class="table-wrap">
-            <table id="noteTable" class="display nowrap" style="width:100%">
+            <table id="master-table-all" class="display nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>NO</th>                                 
@@ -332,12 +378,16 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 </td>
                                 <td>
                                     <span class="action-cell">
+                                        <?php if ($canUpdateNote): ?>
                                         <span class="edit-btn" onclick="openEditModal(this, event)" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </span>
+                                        <?php endif; ?>
+                                        <?php if ($canDeleteNote): ?>
                                         <span class="delete-btn" onclick="deleteNote(<?= $row['id'] ?>, event)" title="Delete">
                                             <i class="fas fa-trash"></i>
                                         </span>
+                                        <?php endif; ?>
                                     </span>
                                 </td>
                             </tr>
@@ -346,16 +396,19 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </tbody>
             </table>
 
-            <div id="emptyState" class="empty-state" style="<?= count($notes) > 0 ? 'display:none;' : 'display:block;' ?>">
+            <!-- <div id="emptyState" class="empty-state" style="<?= count($notes) > 0 ? 'display:none;' : 'display:block;' ?>">
                 <i class="fas fa-folder-open"></i>
                 <p>Belum ada catatan yang masuk.</p>
-            </div>  
+            </div>   -->
         </div>
+
+        </div><!-- end table-wrap -->
+        <?php endif; // end canViewNote ?>
 
         <div class="table-footer-divider"></div>
         <div class="table-footer">
             <div class="project-name">
-                <span>© 2026 Catatan Kepala Toko v1.0.0</span>
+                <span><?= APP_FOOTER_TEXT ?></span>
             </div>
         </div>
     </main>
@@ -383,10 +436,7 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             <label for="inputTopik">TOPIK</label>
             <select id="inputTopik" name="topik_id" required>
-                <option value="">Pilih Topik</option>
-                <?php foreach($topikList as $tp): ?>
-                    <option value="<?= $tp['id'] ?>"><?= $tp['nama_topik'] ?></option>
-                <?php endforeach; ?>
+                <option value="">Pilih Toko dahulu</option>
             </select>
 
             <label for="inputDate">DATE</label>
@@ -454,4 +504,13 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
   </div>
 </div>
 
+<script>
+// Permission dari server — digunakan JS untuk guard aksi
+const userPerms = {
+    view_note:   <?= $canViewNote   ? 'true' : 'false' ?>,
+    input_note:  <?= $canInputNote  ? 'true' : 'false' ?>,
+    update_note: <?= $canUpdateNote ? 'true' : 'false' ?>,
+    delete_note: <?= $canDeleteNote ? 'true' : 'false' ?>
+};
+</script>
 <?php include 'modules/footer.php'; ?>

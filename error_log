@@ -1,0 +1,125 @@
+[05-Feb-2026 10:36:37 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:37:32 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:37:34 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:37:34 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:37:34 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:37:34 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:37:35 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:38:54 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:38:55 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:38:56 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:38:56 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:38:56 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:38:56 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:38:57 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'k.nama_divisi' in 'on clause' in /home/forklif3/headnotes.toyomatsu.com/master.php:33
+Stack trace:
+#0 /home/forklif3/headnotes.toyomatsu.com/master.php(33): PDO->query('\r\n    SELECT k....')
+#1 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/master.php on line 33
+[05-Feb-2026 10:40:29 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:40:29 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:40:29 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:40:29 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:40:29 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:40:29 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:40:40 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:40:40 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:40:40 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:40:40 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:40:40 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:40:40 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:41:30 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:41:30 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:41:30 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:41:30 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:41:30 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:41:30 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:56:43 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:56:43 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:56:43 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:56:43 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:56:43 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:56:43 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:56:55 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:56:55 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:56:55 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:56:55 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:56:55 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:56:55 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:57:37 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:57:37 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:57:37 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:57:37 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:57:37 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:57:37 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:57:55 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:57:55 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:57:55 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:57:55 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:57:55 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 10:57:55 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 11:00:04 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 11:00:04 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 11:00:04 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 11:00:04 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 11:00:04 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[05-Feb-2026 11:00:04 UTC] PHP Notice:  Undefined index: lokasi in /home/forklif3/headnotes.toyomatsu.com/master.php on line 128
+[06-Feb-2026 03:55:21 UTC] PHP Parse error:  syntax error, unexpected end of file in /home/forklif3/headnotes.toyomatsu.com/logout.php on line 5
+[10-Feb-2026 04:36:06 UTC] PHP Parse error:  syntax error, unexpected ':', expecting ')' in /home/forklif3/headnotes.toyomatsu.com/home.php on line 213
+[10-Feb-2026 04:36:50 UTC] PHP Parse error:  syntax error, unexpected ':', expecting ']' in /home/forklif3/headnotes.toyomatsu.com/home.php on line 213
+[10-Feb-2026 04:38:26 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function json_endcode() in /home/forklif3/headnotes.toyomatsu.com/home.php:213
+Stack trace:
+#0 {main}
+  thrown in /home/forklif3/headnotes.toyomatsu.com/home.php on line 213

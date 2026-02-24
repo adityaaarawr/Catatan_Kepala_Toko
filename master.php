@@ -1,5 +1,29 @@
 <?php 
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
 require_once "direct/config.php";
+require_once "direct/app_config.php";
+
+//================================//
+// FLEX ROLE - PERMISSION CHECK   //
+//================================//
+require_once "api/get_flex_role.php";
+
+$_mFlexStmt = $conn->prepare("SELECT role_id FROM users WHERE id = ?");
+$_mFlexStmt->execute([$_SESSION['user_id']]);
+$_mFlexUser = $_mFlexStmt->fetch(PDO::FETCH_ASSOC);
+$flexRole = new FlexRole($conn, $_mFlexUser['role_id'] ?? 0);
+
+$canUpdateToko     = $flexRole->can('update_toko');
+$canManageUser     = $flexRole->can('manage_user');
+$canUpdateRole     = $flexRole->can('update_role');
+$canUpdateDivisi   = $flexRole->can('update_divisi');
+$canUpdateTopik    = $flexRole->can('update_topik');
+$canUpdateKaryawan = $flexRole->can('update_karyawan');
 
 /* ==============================================
    SECTION 1: DATA RETRIEVAL FROM DATABASE
@@ -38,18 +62,23 @@ $dataKaryawan = $conn->query("
     ORDER BY k.id DESC
 ")->fetchAll(PDO::FETCH_ASSOC);
 
-// DATA USER ROLE - PROBLEM: Query kompleks, mungkin perlu dioptimasi
+// DATA USER ROLE - join dengan users pakai created_by, handle mixed key format
 $dataTransaksi_user_role = $conn->query("
     SELECT 
         r.id, 
         r.role_name, 
         u.username,
         r.created_at,
-        GROUP_CONCAT(rk.role_key_name SEPARATOR ', ') as permissions
+        GROUP_CONCAT(DISTINCT rk.role_key_name ORDER BY rk.role_key_name SEPARATOR ', ') as permissions
     FROM roles r
     LEFT JOIN users u ON r.created_by = u.id
-    LEFT JOIN transaksi_user_role tur ON r.id = tur.role_id
-    LEFT JOIN role_key rk ON tur.role_key_name = rk.id 
+    LEFT JOIN (
+        SELECT DISTINCT role_id, role_key_name FROM transaksi_user_role
+    ) tur ON r.id = tur.role_id
+    LEFT JOIN role_key rk ON (
+        tur.role_key_name = CAST(rk.id AS CHAR)
+        OR tur.role_key_name = rk.role_key_name
+    ) AND rk.id >= 3
     GROUP BY r.id, r.role_name, u.username, r.created_at
     ORDER BY r.id ASC 
 ")->fetchAll(PDO::FETCH_ASSOC);
@@ -62,7 +91,28 @@ $cssFile = 'master.css';
 $jsFile = 'master.js';
 include 'modules/header.php'; 
 
+// Ambil user info dari session PHP untuk dikirim ke JS
+$sessionUsername = $_SESSION['username'] ?? $_SESSION['nama'] ?? $_SESSION['user_name'] ?? 'ADMIN';
+$sessionUserId   = (int)($_SESSION['user_id'] ?? $_SESSION['id'] ?? 0);
 ?>
+<script>
+    const currentUsername = <?= json_encode(strtoupper($sessionUsername)) ?>;
+    const currentUserId   = <?= json_encode($sessionUserId) ?>;
+    // Inject data toko dari PHP langsung agar masterTokoOptions selalu terisi
+    // sebelum modal USER ROLE dirender (tidak perlu fetch API lagi)
+    // Deduplikasi nama_toko agar tidak double (e.g. PT. TOYO MATSU 2x)
+    const serverTokoOptions = <?= (function() use ($dataToko) {
+        $unique = [];
+        $seen   = [];
+        foreach ($dataToko as $t) {
+            if (!in_array($t['nama_toko'], $seen)) {
+                $seen[]   = $t['nama_toko'];
+                $unique[] = ['id' => $t['nama_toko'], 'nama_toko' => $t['nama_toko']];
+            }
+        }
+        return json_encode($unique);
+    })() ?>;
+</script>
 
 <!-- ==============================================
      SECTION 3: MAIN LAYOUT
@@ -78,17 +128,23 @@ include 'modules/header.php';
 
         <!-- NAVIGATION TABS -->
         <div class="master-nav">
-            <button class="master-tab" data-type="toko">TOKO</button>
-            <button class="master-tab" data-type="divisi">DIVISI</button>
-            <button class="master-tab" data-type="topik">TOPIK</button>
-            <button class="master-tab" data-type="karyawan">KARYAWAN</button>
-            <button class="master-tab" data-type="user-role">USER ROLE</button>
+            <button class="master-tab" data-type="toko" data-perm="update_toko">TOKO</button>
+            <button class="master-tab" data-type="divisi" data-perm="update_divisi">DIVISI</button>
+            <button class="master-tab" data-type="topik" data-perm="update_topik">TOPIK</button>
+            <button class="master-tab" data-type="karyawan" data-perm="update_karyawan">KARYAWAN</button>
+            <button class="master-tab" data-type="user-role" data-perm="update_role">USER ROLE</button>
         </div>
 
         <!-- TABLE HEADER -->
         <div class="master-header">
             <h2 class="section-title">TOKO</h2>
-            <button id="btnAddMaster" class="btn-primary">
+            <button id="btnAddMaster" class="btn-primary" 
+                data-perm-toko="<?= $canUpdateToko ? '1' : '0' ?>"
+                data-perm-divisi="<?= $canUpdateDivisi ? '1' : '0' ?>"
+                data-perm-topik="<?= $canUpdateTopik ? '1' : '0' ?>"
+                data-perm-karyawan="<?= $canUpdateKaryawan ? '1' : '0' ?>"
+                data-perm-user-role="<?= $canUpdateRole ? '1' : '0' ?>"
+                style="<?= !$canUpdateToko ? 'display:none;' : '' ?>">
                 <i class="fas fa-plus"></i> ADD TOKO
             </button>
         </div>
@@ -129,12 +185,14 @@ include 'modules/header.php';
                                     <td><span class="badge"><?= htmlspecialchars($row['kode']) ?></span></td>
                                     <td class="action-cell">
                                         <div class="action-buttons-container">
+                                            <?php if ($canUpdateToko): ?>
                                             <button class="action-btn edit-btn" onclick="editToko(<?= $row['id'] ?>)" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                             <button class="action-btn delete-btn" onclick="deleteToko(<?= $row['id'] ?>)" title="Hapus">
                                                 <i class="fas fa-trash"></i>
                                             </button>
+                                            <?php else: ?><span style="color:#ccc;font-size:0.8rem;padding:4px;">-</span><?php endif; ?>
                                         </div>
                                     </td>
                                 </tr>
@@ -169,12 +227,14 @@ include 'modules/header.php';
                                     <td><?= htmlspecialchars($row['nama_divisi']) ?></td>
                                     <td class="action-cell">
                                         <div class="action-buttons-container">
+                                            <?php if ($canUpdateTopik): ?>
                                             <button class="action-btn edit-btn" onclick="editTopik(<?= $row['id'] ?>)" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                             <button class="action-btn delete-btn" onclick="deleteTopik(<?= $row['id'] ?>)" title="Hapus">
                                                 <i class="fas fa-trash"></i>
                                             </button>
+                                            <?php else: ?><span style="color:#ccc;font-size:0.8rem;padding:4px;">-</span><?php endif; ?>
                                         </div>
                                     </td>
                                 </tr>
@@ -202,7 +262,7 @@ include 'modules/header.php';
                                 <tr class="master-row" data-type="user-role">
                                     <td><?= $no++ ?></td>
                                     <td><?= (!empty($row['created_at']) && $row['created_at'] != '0000-00-00 00:00:00') ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
-                                    <td><?= htmlspecialchars($row['created_by'] ?? '-') ?></td>
+                                    <td><?= htmlspecialchars($row['username'] ?? '-') ?></td>
                                     <td><?= htmlspecialchars($row['role_name']) ?></td>
                                     <td>
                                         <span style="font-size: 0.85rem; color: #666;">
@@ -211,12 +271,14 @@ include 'modules/header.php';
                                     </td>
                                     <td class="action-cell">
                                         <div class="action-buttons-container">
+                                            <?php if ($canUpdateRole): ?>
                                             <button class="action-btn edit-btn" onclick="editRole(<?= $row['id'] ?>)" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                             <button class="action-btn delete-btn" onclick="deleteRole(<?= $row['id'] ?>)" title="Hapus">
                                                 <i class="fas fa-trash"></i>
                                             </button>
+                                            <?php else: ?><span style="color:#ccc;font-size:0.8rem;padding:4px;">-</span><?php endif; ?>
                                         </div>
                                     </td>
                                 </tr>
@@ -231,7 +293,7 @@ include 'modules/header.php';
         <div class="table-footer-divider"></div>
         <div class="table-footer">
             <div class="project-name">
-                <span>© 2026 Catatan Kepala Toko v1.0.0</span>
+                <span><?= APP_FOOTER_TEXT ?></span>
             </div>
         </div>
     </main>
@@ -341,4 +403,52 @@ include 'modules/header.php';
     </div>
 </div>
 
+<script>
+// ================================================================
+// FLEX ROLE: Permission flags untuk master.js
+// ================================================================
+const masterPerms = {
+    update_toko:     <?= $canUpdateToko     ? 'true' : 'false' ?>,
+    manage_user:     <?= $canManageUser     ? 'true' : 'false' ?>,
+    update_role:     <?= $canUpdateRole     ? 'true' : 'false' ?>,
+    update_divisi:   <?= $canUpdateDivisi   ? 'true' : 'false' ?>,
+    update_topik:    <?= $canUpdateTopik    ? 'true' : 'false' ?>,
+    update_karyawan: <?= $canUpdateKaryawan ? 'true' : 'false' ?>
+};
+
+// Mapping tab label → permission key
+const TAB_PERM_MAP = {
+    'TOKO':      'update_toko',
+    'DIVISI':    'update_divisi',
+    'TOPIK':     'update_topik',
+    'KARYAWAN':  'update_karyawan',
+    'USER ROLE': 'update_role'
+};
+
+function checkMasterPerm(permKey, action) {
+    if (typeof masterPerms === 'undefined') return true;
+    if (!masterPerms[permKey]) {
+        showMasterAccessDenied('Anda tidak memiliki akses untuk ' + action + '.');
+        return false;
+    }
+    return true;
+}
+
+function showMasterAccessDenied(message) {
+    const old = document.getElementById('masterAccessDeniedPopup');
+    if (old) old.remove();
+    const popup = document.createElement('div');
+    popup.id = 'masterAccessDeniedPopup';
+    popup.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+    popup.innerHTML = `<div style="background:#fff;border-radius:12px;padding:32px 28px;max-width:380px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+        <div style="font-size:2.5rem;margin-bottom:12px;">&#x1F512;</div>
+        <h3 style="margin:0 0 10px;color:#e74c3c;font-size:1.1rem;">Akses Ditolak</h3>
+        <p style="color:#555;margin:0 0 20px;font-size:0.9rem;">${message}</p>
+        <button onclick="document.getElementById('masterAccessDeniedPopup').remove()"
+            style="background:#e74c3c;color:#fff;border:none;padding:10px 28px;border-radius:6px;cursor:pointer;font-size:0.9rem;font-weight:bold;">OK</button>
+    </div>`;
+    document.body.appendChild(popup);
+    setTimeout(() => { if (popup.parentNode) popup.remove(); }, 5000);
+}
+</script>
 <?php include 'modules/footer.php'; ?>
