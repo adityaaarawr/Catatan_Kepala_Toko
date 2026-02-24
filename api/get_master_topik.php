@@ -16,15 +16,17 @@ try {
             $sql = "SELECT 
                         tp.id,
                         tp.created_at,
-                        tp.username,
+                        tp.user_id,
+                        u.username AS username,
                         tp.nama_topik,
                         tp.toko_id,
-                        t.nama_toko,
+                        COALESCE(t.nama_toko, tp.toko_id) AS nama_toko,
                         tp.divisi_id,
-                        d.nama_divisi
+                        COALESCE(d.nama_divisi, tp.divisi_id) AS nama_divisi
                     FROM topik tp
-                    LEFT JOIN toko t ON tp.toko_id = t.id
-                    LEFT JOIN divisi d ON tp.divisi_id = d.id
+                    LEFT JOIN users u ON tp.user_id = u.id
+                    LEFT JOIN toko t ON (tp.toko_id REGEXP '^[0-9]+$' AND t.id = CAST(tp.toko_id AS UNSIGNED))
+                    LEFT JOIN divisi d ON (tp.divisi_id REGEXP '^[0-9]+$' AND d.id = CAST(tp.divisi_id AS UNSIGNED))
                     ORDER BY tp.id DESC";
 
             $stmt = $conn->query($sql);
@@ -64,15 +66,17 @@ try {
             $sql = "SELECT 
                         tp.id,
                         tp.created_at,
-                        tp.username,
+                        tp.user_id,
+                        u.username AS username,
                         tp.nama_topik,
                         tp.toko_id,
-                        t.nama_toko,
+                        COALESCE(t.nama_toko, tp.toko_id) AS nama_toko,
                         tp.divisi_id,
-                        d.nama_divisi
+                        COALESCE(d.nama_divisi, tp.divisi_id) AS nama_divisi
                     FROM topik tp
-                    LEFT JOIN toko t ON tp.toko_id = t.id
-                    LEFT JOIN divisi d ON tp.divisi_id = d.id
+                    LEFT JOIN users u ON tp.user_id = u.id
+                    LEFT JOIN toko t ON (tp.toko_id REGEXP '^[0-9]+$' AND t.id = CAST(tp.toko_id AS UNSIGNED))
+                    LEFT JOIN divisi d ON (tp.divisi_id REGEXP '^[0-9]+$' AND d.id = CAST(tp.divisi_id AS UNSIGNED))
                     WHERE tp.id = ?";
 
             $stmt = $conn->prepare($sql);
@@ -113,10 +117,11 @@ try {
             exit;
         }
 
-        $nama_topik = trim($_POST['nama_topik'] ?? '');
-        $toko_id    = (int) ($_POST['toko_id'] ?? null);
-        $divisi_id  = (int) ($_POST['divisi_id'] ?? null);
-        $username   = trim($_POST['username'] ?? 'system');
+        $nama_topik  = trim($_POST['nama_topik'] ?? '');
+        // Kolom toko_id dan divisi_id di DB bertipe varchar, simpan langsung sebagai string nama
+        $toko_id     = trim($_POST['toko_nama'] ?? $_POST['toko_id'] ?? ''); // nama toko (string)
+        $divisi_id   = trim($_POST['divisi_id'] ?? '');                      // nama/id divisi (string)
+        $user_id     = (int) ($_POST['user_id'] ?? 0);
 
         // Validasi input
         if (empty($nama_topik)) {
@@ -127,7 +132,7 @@ try {
             exit;
         }
 
-        if (!$toko_id) {
+        if (empty($toko_id)) {
             echo json_encode([
                 "status" => false,
                 "message" => "Toko wajib dipilih"
@@ -135,7 +140,7 @@ try {
             exit;
         }
 
-        if (!$divisi_id) {
+        if (empty($divisi_id)) {
             echo json_encode([
                 "status" => false,
                 "message" => "Divisi wajib dipilih"
@@ -144,33 +149,6 @@ try {
         }
 
         try {
-            // Validasi toko
-            $cekToko = $conn->prepare("SELECT id, nama_toko FROM toko WHERE id = ?");
-            $cekToko->execute([$toko_id]);
-            $tokoData = $cekToko->fetch(PDO::FETCH_ASSOC);
-            
-            if (!$tokoData) {
-                echo json_encode([
-                    "status" => false,
-                    "message" => "Toko tidak valid"
-                ]);
-                exit;
-            }
-
-            // Validasi divisi
-            // $cekDiv = $conn->prepare("SELECT id, nama_divisi FROM divisi WHERE id = ?");
-            // $cekDiv->execute([$divisi_id]);
-            // $divisiData = $cekDiv->fetch(PDO::FETCH_ASSOC);
-            
-            // if (!$divisiData) {
-            //     echo json_encode([
-            //         "status" => false,
-            //         "message" => "Divisi tidak valid",
-
-            //     ]);
-            //     exit;
-            // }
-
             // Cek duplikasi topik dalam toko yang sama
             $cekDuplikat = $conn->prepare("
                 SELECT id FROM topik 
@@ -189,7 +167,7 @@ try {
             // Insert data topik
             $stmt = $conn->prepare("
                 INSERT INTO topik 
-                    (nama_topik, toko_id, divisi_id, username, created_at)
+                    (nama_topik, toko_id, divisi_id, user_id, created_at)
                 VALUES 
                     (?, ?, ?, ?, NOW())
             ");
@@ -198,7 +176,7 @@ try {
                 $nama_topik,
                 $toko_id,
                 $divisi_id,
-                $username
+                $user_id
             ]);
 
             $lastId = $conn->lastInsertId();
@@ -207,15 +185,17 @@ try {
             $sql = "SELECT 
                         tp.id,
                         tp.created_at,
-                        tp.username,
+                        tp.user_id,
+                        u.username AS username,
                         tp.nama_topik,
                         tp.toko_id,
-                        t.nama_toko,
+                        COALESCE(t.nama_toko, tp.toko_id) AS nama_toko,
                         tp.divisi_id,
-                        d.nama_divisi
+                        COALESCE(d.nama_divisi, tp.divisi_id) AS nama_divisi
                     FROM topik tp
-                    LEFT JOIN toko t ON tp.toko_id = t.id
-                    LEFT JOIN divisi d ON tp.divisi_id = d.id
+                    LEFT JOIN users u ON tp.user_id = u.id
+                    LEFT JOIN toko t ON (tp.toko_id REGEXP '^[0-9]+$' AND t.id = CAST(tp.toko_id AS UNSIGNED))
+                    LEFT JOIN divisi d ON (tp.divisi_id REGEXP '^[0-9]+$' AND d.id = CAST(tp.divisi_id AS UNSIGNED))
                     WHERE tp.id = ?";
 
             $getStmt = $conn->prepare($sql);
@@ -256,10 +236,11 @@ try {
             exit;
         }
 
-        $id = (int) ($_POST['id'] ?? 0);
-        $nama_topik = trim($_POST['nama_topik'] ?? '');
-        $toko_id    = (int) ($_POST['toko_id'] ?? 0);
-        $divisi_id  = (int) ($_POST['divisi_id'] ?? 0);
+        $id          = (int) ($_POST['id'] ?? 0);
+        $nama_topik  = trim($_POST['nama_topik'] ?? '');
+        // Kolom toko_id dan divisi_id di DB bertipe varchar, simpan langsung sebagai string nama
+        $toko_id     = trim($_POST['toko_nama'] ?? $_POST['toko_id'] ?? ''); // nama toko (string)
+        $divisi_id   = trim($_POST['divisi_id'] ?? '');                      // nama/id divisi (string)
 
         // Validasi input
         if (!$id) {
@@ -278,7 +259,7 @@ try {
             exit;
         }
 
-        if (!$toko_id) {
+        if (empty($toko_id)) {
             echo json_encode([
                 "status" => false,
                 "message" => "Toko wajib dipilih"
@@ -286,7 +267,7 @@ try {
             exit;
         }
 
-        if (!$divisi_id) {
+        if (empty($divisi_id)) {
             echo json_encode([
                 "status" => false,
                 "message" => "Divisi wajib dipilih"
@@ -322,28 +303,6 @@ try {
                 exit;
             }
 
-            // Validasi toko
-            $cekToko = $conn->prepare("SELECT id FROM toko WHERE id = ?");
-            $cekToko->execute([$toko_id]);
-            if (!$cekToko->fetch()) {
-                echo json_encode([
-                    "status" => false,
-                    "message" => "Toko tidak valid"
-                ]);
-                exit;
-            }
-
-            // Validasi divisi
-            // $cekDiv = $conn->prepare("SELECT id FROM divisi WHERE id = ?");
-            // $cekDiv->execute([$divisi_id]);
-            // if (!$cekDiv->fetch()) {
-            //     echo json_encode([
-            //         "status" => false,
-            //         "message" => "Divisi tidak valid"
-            //     ]);
-            //     exit;
-            // }
-
             // Update data topik
             $stmt = $conn->prepare("
                 UPDATE topik 
@@ -362,15 +321,17 @@ try {
             $sql = "SELECT 
                         tp.id,
                         tp.created_at,
-                        tp.username,
+                        tp.user_id,
+                        u.username AS username,
                         tp.nama_topik,
                         tp.toko_id,
-                        t.nama_toko,
+                        COALESCE(t.nama_toko, tp.toko_id) AS nama_toko,
                         tp.divisi_id,
-                        d.nama_divisi
+                        COALESCE(d.nama_divisi, tp.divisi_id) AS nama_divisi
                     FROM topik tp
-                    LEFT JOIN toko t ON tp.toko_id = t.id
-                    LEFT JOIN divisi d ON tp.divisi_id = d.id
+                    LEFT JOIN users u ON tp.user_id = u.id
+                    LEFT JOIN toko t ON (tp.toko_id REGEXP '^[0-9]+$' AND t.id = CAST(tp.toko_id AS UNSIGNED))
+                    LEFT JOIN divisi d ON (tp.divisi_id REGEXP '^[0-9]+$' AND d.id = CAST(tp.divisi_id AS UNSIGNED))
                     WHERE tp.id = ?";
 
             $getStmt = $conn->prepare($sql);

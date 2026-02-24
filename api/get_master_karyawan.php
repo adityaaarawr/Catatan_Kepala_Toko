@@ -324,7 +324,7 @@ if ($action === 'delete') {
             "status" => false,
             "message" => "ID karyawan tidak valid"
         ]);
-        exit;
+        exit;   
     }
     
     // Biasanya untuk delete menggunakan endpoint spesifik
